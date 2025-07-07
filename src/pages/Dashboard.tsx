@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { useLanguage } from "@/hooks/useLanguage";
 import { insuranceAgents } from "@/data/insuranceAgents";
+import { claimsApi, type Claim } from "@/services/claimsApi";
 import { 
   Search, 
   Upload, 
@@ -25,6 +26,8 @@ const Dashboard = () => {
   const { t } = useLanguage();
   const navigate = useNavigate();
   const [chatInput, setChatInput] = useState("");
+  const [recentClaims, setRecentClaims] = useState<Claim[]>([]);
+  const [loading, setLoading] = useState(false);
 
   const texts = {
     greeting: { 
@@ -47,6 +50,24 @@ const Dashboard = () => {
     recentActivity: { 'pt-BR': 'Atividade Recente', 'pt': 'Atividade Recente', 'en': 'Recent Activity' },
     quickStats: { 'pt-BR': 'Estatísticas Rápidas', 'pt': 'Estatísticas Rápidas', 'en': 'Quick Stats' }
   };
+
+  // Load recent claims from API
+  useEffect(() => {
+    const loadRecentClaims = async () => {
+      setLoading(true);
+      try {
+        // This would typically be a separate endpoint for recent claims
+        // For now, we'll simulate with a limited set
+        setRecentClaims([]);
+      } catch (error) {
+        console.error('Failed to load recent claims:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadRecentClaims();
+  }, []);
 
   const mockCases = [
     {

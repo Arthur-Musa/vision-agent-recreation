@@ -6,6 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { useLanguage } from "@/hooks/useLanguage";
+import { useClaim } from "@/hooks/useClaims";
+import { claimsApi } from "@/services/claimsApi";
 import { 
   ArrowLeft,
   Clock,
@@ -31,6 +33,9 @@ const CaseDetail = () => {
   const { t } = useLanguage();
   const navigate = useNavigate();
   const [isLiveUpdate, setIsLiveUpdate] = useState(true);
+  const [report, setReport] = useState<any>(null);
+  
+  const { claim, status, loading, error, startAnalysis, refreshStatus } = useClaim(id || "");
 
   const texts = {
     back: { 'pt-BR': 'Voltar', 'pt': 'Voltar', 'en': 'Back' },
@@ -140,17 +145,42 @@ const CaseDetail = () => {
     }
   };
 
-  // Simulate real-time updates
+  // Load claim report and setup real-time updates
   useEffect(() => {
-    if (!isLiveUpdate) return;
+    if (!id) {
+      navigate('/cases');
+      return;
+    }
+    
+    // Load claim report if analysis is completed
+    const loadReport = async () => {
+      if (status?.status === 'completed') {
+        try {
+          const reportData = await claimsApi.getClaimReport(id);
+          setReport(reportData);
+        } catch (err) {
+          console.error('Failed to load report:', err);
+        }
+      }
+    };
 
-    const interval = setInterval(() => {
-      // In a real app, this would fetch updates from the server
-      console.log("Fetching live updates...");
-    }, 2000);
+    loadReport();
+  }, [id, status?.status, navigate]);
+
+  // Real-time updates
+  useEffect(() => {
+    if (!isLiveUpdate || !id) return;
+
+    const interval = setInterval(async () => {
+      try {
+        await refreshStatus();
+      } catch (err) {
+        console.error('Failed to refresh status:', err);
+      }
+    }, 3000);
 
     return () => clearInterval(interval);
-  }, [isLiveUpdate]);
+  }, [isLiveUpdate, id, refreshStatus]);
 
   return (
     <div className="min-h-screen bg-background">
