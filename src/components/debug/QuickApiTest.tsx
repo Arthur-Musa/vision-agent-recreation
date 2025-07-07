@@ -2,9 +2,10 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { CorsErrorDisplay } from '@/components/error/CorsErrorDisplay';
 import { useToast } from '@/hooks/use-toast';
 import { config } from '@/config/environment';
-import { Activity, CheckCircle, XCircle, AlertTriangle } from 'lucide-react';
+import { Activity, CheckCircle, XCircle } from 'lucide-react';
 
 export const QuickApiTest = () => {
   const { toast } = useToast();
@@ -13,6 +14,7 @@ export const QuickApiTest = () => {
     success: boolean;
     message: string;
     details?: string;
+    fullError?: string;
   } | null>(null);
 
   const testApi = async () => {
@@ -29,6 +31,7 @@ export const QuickApiTest = () => {
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
+          'Origin': window.location.origin,
         },
         mode: 'cors',
         signal: controller.signal,
@@ -66,7 +69,7 @@ export const QuickApiTest = () => {
         if (error.name === 'AbortError') {
           message = 'Timeout na conexão';
           details = 'A API não respondeu em 10 segundos';
-        } else if (error.message.includes('CORS')) {
+        } else if (error.message === 'Failed to fetch' || error.message.includes('CORS')) {
           message = 'Erro de CORS';
           details = 'API não permite requisições desta origem';
         } else if (error.message.includes('fetch')) {
@@ -81,6 +84,7 @@ export const QuickApiTest = () => {
         success: false,
         message,
         details,
+        fullError: error instanceof Error ? error.message : String(error),
       });
 
       toast({
@@ -127,7 +131,13 @@ export const QuickApiTest = () => {
           )}
         </Button>
 
-        {result && (
+        {result && !result.success && (result.message.includes('CORS') || result.fullError === 'Failed to fetch') ? (
+          <CorsErrorDisplay 
+            error={result.fullError || result.message}
+            apiUrl={config.api.baseUrl}
+            currentOrigin={window.location.origin}
+          />
+        ) : result && (
           <div className={`p-3 rounded-lg border ${
             result.success 
               ? 'bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-800' 
@@ -152,24 +162,6 @@ export const QuickApiTest = () => {
                 {result.details}
               </div>
             )}
-          </div>
-        )}
-
-        {result && !result.success && (
-          <div className="bg-blue-50 border border-blue-200 dark:bg-blue-900/20 dark:border-blue-800 p-3 rounded-lg">
-            <div className="flex items-center gap-2 mb-2">
-              <AlertTriangle className="h-4 w-4 text-blue-600" />
-              <span className="font-medium text-blue-800 dark:text-blue-200">
-                Configuração CORS Necessária
-              </span>
-            </div>
-            <div className="text-sm text-blue-700 dark:text-blue-300">
-              Adicione ao backend:
-              <br />
-              <code className="bg-blue-100 dark:bg-blue-800 px-1 rounded text-xs">
-                Access-Control-Allow-Origin: {window.location.origin}
-              </code>
-            </div>
           </div>
         )}
       </CardContent>

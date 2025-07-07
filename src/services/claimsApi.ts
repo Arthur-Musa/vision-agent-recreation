@@ -60,8 +60,11 @@ class ClaimsApiService {
       const response = await fetch(`${API_BASE}${endpoint}`, {
         headers: {
           'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Origin': window.location.origin,
           ...options?.headers,
         },
+        mode: 'cors',
         signal: controller.signal,
         ...options,
       });
@@ -70,12 +73,51 @@ class ClaimsApiService {
 
       if (!response.ok) {
         const errorText = await response.text().catch(() => 'Unknown error');
-        throw new Error(sanitizeError(`API Error: ${response.status} ${response.statusText}`));
+        throw new Error(`API Error: ${response.status} ${response.statusText} - ${errorText}`);
       }
 
       return response.json();
     } catch (error) {
       clearTimeout(timeoutId);
+      
+      if (error instanceof Error) {
+        // Detect CORS errors
+        if (error.message === 'Failed to fetch' || error.message.includes('CORS')) {
+          throw new Error(`❌ ERRO DE CORS: A API não permite requisições de ${window.location.origin}
+
+🔧 CONFIGURAÇÃO NECESSÁRIA NO BACKEND:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Headers CORS obrigatórios:
+• Access-Control-Allow-Origin: ${window.location.origin}
+• Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS
+• Access-Control-Allow-Headers: Content-Type, Accept, Authorization, Origin
+• Access-Control-Allow-Credentials: true
+
+Se usar Express.js, adicione:
+app.use(cors({
+  origin: '${window.location.origin}',
+  credentials: true,
+  optionsSuccessStatus: 200
+}));
+
+Se usar FastAPI, adicione:
+from fastapi.middleware.cors import CORSMiddleware
+app.add_middleware(CORSMiddleware,
+  allow_origins=['${window.location.origin}'],
+  allow_credentials=True,
+  allow_methods=['*'],
+  allow_headers=['*']
+)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
+        }
+        
+        if (error.name === 'AbortError') {
+          throw new Error('⏱️ Timeout: A API não respondeu em 30 segundos. Verifique se ela está online.');
+        }
+      }
+      
       throw new Error(sanitizeError(error));
     }
   }
