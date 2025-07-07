@@ -76,13 +76,13 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <div className="w-7 h-7 bg-foreground rounded-full flex items-center justify-center">
-                <div className="w-3 h-3 bg-background rounded-full"></div>
+              <div className="w-6 h-6 sm:w-7 sm:h-7 bg-foreground rounded-full flex items-center justify-center">
+                <div className="w-2 h-2 sm:w-3 sm:h-3 bg-background rounded-full"></div>
               </div>
-              <h1 className="text-2xl olga-logo text-foreground">Olga</h1>
+              <h1 className="text-xl sm:text-2xl olga-logo text-foreground">Olga</h1>
             </div>
             <LanguageSelector />
           </div>
@@ -90,34 +90,35 @@ const Index = () => {
       </header>
 
       {/* Hero Section - V7Labs Style */}
-      <section className="py-16 bg-background">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h1 className="text-4xl md:text-5xl font-light mb-4 text-foreground tracking-tight">
+      <section className="py-8 sm:py-12 lg:py-16 bg-background">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-8 sm:mb-12">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-light mb-4 text-foreground tracking-tight">
               Bom dia
             </h1>
-            <p className="text-xl text-muted-foreground mb-8 font-light">
+            <p className="text-lg sm:text-xl text-muted-foreground mb-8 font-light px-4">
               O que você gostaria de fazer hoje?
             </p>
           </div>
 
           {/* Chat Input */}
-          <div className="max-w-4xl mx-auto mb-12">
-            <div className="bg-card rounded-2xl border shadow-sm p-6">
-              <div className="flex items-center gap-4">
+          <div className="max-w-4xl mx-auto mb-8 sm:mb-12">
+            <div className="bg-card rounded-2xl border shadow-sm p-4 sm:p-6">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
                 <div className="flex-1">
                   <Input
                     type="text"
                     placeholder="Descreva o que você precisa ou faça upload de documentos..."
-                    className="border-0 bg-transparent text-lg placeholder:text-muted-foreground focus-visible:ring-0"
+                    className="border-0 bg-transparent text-sm sm:text-lg placeholder:text-muted-foreground focus-visible:ring-0"
                   />
                 </div>
-                <Button size="lg" className="rounded-full px-6" onClick={() => navigate('/upload')}>
-                  <Search className="h-5 w-5" />
+                <Button size="lg" className="rounded-full px-6 w-full sm:w-auto" onClick={() => navigate('/upload')}>
+                  <Search className="h-5 w-5 mr-2 sm:mr-0" />
+                  <span className="sm:hidden">Pesquisar</span>
                 </Button>
               </div>
               
-              <div className="flex items-center gap-6 mt-4 text-sm text-muted-foreground">
+              <div className="flex flex-wrap items-center gap-3 sm:gap-6 mt-4 text-xs sm:text-sm text-muted-foreground">
                 <span>Apólices</span>
                 <span>Sinistros</span>
                 <span>Jurídico</span>
@@ -129,17 +130,17 @@ const Index = () => {
       </section>
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 py-12">
+      <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
         {/* Search and Filters */}
-        <div className="mb-8">
-          <div className="relative mb-6">
+        <div className="mb-6 sm:mb-8">
+          <div className="relative mb-4 sm:mb-6">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               type="text"
               placeholder={t(heroTexts.searchPlaceholder)}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 h-12 text-lg"
+              className="pl-10 h-10 sm:h-12 text-sm sm:text-lg"
             />
           </div>
           
@@ -150,7 +151,7 @@ const Index = () => {
         </div>
 
         {/* Agents Grid - V7Labs Style */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
           {filteredAgents.map((agent) => (
             <div key={agent.id} onClick={() => navigate(`/agent/${agent.id}`)}>
               <AgentCard 

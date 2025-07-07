@@ -15,12 +15,13 @@ export const CategoryFilter = ({ selectedCategory, onCategoryChange }: CategoryF
   const allLabel = { 'pt-BR': 'Todos', 'pt': 'Todos', 'en': 'All' };
 
   return (
-    <div className="flex flex-wrap gap-2 mb-6">
+    <div className="flex flex-wrap gap-2 sm:gap-3 mb-4 sm:mb-6">
       <Button
         variant={selectedCategory === 'all' ? 'default' : 'outline'}
         onClick={() => onCategoryChange('all')}
+        size="sm"
         className={cn(
-          "transition-all duration-300",
+          "transition-all duration-300 text-xs sm:text-sm",
           selectedCategory === 'all' && "gradient-hero text-white border-none"
         )}
       >
@@ -32,8 +33,9 @@ export const CategoryFilter = ({ selectedCategory, onCategoryChange }: CategoryF
           key={category.id}
           variant={selectedCategory === category.id ? 'default' : 'outline'}
           onClick={() => onCategoryChange(category.id)}
+          size="sm"
           className={cn(
-            "transition-all duration-300",
+            "transition-all duration-300 text-xs sm:text-sm",
             selectedCategory === category.id && [
               category.gradient,
               "text-white border-none"

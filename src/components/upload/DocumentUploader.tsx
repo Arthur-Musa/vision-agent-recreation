@@ -60,10 +60,10 @@ export const DocumentUploader = ({ onFilesAdded }: DocumentUploaderProps) => {
 
   return (
     <Card className="w-full">
-      <CardContent className="p-8">
+      <CardContent className="p-4 sm:p-6 lg:p-8">
         <div
           className={`
-            border-2 border-dashed rounded-lg p-8 text-center transition-all duration-200
+            border-2 border-dashed rounded-lg p-4 sm:p-6 lg:p-8 text-center transition-all duration-200
             ${isDragOver 
               ? 'border-primary bg-primary/5' 
               : 'border-muted-foreground/25 hover:border-primary/50 hover:bg-muted/50'
@@ -82,10 +82,10 @@ export const DocumentUploader = ({ onFilesAdded }: DocumentUploaderProps) => {
             </div>
             
             <div>
-              <h3 className="text-lg font-medium mb-2">
+              <h3 className="text-base sm:text-lg font-medium mb-2">
                 {isDragOver ? t(texts.dragActive) : t(texts.title)}
               </h3>
-              <p className="text-muted-foreground">
+              <p className="text-sm sm:text-base text-muted-foreground px-2">
                 {t(texts.subtitle)}
               </p>
             </div>
@@ -110,11 +110,12 @@ export const DocumentUploader = ({ onFilesAdded }: DocumentUploaderProps) => {
               <p className="text-sm text-muted-foreground mb-3">
                 {t(texts.supportedFormats)}
               </p>
-              <div className="flex items-center justify-center gap-6">
+              <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-6">
                 {supportedTypes.map((type, index) => (
                   <div key={index} className="flex items-center gap-2 text-xs text-muted-foreground">
                     <type.icon className="h-4 w-4" />
-                    <span>{type.label}</span>
+                    <span className="hidden sm:inline">{type.label}</span>
+                    <span className="sm:hidden">{type.ext}</span>
                   </div>
                 ))}
               </div>

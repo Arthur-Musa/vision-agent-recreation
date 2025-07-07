@@ -63,9 +63,9 @@ const Upload = () => {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container mx-auto px-4 py-4">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2 sm:space-x-4">
               <Button 
                 variant="ghost" 
                 size="sm"
@@ -73,11 +73,11 @@ const Upload = () => {
                 className="gap-2"
               >
                 <ArrowLeft className="h-4 w-4" />
-                {t(texts.back)}
+                <span className="hidden sm:inline">{t(texts.back)}</span>
               </Button>
               <div>
-                <h1 className="text-2xl font-medium">{t(texts.title)}</h1>
-                <p className="text-sm text-muted-foreground">{t(texts.subtitle)}</p>
+                <h1 className="text-lg sm:text-2xl font-medium">{t(texts.title)}</h1>
+                <p className="text-xs sm:text-sm text-muted-foreground hidden sm:block">{t(texts.subtitle)}</p>
               </div>
             </div>
           </div>
@@ -85,13 +85,13 @@ const Upload = () => {
       </header>
 
       {/* Progress Steps */}
-      <div className="container mx-auto px-4 py-6">
-        <div className="flex items-center justify-center mb-8">
-          <div className="flex items-center space-x-4">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+        <div className="flex items-center justify-center mb-6 sm:mb-8 overflow-x-auto">
+          <div className="flex items-center space-x-2 sm:space-x-4 min-w-max">
             {['upload', 'select-agent', 'review'].map((stepName, index) => (
               <div key={stepName} className="flex items-center">
                 <div className={`
-                  w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium
+                  w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs sm:text-sm font-medium
                   ${step === stepName || (index < ['upload', 'select-agent', 'review'].indexOf(step)) 
                     ? 'bg-primary text-primary-foreground' 
                     : 'bg-muted text-muted-foreground'
@@ -99,15 +99,15 @@ const Upload = () => {
                 `}>
                   {index + 1}
                 </div>
-                <span className={`ml-2 text-sm font-medium ${
+                <span className={`ml-1 sm:ml-2 text-xs sm:text-sm font-medium ${
                   step === stepName ? 'text-foreground' : 'text-muted-foreground'
-                }`}>
+                } hidden sm:inline`}>
                   {stepName === 'upload' && t(texts.uploadStep)}
                   {stepName === 'select-agent' && t(texts.selectAgent)}
                   {stepName === 'review' && t(texts.review)}
                 </span>
                 {index < 2 && (
-                  <div className={`ml-4 w-8 h-px ${
+                  <div className={`ml-2 sm:ml-4 w-6 sm:w-8 h-px ${
                     index < ['upload', 'select-agent', 'review'].indexOf(step) 
                       ? 'bg-primary' 
                       : 'bg-muted'
@@ -119,7 +119,7 @@ const Upload = () => {
         </div>
 
         {/* Step Content */}
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-4xl mx-auto px-4 sm:px-0">
           {step === 'upload' && (
             <div className="space-y-6">
               <DocumentUploader onFilesAdded={handleFilesAdded} />
@@ -148,7 +148,7 @@ const Upload = () => {
                       {t({ 'pt-BR': 'Revisão do Processamento', 'pt': 'Revisão do Processamento', 'en': 'Processing Review' })}
                     </h3>
                     
-                    <div className="grid md:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                       <div>
                         <h4 className="font-medium mb-2">
                           {t({ 'pt-BR': 'Agent Selecionado', 'pt': 'Agent Selecionado', 'en': 'Selected Agent' })}
