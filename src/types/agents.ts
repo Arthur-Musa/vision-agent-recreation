@@ -58,7 +58,9 @@ export interface DocumentUpload {
   name: string;
   type: string;
   size: number;
-  url: string;
+  url?: string;
+  file?: File; // Para referência do arquivo original
+  preview?: string; // Para preview de imagens
   uploadedAt: Date;
 }
 

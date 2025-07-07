@@ -7,13 +7,16 @@ import { useLanguage } from "@/hooks/useLanguage";
 import { useCreateClaim } from "@/hooks/useClaims";
 import { ConciergeChat } from "@/components/workflow/ConciergeChat";
 import { PropertyField } from "@/components/workflow/PropertyField";
+import { RealAgentProcessor } from "@/components/agents/RealAgentProcessor";
+import { AgentTestDashboard } from "@/components/agents/AgentTestDashboard";
 import { PropertyType } from "@/types/workflow";
 import { 
   ArrowLeft, 
   Brain,
   Settings,
   Eye,
-  FileText
+  FileText,
+  Zap
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -26,7 +29,8 @@ const ConversationAnalysis = () => {
   
   const [suggestedAgent, setSuggestedAgent] = useState<string | null>(null);
   const [extractedData, setExtractedData] = useState<Record<string, any>>({});
-  const [activeView, setActiveView] = useState<'concierge' | 'properties' | 'review'>('concierge');
+  const [activeView, setActiveView] = useState<'concierge' | 'properties' | 'review' | 'processing' | 'test'>('test');
+  const [createdClaimId, setCreatedClaimId] = useState<string | null>(null);
 
   // Mock property types for insurance claims
   const propertyTypes: PropertyType[] = [
@@ -86,13 +90,15 @@ const ConversationAnalysis = () => {
       };
 
       const newClaim = await createClaim(claimData);
+      setCreatedClaimId(newClaim.id);
       
       toast({
         title: "Sinistro Criado",
         description: `Sinistro ${newClaim.numero_sinistro} criado com sucesso.`,
       });
       
-      navigate(`/case/${newClaim.id}`);
+      // Ir para a etapa de processamento real
+      setActiveView('processing');
     } catch (error) {
       toast({
         title: "Erro",
@@ -106,9 +112,11 @@ const ConversationAnalysis = () => {
     title: { 'pt-BR': 'Análise Inteligente', 'pt': 'Análise Inteligente', 'en': 'Intelligent Analysis' },
     subtitle: { 'pt-BR': 'Assistente concierge para análise de sinistros', 'pt': 'Assistente concierge para análise de sinistros', 'en': 'Concierge assistant for claims analysis' },
     back: { 'pt-BR': 'Voltar', 'pt': 'Voltar', 'en': 'Back' },
+    test: { 'pt-BR': 'Teste', 'pt': 'Teste', 'en': 'Test' },
     concierge: { 'pt-BR': 'Concierge', 'pt': 'Concierge', 'en': 'Concierge' },
     properties: { 'pt-BR': 'Propriedades', 'pt': 'Propriedades', 'en': 'Properties' },
     review: { 'pt-BR': 'Revisar', 'pt': 'Revisar', 'en': 'Review' },
+    processing: { 'pt-BR': 'Processamento', 'pt': 'Processamento', 'en': 'Processing' },
     submit: { 'pt-BR': 'Criar Sinistro', 'pt': 'Criar Sinistro', 'en': 'Create Claim' }
   };
 
@@ -136,6 +144,15 @@ const ConversationAnalysis = () => {
             
             {/* View Switcher */}
             <div className="flex items-center space-x-1 bg-muted/50 rounded-lg p-1">
+              <Button
+                variant={activeView === 'test' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setActiveView('test')}
+                className="gap-2"
+              >
+                <Zap className="h-4 w-4" />
+                {t(texts.test)}
+              </Button>
               <Button
                 variant={activeView === 'concierge' ? 'default' : 'ghost'}
                 size="sm"
@@ -165,6 +182,16 @@ const ConversationAnalysis = () => {
                 <Eye className="h-4 w-4" />
                 {t(texts.review)}
               </Button>
+              <Button
+                variant={activeView === 'processing' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setActiveView('processing')}
+                disabled={!createdClaimId}
+                className="gap-2"
+              >
+                <Zap className="h-4 w-4" />
+                {t(texts.processing)}
+              </Button>
             </div>
           </div>
         </div>
@@ -174,6 +201,17 @@ const ConversationAnalysis = () => {
       <div className="flex-1 flex">
         {/* Primary Panel */}
         <div className="flex-1 flex flex-col">
+          {activeView === 'test' && (
+            <div className="flex-1 overflow-y-auto p-6">
+              <div className="max-w-2xl mx-auto">
+                <AgentTestDashboard onClaimCreated={(claimId) => {
+                  setCreatedClaimId(claimId);
+                  setActiveView('processing');
+                }} />
+              </div>
+            </div>
+          )}
+
           {activeView === 'concierge' && (
             <ConciergeChat
               onAgentSuggestion={handleAgentSuggestion}
@@ -260,6 +298,13 @@ const ConversationAnalysis = () => {
                 </div>
               </div>
             </div>
+          )}
+
+          {activeView === 'processing' && createdClaimId && (
+            <RealAgentProcessor 
+              claimId={createdClaimId}
+              agentType={suggestedAgent || 'claims_processor'}
+            />
           )}
         </div>
 

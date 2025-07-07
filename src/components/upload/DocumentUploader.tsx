@@ -1,30 +1,74 @@
 import { useCallback, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
 import { useLanguage } from "@/hooks/useLanguage";
 import { DocumentUpload } from "@/types/agents";
+import { claimsApi } from "@/services/claimsApi";
+import { useToast } from "@/hooks/use-toast";
 import { Upload, File, Image, FileText } from "lucide-react";
 
 interface DocumentUploaderProps {
   onFilesAdded: (files: DocumentUpload[]) => void;
+  claimId?: string; // Para upload direto na API
 }
 
-export const DocumentUploader = ({ onFilesAdded }: DocumentUploaderProps) => {
+export const DocumentUploader = ({ onFilesAdded, claimId }: DocumentUploaderProps) => {
   const { t } = useLanguage();
+  const { toast } = useToast();
   const [isDragOver, setIsDragOver] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
 
-  const handleFileSelect = useCallback((fileList: FileList) => {
-    const files = Array.from(fileList).map(file => ({
-      id: `${Date.now()}-${Math.random()}`,
-      name: file.name,
-      type: file.type,
-      size: file.size,
-      url: URL.createObjectURL(file),
-      uploadedAt: new Date()
-    }));
-    
-    onFilesAdded(files);
-  }, [onFilesAdded]);
+  const handleFileSelect = useCallback(async (fileList: FileList) => {
+    setUploading(true);
+    setUploadProgress(0);
+
+    const documentUploads: DocumentUpload[] = [];
+
+    for (let i = 0; i < fileList.length; i++) {
+      const file = fileList[i];
+      
+      // Simular progresso
+      setUploadProgress((i / fileList.length) * 100);
+
+      const documentUpload: DocumentUpload = {
+        id: `${Date.now()}-${i}`,
+        name: file.name,
+        type: file.type,
+        size: file.size,
+        file: file,
+        preview: file.type.startsWith('image/') ? URL.createObjectURL(file) : undefined,
+        uploadedAt: new Date()
+      };
+
+      documentUploads.push(documentUpload);
+
+      // Se temos claimId, fazer upload real para a API
+      if (claimId) {
+        try {
+          await claimsApi.uploadDocument(claimId, file);
+        } catch (error) {
+          toast({
+            title: "Erro no Upload",
+            description: `Falha ao enviar ${file.name}`,
+            variant: "destructive"
+          });
+        }
+      }
+    }
+
+    setUploadProgress(100);
+    setUploading(false);
+    onFilesAdded(documentUploads);
+
+    if (documentUploads.length > 0) {
+      toast({
+        title: "Upload Concluído",
+        description: `${documentUploads.length} arquivo(s) enviado(s) com sucesso`,
+      });
+    }
+  }, [onFilesAdded, claimId, toast]);
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -105,6 +149,17 @@ export const DocumentUploader = ({ onFilesAdded }: DocumentUploaderProps) => {
                 </Button>
               </label>
             </div>
+
+            {/* Progresso do Upload */}
+            {uploading && (
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span>Enviando arquivos...</span>
+                  <span>{Math.round(uploadProgress)}%</span>
+                </div>
+                <Progress value={uploadProgress} className="h-2" />
+              </div>
+            )}
 
             <div className="pt-4 border-t">
               <p className="text-sm text-muted-foreground mb-3">
