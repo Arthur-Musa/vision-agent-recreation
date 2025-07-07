@@ -158,21 +158,21 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4">
+      <header className="sticky top-0 z-50 border-b bg-background/80 backdrop-blur-sm">
+        <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <div className="w-8 h-8 bg-foreground rounded-full flex items-center justify-center">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
                 <div className="w-3 h-3 bg-background rounded-full"></div>
               </div>
-              <h1 className="text-2xl olga-logo text-foreground">Olga</h1>
+              <h1 className="text-xl olga-logo font-medium">Olga</h1>
             </div>
             
-            <div className="flex items-center space-x-4">
-              <Button variant="ghost" size="sm">
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" size="sm" className="h-9 w-9 p-0">
                 <Bell className="h-4 w-4" />
               </Button>
-              <Button variant="ghost" size="sm">
+              <Button variant="ghost" size="sm" className="h-9 w-9 p-0">
                 <Settings className="h-4 w-4" />
               </Button>
             </div>
@@ -180,52 +180,52 @@ const Dashboard = () => {
         </div>
       </header>
 
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="container mx-auto px-6 py-8 space-y-8">
         {/* Hero Section */}
-        <div className="text-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-light mb-4 text-foreground tracking-tight">
-            {t(texts.greeting)}
-          </h1>
-          <p className="text-xl text-muted-foreground mb-8 font-light">
-            {t(texts.subtitle)}
-          </p>
+        <section className="text-center space-y-6">
+          <div className="space-y-2">
+            <h1 className="text-3xl md:text-4xl font-light tracking-tight">
+              {t(texts.greeting)}
+            </h1>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              {t(texts.subtitle)}
+            </p>
+          </div>
 
           {/* Chat Interface */}
-          <Card className="max-w-4xl mx-auto">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-4 mb-4">
-                <div className="flex-1">
-                  <Input
-                    type="text"
-                    placeholder={t(texts.chatPlaceholder)}
-                    value={chatInput}
-                    onChange={(e) => setChatInput(e.target.value)}
-                    className="border-0 bg-transparent text-lg placeholder:text-muted-foreground focus-visible:ring-0"
-                    onKeyPress={(e) => e.key === 'Enter' && handleChatSubmit()}
-                  />
-                </div>
+          <Card className="max-w-3xl mx-auto shadow-sm">
+            <CardContent className="p-6 space-y-4">
+              <div className="flex items-center gap-3">
+                <Input
+                  type="text"
+                  placeholder={t(texts.chatPlaceholder)}
+                  value={chatInput}
+                  onChange={(e) => setChatInput(e.target.value)}
+                  className="border-0 bg-transparent text-base placeholder:text-muted-foreground focus-visible:ring-0 flex-1"
+                  onKeyPress={(e) => e.key === 'Enter' && handleChatSubmit()}
+                />
                 <Button 
                   size="lg" 
-                  className="rounded-full px-6"
+                  className="rounded-full px-6 shrink-0"
                   onClick={handleChatSubmit}
                   disabled={!chatInput.trim()}
                 >
-                  <MessageSquare className="h-5 w-5" />
+                  <MessageSquare className="h-4 w-4" />
                 </Button>
               </div>
               
-              <div className="flex items-center gap-2 mb-4">
-                <Badge variant="outline" className="gap-1">
+              <div className="flex items-center justify-center gap-2">
+                <Badge variant="outline" className="gap-1 text-xs">
                   <Upload className="h-3 w-3" />
                   Sinistros.pdf
                 </Badge>
-                <Badge variant="outline" className="gap-1">
+                <Badge variant="outline" className="gap-1 text-xs">
                   <FileText className="h-3 w-3" />
                   Apólices.docx
                 </Badge>
               </div>
 
-              <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+              <div className="flex flex-wrap items-center justify-center gap-3 text-xs text-muted-foreground">
                 <span className="flex items-center gap-1">
                   <Brain className="h-3 w-3" />
                   Triagem de Sinistros
@@ -239,53 +239,54 @@ const Dashboard = () => {
               </div>
             </CardContent>
           </Card>
-        </div>
+        </section>
 
         {/* Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Left Column - Agents */}
-          <div className="lg:col-span-2 space-y-6">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+          {/* Main Content - Agents */}
+          <section className="lg:col-span-3 space-y-6">
             <div className="flex items-center justify-between">
-              <h2 className="text-2xl font-semibold">{t(texts.agents)}</h2>
-              <div className="flex items-center gap-2">
-                <Badge variant="outline">{insuranceAgents.length}</Badge>
-                <Button variant="outline" size="sm">
-                  <Search className="h-4 w-4 mr-2" />
+              <h2 className="text-xl font-semibold">{t(texts.agents)}</h2>
+              <div className="flex items-center gap-3">
+                <Badge variant="secondary" className="text-xs">
+                  {insuranceAgents.length} agentes
+                </Badge>
+                <Button variant="outline" size="sm" className="gap-2">
+                  <Search className="h-4 w-4" />
                   Buscar
                 </Button>
               </div>
             </div>
 
-            {/* Agents Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {insuranceAgents.slice(0, 4).map((agent) => (
                 <Card 
                   key={agent.id} 
-                  className="cursor-pointer hover:shadow-lg transition-all duration-200 group"
+                  className="cursor-pointer hover:shadow-lg transition-all duration-200 group border-border/50 hover:border-border"
                   onClick={() => navigate(`/agent/${agent.id}`)}
                 >
-                  <CardContent className="p-6">
-                    <div className="flex items-start gap-4">
-                      <div className={`w-12 h-12 rounded-full ${
+                  <CardContent className="p-5 space-y-3">
+                    <div className="flex items-start gap-3">
+                      <div className={`w-10 h-10 rounded-lg ${
                         agent.category === 'claims' ? 'gradient-claims' :
                         agent.category === 'underwriting' ? 'gradient-underwriting' :
                         agent.category === 'legal' ? 'gradient-legal' :
                         'gradient-customer'
-                      } flex items-center justify-center`}>
-                        <Brain className="h-6 w-6 text-white" />
+                      } flex items-center justify-center shrink-0`}>
+                        <Brain className="h-5 w-5 text-white" />
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold mb-1 group-hover:text-primary transition-colors">
+                      <div className="min-w-0 flex-1">
+                        <h3 className="font-medium mb-1 group-hover:text-primary transition-colors line-clamp-1">
                           {t(agent.name)}
                         </h3>
-                        <p className="text-sm text-muted-foreground mb-2 line-clamp-2">
+                        <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
                           {t(agent.description)}
                         </p>
                         <div className="flex items-center gap-2">
-                          <Badge variant="outline" className="text-xs">
+                          <Badge variant="outline" className="text-xs font-normal">
                             {agent.estimatedTime}
                           </Badge>
-                          <Badge variant="outline" className="text-xs">
+                          <Badge variant="outline" className="text-xs font-normal">
                             {agent.complexityLevel}
                           </Badge>
                         </div>
@@ -295,33 +296,35 @@ const Dashboard = () => {
                 </Card>
               ))}
             </div>
-          </div>
+          </section>
 
-          {/* Right Column - Cases & Activity */}
-          <div className="space-y-6">
+          {/* Sidebar */}
+          <aside className="space-y-6">
             {/* Recent Cases */}
-            <div>
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold">{t(texts.cases)}</h3>
-                <Button variant="outline" size="sm" onClick={() => navigate('/cases')}>
-                  <History className="h-4 w-4 mr-2" />
-                  Ver Todos
-                </Button>
-              </div>
+            <Card className="shadow-sm">
+              <CardContent className="p-5 space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="font-medium">{t(texts.cases)}</h3>
+                  <Button variant="ghost" size="sm" onClick={() => navigate('/cases')} className="gap-1 text-xs">
+                    <History className="h-3 w-3" />
+                    Ver Todos
+                  </Button>
+                </div>
 
-              <div className="space-y-3">
-                {mockCases.map((case_) => (
-                  <Card key={case_.id} className="cursor-pointer hover:shadow-md transition-shadow">
-                    <CardContent className="p-4">
+                <div className="space-y-3">
+                  {mockCases.slice(0, 3).map((case_) => (
+                    <div key={case_.id} className="cursor-pointer group">
                       <div className="flex items-start justify-between mb-2">
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 min-w-0 flex-1">
                           {getStatusIcon(case_.status)}
-                          <h4 className="font-medium text-sm">{case_.title}</h4>
+                          <h4 className="font-medium text-sm line-clamp-1 group-hover:text-primary transition-colors">
+                            {case_.title}
+                          </h4>
                         </div>
                         {getStatusBadge(case_.status)}
                       </div>
                       
-                      <p className="text-xs text-muted-foreground mb-2">{case_.agent}</p>
+                      <p className="text-xs text-muted-foreground mb-2 line-clamp-1">{case_.agent}</p>
                       
                       {case_.status === 'processing' && (
                         <div className="space-y-1">
@@ -339,43 +342,49 @@ const Dashboard = () => {
                       )}
 
                       <div className="flex items-center justify-between mt-2 text-xs text-muted-foreground">
-                        <span>{case_.documentsCount} documentos</span>
+                        <span>{case_.documentsCount} docs</span>
                         <span>{case_.timeElapsed}</span>
                       </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </div>
+                      
+                      {case_.id !== mockCases[mockCases.length - 1].id && (
+                        <div className="border-b border-border/30 mt-3"></div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
 
             {/* Recent Activity */}
-            <div>
-              <h3 className="text-lg font-semibold mb-4">{t(texts.recentActivity)}</h3>
-              <div className="space-y-3">
-                {recentActivity.map((activity, index) => (
-                  <div key={index} className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
-                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                      {activity.type === 'analysis' && <CheckCircle className="h-4 w-4 text-primary" />}
-                      {activity.type === 'upload' && <Upload className="h-4 w-4 text-primary" />}
-                      {activity.type === 'processing' && <Clock className="h-4 w-4 text-primary" />}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium">{activity.title}</p>
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                        <span>{activity.agent}</span>
-                        <span>•</span>
-                        <span>{activity.time}</span>
+            <Card className="shadow-sm">
+              <CardContent className="p-5 space-y-4">
+                <h3 className="font-medium">{t(texts.recentActivity)}</h3>
+                <div className="space-y-3">
+                  {recentActivity.slice(0, 3).map((activity, index) => (
+                    <div key={index} className="flex items-start gap-3">
+                      <div className="w-7 h-7 rounded-full bg-muted flex items-center justify-center shrink-0">
+                        {activity.type === 'analysis' && <CheckCircle className="h-3 w-3 text-primary" />}
+                        {activity.type === 'upload' && <Upload className="h-3 w-3 text-primary" />}
+                        {activity.type === 'processing' && <Clock className="h-3 w-3 text-primary" />}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-medium line-clamp-1">{activity.title}</p>
+                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                          <span className="line-clamp-1">{activity.agent}</span>
+                          <span>•</span>
+                          <span>{activity.time}</span>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
 
             {/* Quick Stats */}
-            <Card>
-              <CardContent className="p-4">
-                <h3 className="text-lg font-semibold mb-4">{t(texts.quickStats)}</h3>
+            <Card className="shadow-sm">
+              <CardContent className="p-5 space-y-4">
+                <h3 className="font-medium">{t(texts.quickStats)}</h3>
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-muted-foreground">Casos Hoje</span>
@@ -395,9 +404,9 @@ const Dashboard = () => {
                 </div>
               </CardContent>
             </Card>
-          </div>
+          </aside>
         </div>
-      </div>
+      </main>
     </div>
   );
 };
