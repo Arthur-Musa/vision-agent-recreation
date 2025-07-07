@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { QuickApiTest } from "@/components/debug/QuickApiTest";
 import { useLanguage } from "@/hooks/useLanguage";
 import { insuranceAgents } from "@/data/insuranceAgents";
 import { claimsApi, type Claim } from "@/services/claimsApi";
@@ -404,6 +405,9 @@ const Dashboard = () => {
                 </div>
               </CardContent>
             </Card>
+
+            {/* API Test */}
+            <QuickApiTest />
           </aside>
         </div>
       </main>
