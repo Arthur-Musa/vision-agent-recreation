@@ -76,11 +76,11 @@ const Index = () => {
       <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 gradient-hero rounded-lg flex items-center justify-center">
-                <Bot className="h-5 w-5 text-white" />
+            <div className="flex items-center space-x-3">
+              <div className="w-7 h-7 bg-foreground rounded-full flex items-center justify-center">
+                <div className="w-3 h-3 bg-background rounded-full"></div>
               </div>
-              <h1 className="text-xl font-bold">Olga</h1>
+              <h1 className="text-2xl olga-logo text-foreground">Olga</h1>
             </div>
             <LanguageSelector />
           </div>
@@ -91,10 +91,10 @@ const Index = () => {
       <section className="py-16 bg-background">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
-            <h1 className="text-4xl md:text-5xl font-bold mb-4 text-foreground">
-              Bom dia! 👋
+            <h1 className="text-4xl md:text-5xl font-light mb-4 text-foreground tracking-tight">
+              Bom dia
             </h1>
-            <p className="text-xl text-muted-foreground mb-8">
+            <p className="text-xl text-muted-foreground mb-8 font-light">
               O que você gostaria de fazer hoje?
             </p>
           </div>
@@ -115,11 +115,11 @@ const Index = () => {
                 </Button>
               </div>
               
-              <div className="flex items-center gap-2 mt-4 text-sm text-muted-foreground">
-                <span>💼 Apólices</span>
-                <span>📋 Sinistros</span>
-                <span>⚖️ Jurídico</span>
-                <span>🤝 Atendimento</span>
+              <div className="flex items-center gap-6 mt-4 text-sm text-muted-foreground">
+                <span>Apólices</span>
+                <span>Sinistros</span>
+                <span>Jurídico</span>
+                <span>Atendimento</span>
               </div>
             </div>
           </div>
@@ -160,8 +160,10 @@ const Index = () => {
 
         {filteredAgents.length === 0 && (
           <div className="text-center py-12">
-            <Bot className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg font-semibold mb-2">
+            <div className="w-12 h-12 bg-muted rounded-full mx-auto mb-4 flex items-center justify-center">
+              <div className="w-4 h-4 bg-muted-foreground/30 rounded-full"></div>
+            </div>
+            <h3 className="text-lg font-medium mb-2">
               {t({ 'pt-BR': 'Nenhum agent encontrado', 'pt': 'Nenhum agent encontrado', 'en': 'No agents found' })}
             </h3>
             <p className="text-muted-foreground">
