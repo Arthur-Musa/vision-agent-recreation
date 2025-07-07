@@ -5,10 +5,11 @@ import { Button } from "@/components/ui/button";
 import { DocumentUploader } from "@/components/upload/DocumentUploader";
 import { AgentSelector } from "@/components/upload/AgentSelector";
 import { FilePreview } from "@/components/upload/FilePreview";
+import { ApiTestPanel } from "@/components/debug/ApiTestPanel";
 import { useLanguage } from "@/hooks/useLanguage";
 import { InsuranceAgent } from "@/types/agents";
 import { DocumentUpload } from "@/types/agents";
-import { ArrowLeft, Upload as UploadIcon } from "lucide-react";
+import { ArrowLeft, Upload as UploadIcon, Settings } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 const Upload = () => {
@@ -19,6 +20,7 @@ const Upload = () => {
   const [files, setFiles] = useState<DocumentUpload[]>([]);
   const [selectedAgent, setSelectedAgent] = useState<InsuranceAgent | null>(null);
   const [step, setStep] = useState<'upload' | 'select-agent' | 'review'>('upload');
+  const [showApiTest, setShowApiTest] = useState(false);
 
   const handleFilesAdded = useCallback((newFiles: DocumentUpload[]) => {
     setFiles(prev => [...prev, ...newFiles]);
@@ -79,9 +81,26 @@ const Upload = () => {
                 <p className="text-sm text-muted-foreground mt-1">{t(texts.subtitle)}</p>
               </div>
             </div>
+            
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => setShowApiTest(!showApiTest)}
+              className="gap-2"
+            >
+              <Settings className="h-4 w-4" />
+              {showApiTest ? 'Ocultar' : 'Testar'} API
+            </Button>
           </div>
         </div>
       </header>
+
+      {/* API Test Panel */}
+      {showApiTest && (
+        <div className="container mx-auto px-6 py-4">
+          <ApiTestPanel />
+        </div>
+      )}
 
       {/* Minimal Progress Steps */}
       <div className="container mx-auto px-6 py-8">
