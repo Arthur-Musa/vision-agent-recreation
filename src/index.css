@@ -157,29 +157,4 @@
   .agent-card {
     @apply bg-card border border-border rounded-lg p-6 shadow-[var(--shadow-card)] transition-all duration-300 hover:shadow-[var(--shadow-card-hover)] hover:-translate-y-1;
   }
-
-  .agent-card-gradient {
-    @apply relative overflow-hidden;
-  }
-
-  .agent-card-gradient::before {
-    @apply absolute inset-0 opacity-10 rounded-lg;
-    content: '';
-  }
-
-  .agent-card-gradient.claims::before {
-    background: var(--gradient-claims);
-  }
-
-  .agent-card-gradient.underwriting::before {
-    background: var(--gradient-underwriting);
-  }
-
-  .agent-card-gradient.legal::before {
-    background: var(--gradient-legal);
-  }
-
-  .agent-card-gradient.customer::before {
-    background: var(--gradient-customer);
-  }
 }

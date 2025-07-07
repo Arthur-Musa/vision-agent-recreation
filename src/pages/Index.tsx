@@ -87,30 +87,41 @@ const Index = () => {
         </div>
       </header>
 
-      {/* Hero Section */}
-      <section className="py-20 gradient-hero text-white">
-        <div className="container mx-auto px-4 text-center">
-          <h1 className="text-5xl md:text-6xl font-bold mb-6 leading-tight">
-            {t(heroTexts.title)}
-          </h1>
-          <p className="text-xl mb-4 opacity-90">
-            {t(heroTexts.subtitle)}
-          </p>
-          <p className="text-lg mb-8 opacity-80 max-w-4xl mx-auto">
-            {t(heroTexts.description)}
-          </p>
+      {/* Hero Section - V7Labs Style */}
+      <section className="py-16 bg-background">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <h1 className="text-4xl md:text-5xl font-bold mb-4 text-foreground">
+              Bom dia! 👋
+            </h1>
+            <p className="text-xl text-muted-foreground mb-8">
+              O que você gostaria de fazer hoje?
+            </p>
+          </div>
 
-          {/* Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
-            {statsData.map((stat, index) => (
-              <div key={index} className="bg-white/10 backdrop-blur rounded-lg p-4">
-                <div className="flex items-center justify-center mb-2 text-white/90">
-                  {stat.icon}
+          {/* Chat Input */}
+          <div className="max-w-4xl mx-auto mb-12">
+            <div className="bg-card rounded-2xl border shadow-sm p-6">
+              <div className="flex items-center gap-4">
+                <div className="flex-1">
+                  <Input
+                    type="text"
+                    placeholder="Descreva o que você precisa ou faça upload de documentos..."
+                    className="border-0 bg-transparent text-lg placeholder:text-muted-foreground focus-visible:ring-0"
+                  />
                 </div>
-                <div className="text-2xl font-bold">{stat.value}</div>
-                <div className="text-sm opacity-80">{t(stat.label)}</div>
+                <Button size="lg" className="rounded-full px-6">
+                  <Search className="h-5 w-5" />
+                </Button>
               </div>
-            ))}
+              
+              <div className="flex items-center gap-2 mt-4 text-sm text-muted-foreground">
+                <span>💼 Apólices</span>
+                <span>📋 Sinistros</span>
+                <span>⚖️ Jurídico</span>
+                <span>🤝 Atendimento</span>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -136,8 +147,8 @@ const Index = () => {
           />
         </div>
 
-        {/* Agents Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* Agents Grid - V7Labs Style */}
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {filteredAgents.map((agent) => (
             <AgentCard 
               key={agent.id} 

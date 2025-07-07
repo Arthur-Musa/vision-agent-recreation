@@ -27,67 +27,40 @@ export const AgentCard = ({ agent, onSelect }: AgentCardProps) => {
   };
 
   return (
-    <Card className={cn(
-      "agent-card agent-card-gradient",
-      agent.category,
-      "group cursor-pointer"
-    )} onClick={() => onSelect(agent)}>
-      <CardHeader className="relative z-10">
-        <div className="flex items-start justify-between">
-          <div className="flex-1">
-            <CardTitle className="text-lg mb-2">{t(agent.name)}</CardTitle>
-            <CardDescription className="text-sm line-clamp-2">
-              {t(agent.description)}
-            </CardDescription>
+    <Card className="group cursor-pointer hover:shadow-lg transition-all duration-300 border-0 bg-card/50 backdrop-blur">
+      <CardContent className="p-6">
+        <div className="flex flex-col items-center text-center space-y-4">
+          {/* Circular gradient icon like V7Labs */}
+          <div className={cn(
+            "w-16 h-16 rounded-full flex items-center justify-center",
+            `gradient-${agent.category}`
+          )}>
+            <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
+              <div className="w-4 h-4 bg-white rounded-full"></div>
+            </div>
           </div>
-          <Badge 
-            variant="secondary" 
-            className={cn("ml-2", complexityColors[agent.complexityLevel])}
-          >
-            {t(complexityLabels[agent.complexityLevel])}
-          </Badge>
-        </div>
-      </CardHeader>
 
-      <CardContent className="relative z-10">
-        <div className="space-y-4">
-          {/* Features */}
-          <div className="flex flex-wrap gap-2">
-            {agent.features.slice(0, 3).map((feature, index) => (
-              <Badge key={index} variant="outline" className="text-xs">
-                {t(feature)}
-              </Badge>
-            ))}
+          {/* Agent name */}
+          <div>
+            <h3 className="font-semibold text-lg mb-1">{t(agent.name)}</h3>
+            <p className="text-sm text-muted-foreground line-clamp-2">
+              {t(agent.description)}
+            </p>
           </div>
 
           {/* Meta info */}
-          <div className="flex items-center justify-between text-sm text-muted-foreground">
+          <div className="flex items-center gap-4 text-xs text-muted-foreground">
             <div className="flex items-center gap-1">
-              <Clock className="h-4 w-4" />
+              <Clock className="h-3 w-3" />
               <span>{agent.estimatedTime}</span>
             </div>
-            <div className="flex items-center gap-1">
-              <FileText className="h-4 w-4" />
-              <span>{agent.documentTypes.length} tipos</span>
-            </div>
+            <Badge 
+              variant="secondary" 
+              className={cn("text-xs", complexityColors[agent.complexityLevel])}
+            >
+              {t(complexityLabels[agent.complexityLevel])}
+            </Badge>
           </div>
-
-          {/* Use case */}
-          <p className="text-xs text-muted-foreground line-clamp-2">
-            {t(agent.useCase)}
-          </p>
-
-          {/* Action button */}
-          <Button 
-            className="w-full group-hover:shadow-lg transition-all duration-300"
-            onClick={(e) => {
-              e.stopPropagation();
-              onSelect(agent);
-            }}
-          >
-            <Zap className="h-4 w-4 mr-2" />
-            {t({ 'pt-BR': 'Usar Agent', 'pt': 'Usar Agent', 'en': 'Use Agent' })}
-          </Button>
         </div>
       </CardContent>
     </Card>
