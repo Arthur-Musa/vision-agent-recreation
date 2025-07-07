@@ -2,12 +2,11 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+/* Olga Insurance Platform Design System */
 
 @layer base {
   :root {
+    /* Base Colors */
     --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;
 
@@ -17,7 +16,8 @@ All colors MUST be HSL.
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
 
-    --primary: 222.2 47.4% 11.2%;
+    /* Olga Brand Colors */
+    --primary: 204 100% 40%; /* Azul principal Olga */
     --primary-foreground: 210 40% 98%;
 
     --secondary: 210 40% 96.1%;
@@ -26,17 +26,35 @@ All colors MUST be HSL.
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 340 75% 50%; /* Rosa/magenta Olga */
+    --accent-foreground: 210 40% 98%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --ring: 204 100% 40%;
 
-    --radius: 0.5rem;
+    --radius: 0.75rem;
+
+    /* Olga Insurance Agent Categories */
+    --olga-claims: 204 100% 40%; /* Azul para sinistros */
+    --olga-underwriting: 340 75% 50%; /* Rosa para subscrição */
+    --olga-legal: 45 90% 55%; /* Dourado para jurídico */
+    --olga-customer: 160 75% 45%; /* Verde para atendimento */
+
+    /* Gradients */
+    --gradient-claims: linear-gradient(135deg, hsl(204 100% 40%), hsl(184 100% 45%));
+    --gradient-underwriting: linear-gradient(135deg, hsl(340 75% 50%), hsl(320 70% 55%));
+    --gradient-legal: linear-gradient(135deg, hsl(45 90% 55%), hsl(35 85% 60%));
+    --gradient-customer: linear-gradient(135deg, hsl(160 75% 45%), hsl(140 70% 50%));
+    --gradient-hero: linear-gradient(135deg, hsl(204 100% 40%), hsl(340 75% 50%));
+
+    /* Shadows */
+    --shadow-card: 0 4px 6px -1px hsl(0 0% 0% / 0.1), 0 2px 4px -2px hsl(0 0% 0% / 0.1);
+    --shadow-card-hover: 0 10px 15px -3px hsl(0 0% 0% / 0.1), 0 4px 6px -4px hsl(0 0% 0% / 0.1);
+    --shadow-glow: 0 0 20px hsl(var(--primary) / 0.3);
 
     --sidebar-background: 0 0% 98%;
 
@@ -65,7 +83,7 @@ All colors MUST be HSL.
     --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
 
-    --primary: 210 40% 98%;
+    --primary: 204 100% 50%; /* Azul mais claro no dark */
     --primary-foreground: 222.2 47.4% 11.2%;
 
     --secondary: 217.2 32.6% 17.5%;
@@ -74,7 +92,7 @@ All colors MUST be HSL.
     --muted: 217.2 32.6% 17.5%;
     --muted-foreground: 215 20.2% 65.1%;
 
-    --accent: 217.2 32.6% 17.5%;
+    --accent: 340 75% 60%; /* Rosa mais claro no dark */
     --accent-foreground: 210 40% 98%;
 
     --destructive: 0 62.8% 30.6%;
@@ -82,7 +100,14 @@ All colors MUST be HSL.
 
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
+    --ring: 204 100% 50%;
+
+    /* Dark mode gradients */
+    --gradient-claims: linear-gradient(135deg, hsl(204 100% 50%), hsl(184 100% 55%));
+    --gradient-underwriting: linear-gradient(135deg, hsl(340 75% 60%), hsl(320 70% 65%));
+    --gradient-legal: linear-gradient(135deg, hsl(45 90% 65%), hsl(35 85% 70%));
+    --gradient-customer: linear-gradient(135deg, hsl(160 75% 55%), hsl(140 70% 60%));
+    --gradient-hero: linear-gradient(135deg, hsl(204 100% 50%), hsl(340 75% 60%));
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 224.3 76.3% 48%;
@@ -100,6 +125,61 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-semibold tracking-tight;
+  }
+}
+
+@layer components {
+  .gradient-claims {
+    background: var(--gradient-claims);
+  }
+  
+  .gradient-underwriting {
+    background: var(--gradient-underwriting);
+  }
+  
+  .gradient-legal {
+    background: var(--gradient-legal);
+  }
+  
+  .gradient-customer {
+    background: var(--gradient-customer);
+  }
+  
+  .gradient-hero {
+    background: var(--gradient-hero);
+  }
+
+  .agent-card {
+    @apply bg-card border border-border rounded-lg p-6 shadow-[var(--shadow-card)] transition-all duration-300 hover:shadow-[var(--shadow-card-hover)] hover:-translate-y-1;
+  }
+
+  .agent-card-gradient {
+    @apply relative overflow-hidden;
+  }
+
+  .agent-card-gradient::before {
+    @apply absolute inset-0 opacity-10 rounded-lg;
+    content: '';
+  }
+
+  .agent-card-gradient.claims::before {
+    background: var(--gradient-claims);
+  }
+
+  .agent-card-gradient.underwriting::before {
+    background: var(--gradient-underwriting);
+  }
+
+  .agent-card-gradient.legal::before {
+    background: var(--gradient-legal);
+  }
+
+  .agent-card-gradient.customer::before {
+    background: var(--gradient-customer);
   }
 }
