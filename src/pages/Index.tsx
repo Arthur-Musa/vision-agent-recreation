@@ -28,14 +28,7 @@ const Index = () => {
   });
 
   const handleAgentSelect = (agent: InsuranceAgent) => {
-    toast({
-      title: t({ 'pt-BR': 'Agent Selecionado', 'pt': 'Agent Selecionado', 'en': 'Agent Selected' }),
-      description: t({ 
-        'pt-BR': `Você selecionou ${t(agent.name)}. Esta funcionalidade será implementada em breve.`,
-        'pt': `Você selecionou ${t(agent.name)}. Esta funcionalidade será implementada em breve.`,
-        'en': `You selected ${t(agent.name)}. This functionality will be implemented soon.`
-      }),
-    });
+    navigate(`/agent/${agent.id}`);
   };
 
   const heroTexts = {
@@ -112,9 +105,9 @@ const Index = () => {
                     className="border-0 bg-transparent text-sm sm:text-lg placeholder:text-muted-foreground focus-visible:ring-0"
                   />
                 </div>
-                <Button size="lg" className="rounded-full px-6 w-full sm:w-auto" onClick={() => navigate('/dashboard')}>
+                <Button size="lg" className="rounded-full px-6 w-full sm:w-auto" onClick={() => navigate('/upload')}>
                   <Search className="h-5 w-5 mr-2 sm:mr-0" />
-                  <span className="sm:hidden">Pesquisar</span>
+                  <span className="sm:hidden">Iniciar</span>
                 </Button>
               </div>
               
