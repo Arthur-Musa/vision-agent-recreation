@@ -62,12 +62,12 @@ export const AgentSelector = ({ files, onAgentSelected, onBack }: AgentSelectorP
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
+    <div className="space-y-8">
+      {/* Minimal Header */}
       <div className="text-center">
-        <h2 className="text-2xl font-medium mb-2">{t(texts.title)}</h2>
-        <p className="text-muted-foreground">{t(texts.subtitle)}</p>
-        <p className="text-sm text-muted-foreground mt-2">
+        <h2 className="text-xl font-medium text-foreground mb-3">{t(texts.title)}</h2>
+        <p className="text-muted-foreground text-sm">{t(texts.subtitle)}</p>
+        <p className="text-xs text-muted-foreground mt-2">
           {files.length} {t(texts.filesUploaded)}
         </p>
       </div>
@@ -101,27 +101,22 @@ export const AgentSelector = ({ files, onAgentSelected, onBack }: AgentSelectorP
             <Card 
               key={agent.id}
               className={cn(
-                "group cursor-pointer transition-all duration-300 hover:shadow-lg",
-                isSelected && "ring-2 ring-primary",
-                isRecommended && "border-primary/50"
+                "group cursor-pointer transition-all duration-200 hover:shadow-[var(--shadow-card-hover)]",
+                isSelected && "ring-1 ring-foreground",
+                isRecommended && "border-muted-foreground/30"
               )}
               onClick={() => setSelectedAgent(agent)}
             >
               <CardContent className="p-6">
                 <div className="space-y-4">
-                  {/* Agent Icon */}
+                  {/* Minimal Agent Icon */}
                   <div className="flex items-center justify-between">
-                    <div className={cn(
-                      "w-12 h-12 rounded-full flex items-center justify-center",
-                      `gradient-${agent.category}`
-                    )}>
-                      <div className="w-6 h-6 bg-white/30 rounded-full flex items-center justify-center">
-                        <div className="w-2 h-2 bg-white rounded-full"></div>
-                      </div>
+                    <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
+                      <div className="w-3 h-3 rounded-full bg-muted-foreground"></div>
                     </div>
                     
                     {isRecommended && (
-                      <Badge variant="secondary" className="text-xs">
+                      <Badge variant="outline" className="text-xs text-muted-foreground border-muted-foreground/30">
                         {t(texts.recommended)}
                       </Badge>
                     )}
@@ -129,28 +124,31 @@ export const AgentSelector = ({ files, onAgentSelected, onBack }: AgentSelectorP
 
                   {/* Agent Info */}
                   <div>
-                    <h3 className="font-medium text-base mb-2">{t(agent.name)}</h3>
+                    <h3 className="font-medium text-base mb-2 text-foreground">{t(agent.name)}</h3>
                     <p className="text-sm text-muted-foreground line-clamp-3 leading-relaxed">
                       {t(agent.description)}
                     </p>
                   </div>
 
-                  {/* Meta Info */}
+                  {/* Minimal Meta Info */}
                   <div className="flex items-center justify-between text-xs text-muted-foreground">
                     <div className="flex items-center gap-1">
                       <Clock className="h-3 w-3" />
                       <span>{agent.estimatedTime}</span>
                     </div>
-                    <Badge variant="outline" className="text-xs">
-                      {agent.complexityLevel}
-                    </Badge>
+                    <span className="text-xs">{agent.complexityLevel}</span>
                   </div>
 
-                  {/* Select Button */}
+                  {/* Minimal Select Button */}
                   <Button 
                     variant={isSelected ? "default" : "outline"}
                     size="sm"
-                    className="w-full gap-2"
+                    className={cn(
+                      "w-full text-sm transition-colors",
+                      isSelected 
+                        ? "bg-foreground text-background border-foreground" 
+                        : "bg-transparent text-muted-foreground border-border hover:text-foreground hover:border-muted-foreground"
+                    )}
                     onClick={(e) => {
                       e.stopPropagation();
                       setSelectedAgent(agent);
@@ -158,7 +156,7 @@ export const AgentSelector = ({ files, onAgentSelected, onBack }: AgentSelectorP
                   >
                     {isSelected ? (
                       <>
-                        <CheckCircle className="h-4 w-4" />
+                        <CheckCircle className="h-4 w-4 mr-2" />
                         {t(texts.selected)}
                       </>
                     ) : (

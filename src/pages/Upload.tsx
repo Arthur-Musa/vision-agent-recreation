@@ -35,19 +35,18 @@ const Upload = () => {
   const handleStartProcessing = useCallback(() => {
     if (!selectedAgent || files.length === 0) return;
     
-    // Simulate processing start
     toast({
-      title: t({ 'pt-BR': 'Processamento Iniciado', 'pt': 'Processamento Iniciado', 'en': 'Processing Started' }),
+      title: t({ 'pt-BR': 'Iniciando Análise', 'pt': 'Iniciando Análise', 'en': 'Starting Analysis' }),
       description: t({ 
-        'pt-BR': `${files.length} arquivo(s) serão processados pelo ${t(selectedAgent.name)}`,
-        'pt': `${files.length} arquivo(s) serão processados pelo ${t(selectedAgent.name)}`,
-        'en': `${files.length} file(s) will be processed by ${t(selectedAgent.name)}`
+        'pt-BR': `Redirecionando para análise conversacional`,
+        'pt': `Redirecionando para análise conversacional`,
+        'en': `Redirecting to conversational analysis`
       }),
     });
     
-    // Navigate to processing page (will implement later)
-    // navigate(`/processing/${caseId}`);
-  }, [selectedAgent, files, t, toast]);
+    // Navigate to conversation analysis
+    navigate(`/conversation/${selectedAgent.id}`);
+  }, [selectedAgent, files, t, toast, navigate]);
 
   const texts = {
     title: { 'pt-BR': 'Upload de Documentos', 'pt': 'Upload de Documentos', 'en': 'Document Upload' },
@@ -61,56 +60,56 @@ const Upload = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4">
+      {/* Minimal Header */}
+      <header className="border-b border-border/50">
+        <div className="container mx-auto px-6 py-6">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2 sm:space-x-4">
+            <div className="flex items-center space-x-6">
               <Button 
                 variant="ghost" 
                 size="sm"
                 onClick={() => navigate('/')}
-                className="gap-2"
+                className="gap-2 text-muted-foreground hover:text-foreground"
               >
                 <ArrowLeft className="h-4 w-4" />
-                <span className="hidden sm:inline">{t(texts.back)}</span>
+                <span>Back</span>
               </Button>
               <div>
-                <h1 className="text-lg sm:text-2xl font-medium">{t(texts.title)}</h1>
-                <p className="text-xs sm:text-sm text-muted-foreground hidden sm:block">{t(texts.subtitle)}</p>
+                <h1 className="text-xl font-medium text-foreground">{t(texts.title)}</h1>
+                <p className="text-sm text-muted-foreground mt-1">{t(texts.subtitle)}</p>
               </div>
             </div>
           </div>
         </div>
       </header>
 
-      {/* Progress Steps */}
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
-        <div className="flex items-center justify-center mb-6 sm:mb-8 overflow-x-auto">
-          <div className="flex items-center space-x-2 sm:space-x-4 min-w-max">
+      {/* Minimal Progress Steps */}
+      <div className="container mx-auto px-6 py-8">
+        <div className="flex items-center justify-center mb-12">
+          <div className="flex items-center space-x-8">
             {['upload', 'select-agent', 'review'].map((stepName, index) => (
               <div key={stepName} className="flex items-center">
                 <div className={`
-                  w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs sm:text-sm font-medium
+                  w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium border
                   ${step === stepName || (index < ['upload', 'select-agent', 'review'].indexOf(step)) 
-                    ? 'bg-primary text-primary-foreground' 
-                    : 'bg-muted text-muted-foreground'
+                    ? 'bg-foreground text-background border-foreground' 
+                    : 'bg-background text-muted-foreground border-border'
                   }
                 `}>
                   {index + 1}
                 </div>
-                <span className={`ml-1 sm:ml-2 text-xs sm:text-sm font-medium ${
-                  step === stepName ? 'text-foreground' : 'text-muted-foreground'
-                } hidden sm:inline`}>
+                <span className={`ml-3 text-sm ${
+                  step === stepName ? 'text-foreground font-medium' : 'text-muted-foreground'
+                }`}>
                   {stepName === 'upload' && t(texts.uploadStep)}
                   {stepName === 'select-agent' && t(texts.selectAgent)}
                   {stepName === 'review' && t(texts.review)}
                 </span>
                 {index < 2 && (
-                  <div className={`ml-2 sm:ml-4 w-6 sm:w-8 h-px ${
+                  <div className={`ml-8 w-12 h-px ${
                     index < ['upload', 'select-agent', 'review'].indexOf(step) 
-                      ? 'bg-primary' 
-                      : 'bg-muted'
+                      ? 'bg-foreground' 
+                      : 'bg-border'
                   }`} />
                 )}
               </div>
@@ -119,7 +118,7 @@ const Upload = () => {
         </div>
 
         {/* Step Content */}
-        <div className="max-w-4xl mx-auto px-4 sm:px-0">
+        <div className="max-w-4xl mx-auto">
           {step === 'upload' && (
             <div className="space-y-6">
               <DocumentUploader onFilesAdded={handleFilesAdded} />

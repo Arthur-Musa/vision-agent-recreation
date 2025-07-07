@@ -9,6 +9,7 @@ import Upload from "./pages/Upload";
 import Cases from "./pages/Cases";
 import CaseDetail from "./pages/CaseDetail";
 import AgentDetail from "./pages/AgentDetail";
+import ConversationAnalysis from "./pages/ConversationAnalysis";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -26,6 +27,7 @@ const App = () => (
           <Route path="/cases" element={<Cases />} />
           <Route path="/case/:id" element={<CaseDetail />} />
           <Route path="/agent/:id" element={<AgentDetail />} />
+          <Route path="/conversation/:agentId" element={<ConversationAnalysis />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
