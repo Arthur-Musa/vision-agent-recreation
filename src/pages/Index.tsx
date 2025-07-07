@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { AgentCard } from "../components/AgentCard";
 import { CategoryFilter } from "../components/CategoryFilter";
@@ -13,6 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 const Index = () => {
   const { t } = useLanguage();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [selectedCategory, setSelectedCategory] = useState<AgentCategory | 'all'>('all');
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -110,7 +112,7 @@ const Index = () => {
                     className="border-0 bg-transparent text-lg placeholder:text-muted-foreground focus-visible:ring-0"
                   />
                 </div>
-                <Button size="lg" className="rounded-full px-6">
+                <Button size="lg" className="rounded-full px-6" onClick={() => navigate('/upload')}>
                   <Search className="h-5 w-5" />
                 </Button>
               </div>
@@ -150,11 +152,12 @@ const Index = () => {
         {/* Agents Grid - V7Labs Style */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {filteredAgents.map((agent) => (
-            <AgentCard 
-              key={agent.id} 
-              agent={agent} 
-              onSelect={handleAgentSelect}
-            />
+            <div key={agent.id} onClick={() => navigate(`/agent/${agent.id}`)}>
+              <AgentCard 
+                agent={agent} 
+                onSelect={handleAgentSelect}
+              />
+            </div>
           ))}
         </div>
 
