@@ -2,27 +2,20 @@ import { useState, useRef, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { useLanguage } from "@/hooks/useLanguage";
 import { useCreateClaim } from "@/hooks/useClaims";
+import { ConciergeChat } from "@/components/workflow/ConciergeChat";
+import { PropertyField } from "@/components/workflow/PropertyField";
+import { PropertyType } from "@/types/workflow";
 import { 
   ArrowLeft, 
-  Send, 
-  FileText, 
-  Loader2,
-  CheckCircle,
-  AlertTriangle
+  Brain,
+  Settings,
+  Eye,
+  FileText
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-
-interface Message {
-  id: string;
-  type: 'user' | 'agent' | 'system';
-  content: string;
-  timestamp: Date;
-  status?: 'sending' | 'delivered' | 'processing' | 'completed' | 'error';
-}
 
 const ConversationAnalysis = () => {
   const { agentId } = useParams();
@@ -31,92 +24,92 @@ const ConversationAnalysis = () => {
   const navigate = useNavigate();
   const { createClaim, loading } = useCreateClaim();
   
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: '1',
-      type: 'system',
-      content: 'Analysis workspace initialized. You can now start your conversation with the agent.',
-      timestamp: new Date(),
-      status: 'delivered'
-    }
-  ]);
-  const [inputValue, setInputValue] = useState('');
-  const [isProcessing, setIsProcessing] = useState(false);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [suggestedAgent, setSuggestedAgent] = useState<string | null>(null);
+  const [extractedData, setExtractedData] = useState<Record<string, any>>({});
+  const [activeView, setActiveView] = useState<'concierge' | 'properties' | 'review'>('concierge');
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  // Mock property types for insurance claims
+  const propertyTypes: PropertyType[] = [
+    {
+      id: 'claim_type',
+      name: 'Tipo de Sinistro',
+      type: 'single_select',
+      required: true,
+      description: 'Categoria do sinistro',
+      options: ['Automotivo', 'Residencial', 'Empresarial', 'Vida', 'Saúde']
+    },
+    {
+      id: 'estimated_value',
+      name: 'Valor Estimado',
+      type: 'number',
+      required: true,
+      description: 'Valor estimado dos danos (R$)',
+      validation: { min: 0, max: 1000000 }
+    },
+    {
+      id: 'description',
+      name: 'Descrição do Sinistro',
+      type: 'text',
+      required: true,
+      description: 'Descrição detalhada do ocorrido'
+    },
+    {
+      id: 'risk_factors',
+      name: 'Fatores de Risco',
+      type: 'multi_select',
+      required: false,
+      description: 'Indicadores de risco identificados',
+      options: ['Inconsistência documental', 'Valor elevado', 'Histórico suspeito', 'Testemunhas conflitantes']
+    }
+  ];
+
+  const handleAgentSuggestion = (agentId: string) => {
+    setSuggestedAgent(agentId);
+    setActiveView('properties');
   };
 
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
+  const handleDataExtraction = (data: Record<string, any>) => {
+    setExtractedData(prev => ({ ...prev, ...data }));
+  };
 
-  const handleSendMessage = async () => {
-    if (!inputValue.trim() || isProcessing) return;
+  const handlePropertyChange = (propertyId: string, value: any) => {
+    setExtractedData(prev => ({ ...prev, [propertyId]: value }));
+  };
 
-    const userMessage: Message = {
-      id: Date.now().toString(),
-      type: 'user',
-      content: inputValue,
-      timestamp: new Date(),
-      status: 'delivered'
-    };
-
-    setMessages(prev => [...prev, userMessage]);
-    setInputValue('');
-    setIsProcessing(true);
-
-    // Simulate agent processing
-    setTimeout(() => {
-      const agentResponse: Message = {
-        id: (Date.now() + 1).toString(),
-        type: 'agent',
-        content: `I've received your message: "${userMessage.content}". Let me analyze this information and provide insights based on the uploaded documents.`,
-        timestamp: new Date(),
-        status: 'processing'
+  const handleSubmitClaim = async () => {
+    try {
+      const claimData = {
+        tipo_sinistro: extractedData.claim_type || 'Automotivo',
+        descricao: extractedData.description || 'Sinistro processado via concierge',
+        valor_estimado: extractedData.estimated_value || 0,
+        documentos: []
       };
 
-      setMessages(prev => [...prev, agentResponse]);
-
-      // Simulate completion
-      setTimeout(() => {
-        setMessages(prev => prev.map(msg => 
-          msg.id === agentResponse.id 
-            ? { ...msg, status: 'completed' }
-            : msg
-        ));
-        setIsProcessing(false);
-      }, 2000);
-    }, 1000);
-  };
-
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSendMessage();
-    }
-  };
-
-  const getMessageIcon = (message: Message) => {
-    switch (message.status) {
-      case 'processing':
-        return <Loader2 className="h-3 w-3 animate-spin" />;
-      case 'completed':
-        return <CheckCircle className="h-3 w-3 text-green-600" />;
-      case 'error':
-        return <AlertTriangle className="h-3 w-3 text-red-600" />;
-      default:
-        return null;
+      const newClaim = await createClaim(claimData);
+      
+      toast({
+        title: "Sinistro Criado",
+        description: `Sinistro ${newClaim.numero_sinistro} criado com sucesso.`,
+      });
+      
+      navigate(`/case/${newClaim.id}`);
+    } catch (error) {
+      toast({
+        title: "Erro",
+        description: "Falha ao criar sinistro.",
+        variant: "destructive"
+      });
     }
   };
 
   const texts = {
-    title: { 'pt-BR': 'Análise Conversacional', 'pt': 'Análise Conversacional', 'en': 'Conversational Analysis' },
-    subtitle: { 'pt-BR': 'Interaja com o agente de IA para análise detalhada', 'pt': 'Interaja com o agente de IA para análise detalhada', 'en': 'Interact with the AI agent for detailed analysis' },
+    title: { 'pt-BR': 'Análise Inteligente', 'pt': 'Análise Inteligente', 'en': 'Intelligent Analysis' },
+    subtitle: { 'pt-BR': 'Assistente concierge para análise de sinistros', 'pt': 'Assistente concierge para análise de sinistros', 'en': 'Concierge assistant for claims analysis' },
     back: { 'pt-BR': 'Voltar', 'pt': 'Voltar', 'en': 'Back' },
-    placeholder: { 'pt-BR': 'Digite sua mensagem...', 'pt': 'Digite sua mensagem...', 'en': 'Type your message...' },
-    send: { 'pt-BR': 'Enviar', 'pt': 'Enviar', 'en': 'Send' }
+    concierge: { 'pt-BR': 'Concierge', 'pt': 'Concierge', 'en': 'Concierge' },
+    properties: { 'pt-BR': 'Propriedades', 'pt': 'Propriedades', 'en': 'Properties' },
+    review: { 'pt-BR': 'Revisar', 'pt': 'Revisar', 'en': 'Review' },
+    submit: { 'pt-BR': 'Criar Sinistro', 'pt': 'Criar Sinistro', 'en': 'Create Claim' }
   };
 
   return (
@@ -140,120 +133,186 @@ const ConversationAnalysis = () => {
                 <p className="text-sm text-muted-foreground mt-1">{t(texts.subtitle)}</p>
               </div>
             </div>
-            <div className="flex items-center space-x-2">
-              <Badge variant="outline" className="text-xs">
-                Agent ID: {agentId}
-              </Badge>
+            
+            {/* View Switcher */}
+            <div className="flex items-center space-x-1 bg-muted/50 rounded-lg p-1">
+              <Button
+                variant={activeView === 'concierge' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setActiveView('concierge')}
+                className="gap-2"
+              >
+                <Brain className="h-4 w-4" />
+                {t(texts.concierge)}
+              </Button>
+              <Button
+                variant={activeView === 'properties' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setActiveView('properties')}
+                disabled={!suggestedAgent}
+                className="gap-2"
+              >
+                <Settings className="h-4 w-4" />
+                {t(texts.properties)}
+              </Button>
+              <Button
+                variant={activeView === 'review' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setActiveView('review')}
+                disabled={!suggestedAgent}
+                className="gap-2"
+              >
+                <Eye className="h-4 w-4" />
+                {t(texts.review)}
+              </Button>
             </div>
           </div>
         </div>
       </header>
 
-      {/* Conversation Area */}
+      {/* Main Content */}
       <div className="flex-1 flex">
-        {/* Main Chat */}
+        {/* Primary Panel */}
         <div className="flex-1 flex flex-col">
-          {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-6">
-            <div className="max-w-4xl mx-auto space-y-4">
-              {messages.map((message) => (
-                <div
-                  key={message.id}
-                  className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
-                >
-                  <div className={`max-w-2xl ${message.type === 'user' ? 'ml-12' : 'mr-12'}`}>
-                    <div
-                      className={`
-                        conversation-message
-                        ${message.type === 'user' 
-                          ? 'bg-foreground text-background' 
-                          : message.type === 'system'
-                          ? 'bg-muted/30 text-muted-foreground border-dashed'
-                          : 'bg-card'
-                        }
-                      `}
-                    >
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="flex-1">
-                          <p className="text-sm leading-relaxed">{message.content}</p>
-                          <div className="flex items-center justify-between mt-2">
-                            <span className="text-xs opacity-60">
-                              {message.timestamp.toLocaleTimeString()}
-                            </span>
-                            {getMessageIcon(message)}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-              <div ref={messagesEndRef} />
-            </div>
-          </div>
+          {activeView === 'concierge' && (
+            <ConciergeChat
+              onAgentSuggestion={handleAgentSuggestion}
+              onDataExtraction={handleDataExtraction}
+            />
+          )}
 
-          {/* Input Area */}
-          <div className="border-t border-border/50 p-6 flex-shrink-0">
-            <div className="max-w-4xl mx-auto">
-              <div className="flex items-end space-x-4">
-                <div className="flex-1">
-                  <Input
-                    value={inputValue}
-                    onChange={(e) => setInputValue(e.target.value)}
-                    onKeyPress={handleKeyPress}
-                    placeholder={t(texts.placeholder)}
-                    disabled={isProcessing}
-                    className="min-h-[44px] border-border/50 focus:border-foreground"
-                  />
+          {activeView === 'properties' && (
+            <div className="flex-1 overflow-y-auto p-6">
+              <div className="max-w-2xl mx-auto space-y-6">
+                <div className="text-center mb-8">
+                  <h2 className="text-lg font-medium mb-2">Configurar Propriedades</h2>
+                  <p className="text-sm text-muted-foreground">
+                    Ajuste os dados extraídos pelo agente {suggestedAgent}
+                  </p>
                 </div>
-                <Button
-                  onClick={handleSendMessage}
-                  disabled={!inputValue.trim() || isProcessing}
-                  size="sm"
-                  className="bg-foreground text-background hover:bg-foreground/90 px-6"
-                >
-                  {isProcessing ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <>
-                      <Send className="h-4 w-4 mr-2" />
-                      {t(texts.send)}
-                    </>
-                  )}
-                </Button>
+
+                <div className="space-y-6">
+                  {propertyTypes.map((property) => (
+                    <PropertyField
+                      key={property.id}
+                      property={property}
+                      value={extractedData[property.id]}
+                      onChange={(value) => handlePropertyChange(property.id, value)}
+                    />
+                  ))}
+                </div>
+
+                <div className="flex justify-end pt-6">
+                  <Button onClick={() => setActiveView('review')}>
+                    Revisar Dados
+                  </Button>
+                </div>
               </div>
             </div>
-          </div>
+          )}
+
+          {activeView === 'review' && (
+            <div className="flex-1 overflow-y-auto p-6">
+              <div className="max-w-2xl mx-auto space-y-6">
+                <div className="text-center mb-8">
+                  <h2 className="text-lg font-medium mb-2">Revisar e Submeter</h2>
+                  <p className="text-sm text-muted-foreground">
+                    Verifique os dados antes de criar o sinistro
+                  </p>
+                </div>
+
+                <Card>
+                  <CardContent className="p-6 space-y-4">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium">Agente Sugerido:</span>
+                      <Badge variant="outline">{suggestedAgent}</Badge>
+                    </div>
+
+                    {propertyTypes.map((property) => {
+                      const value = extractedData[property.id];
+                      if (!value) return null;
+
+                      return (
+                        <div key={property.id} className="flex items-center justify-between">
+                          <span className="text-sm text-muted-foreground">{property.name}:</span>
+                          <span className="text-sm font-medium">
+                            {Array.isArray(value) ? value.join(', ') : String(value)}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </CardContent>
+                </Card>
+
+                <div className="flex justify-between pt-6">
+                  <Button 
+                    variant="outline" 
+                    onClick={() => setActiveView('properties')}
+                  >
+                    Voltar para Propriedades
+                  </Button>
+                  <Button 
+                    onClick={handleSubmitClaim}
+                    disabled={loading}
+                  >
+                    {loading ? 'Criando...' : t(texts.submit)}
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
-        {/* Side Panel */}
+        {/* Side Panel - Context Info */}
         <div className="w-80 border-l border-border/50 bg-muted/30 p-6">
           <div className="space-y-6">
             <div>
-              <h3 className="text-sm font-medium text-foreground mb-3">Session Info</h3>
+              <h3 className="text-sm font-medium text-foreground mb-3">Status da Sessão</h3>
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-xs">
-                  <span className="text-muted-foreground">Messages</span>
-                  <span className="text-foreground">{messages.length}</span>
+                  <span className="text-muted-foreground">Agente Ativo</span>
+                  <Badge variant="outline" className="text-xs">
+                    {suggestedAgent || 'Concierge'}
+                  </Badge>
                 </div>
                 <div className="flex items-center justify-between text-xs">
-                  <span className="text-muted-foreground">Agent Status</span>
-                  <Badge variant="outline" className="text-xs">
-                    {isProcessing ? 'Processing' : 'Ready'}
-                  </Badge>
+                  <span className="text-muted-foreground">Dados Extraídos</span>
+                  <span className="text-foreground">
+                    {Object.keys(extractedData).length}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-muted-foreground">Etapa Atual</span>
+                  <span className="text-foreground capitalize">{activeView}</span>
                 </div>
               </div>
             </div>
 
             <div>
-              <h3 className="text-sm font-medium text-foreground mb-3">Documents</h3>
+              <h3 className="text-sm font-medium text-foreground mb-3">Documentos</h3>
               <div className="space-y-2">
                 <div className="flex items-center gap-2 p-2 rounded border border-border/50">
                   <FileText className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-xs text-muted-foreground">Sample document.pdf</span>
+                  <span className="text-xs text-muted-foreground">Aguardando upload...</span>
                 </div>
               </div>
             </div>
+
+            {Object.keys(extractedData).length > 0 && (
+              <div>
+                <h3 className="text-sm font-medium text-foreground mb-3">Dados Extraídos</h3>
+                <div className="space-y-2">
+                  {Object.entries(extractedData).map(([key, value]) => (
+                    <div key={key} className="p-2 rounded bg-card border border-border/50">
+                      <div className="text-xs text-muted-foreground">{key}</div>
+                      <div className="text-xs font-medium truncate">
+                        {Array.isArray(value) ? value.join(', ') : String(value)}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
