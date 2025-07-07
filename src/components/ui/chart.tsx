@@ -74,26 +74,30 @@ const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
     return null
   }
 
+  // Use secure CSS-in-JS approach instead of dangerouslySetInnerHTML
+  const chartVariables = React.useMemo(() => {
+    const variables: Record<string, string> = {};
+    
+    colorConfig.forEach(([key, itemConfig]) => {
+      const lightColor = itemConfig.theme?.light || itemConfig.color;
+      const darkColor = itemConfig.theme?.dark || itemConfig.color;
+      
+      if (lightColor && /^(#[0-9A-Fa-f]{3,8}|hsl\(.*\))$/.test(lightColor)) {
+        variables[`--color-${key}`] = lightColor;
+      }
+      if (darkColor && /^(#[0-9A-Fa-f]{3,8}|hsl\(.*\))$/.test(darkColor)) {
+        variables[`--color-${key}-dark`] = darkColor;
+      }
+    });
+    
+    return variables;
+  }, [colorConfig]);
+
   return (
-    <style
-      dangerouslySetInnerHTML={{
-        __html: Object.entries(THEMES)
-          .map(
-            ([theme, prefix]) => `
-${prefix} [data-chart=${id}] {
-${colorConfig
-  .map(([key, itemConfig]) => {
-    const color =
-      itemConfig.theme?.[theme as keyof typeof itemConfig.theme] ||
-      itemConfig.color
-    return color ? `  --color-${key}: ${color};` : null
-  })
-  .join("\n")}
-}
-`
-          )
-          .join("\n"),
-      }}
+    <div 
+      data-chart={id} 
+      style={chartVariables}
+      className="sr-only"
     />
   )
 }

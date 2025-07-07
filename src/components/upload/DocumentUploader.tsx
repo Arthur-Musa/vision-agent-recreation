@@ -6,6 +6,8 @@ import { useLanguage } from "@/hooks/useLanguage";
 import { DocumentUpload } from "@/types/agents";
 import { claimsApi } from "@/services/claimsApi";
 import { useToast } from "@/hooks/use-toast";
+import { config } from "@/config/environment";
+import { validateFileUpload } from "@/lib/validation";
 import { Upload, File, Image, FileText } from "lucide-react";
 
 interface DocumentUploaderProps {
@@ -24,10 +26,57 @@ export const DocumentUploader = ({ onFilesAdded, claimId }: DocumentUploaderProp
     setUploading(true);
     setUploadProgress(0);
 
+    // Security validation
+    if (fileList.length > config.security.maxFilesPerUpload) {
+      toast({
+        title: "Muitos arquivos",
+        description: `Máximo de ${config.security.maxFilesPerUpload} arquivos permitidos`,
+        variant: "destructive"
+      });
+      setUploading(false);
+      return;
+    }
+
     const documentUploads: DocumentUpload[] = [];
 
     for (let i = 0; i < fileList.length; i++) {
       const file = fileList[i];
+      
+      // Security validation for each file
+      const fileValidation = validateFileUpload({
+        name: file.name,
+        type: file.type,
+        size: file.size
+      });
+
+      if (!fileValidation.success) {
+        toast({
+          title: "Arquivo inválido",
+          description: `${file.name}: ${fileValidation.error.errors.map(e => e.message).join(', ')}`,
+          variant: "destructive"
+        });
+        continue;
+      }
+
+      // Check file size
+      if (file.size > config.security.maxFileSize) {
+        toast({
+          title: "Arquivo muito grande",
+          description: `${file.name} excede o limite de ${config.security.maxFileSize / 1024 / 1024}MB`,
+          variant: "destructive"
+        });
+        continue;
+      }
+
+      // Check file type
+      if (!config.security.allowedFileTypes.includes(file.type as any)) {
+        toast({
+          title: "Tipo de arquivo não permitido",
+          description: `${file.name} tem tipo não suportado: ${file.type}`,
+          variant: "destructive"
+        });
+        continue;
+      }
       
       // Simular progresso
       setUploadProgress((i / fileList.length) * 100);

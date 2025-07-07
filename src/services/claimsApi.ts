@@ -1,4 +1,8 @@
-const API_BASE = "https://sinistros-ia-sistema-production.up.railway.app";
+import { config } from '@/config/environment';
+import { validateClaimData, sanitizeError } from '@/lib/validation';
+import { apiRateLimiter } from '@/lib/rateLimiter';
+
+const API_BASE = config.api.baseUrl;
 
 export interface Claim {
   id: string;
@@ -44,30 +48,47 @@ export interface ClaimReport {
 
 class ClaimsApiService {
   private async request<T>(endpoint: string, options?: RequestInit): Promise<T> {
-    const response = await fetch(`${API_BASE}${endpoint}`, {
-      headers: {
-        'Content-Type': 'application/json',
-        ...options?.headers,
-      },
-      ...options,
-    });
-
-    if (!response.ok) {
-      throw new Error(`API Error: ${response.status} ${response.statusText}`);
+    // Rate limiting check
+    if (!apiRateLimiter.canMakeRequest('api-calls')) {
+      throw new Error('Muitas requisições. Tente novamente em alguns segundos.');
     }
 
-    return response.json();
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), config.api.timeout);
+
+    try {
+      const response = await fetch(`${API_BASE}${endpoint}`, {
+        headers: {
+          'Content-Type': 'application/json',
+          ...options?.headers,
+        },
+        signal: controller.signal,
+        ...options,
+      });
+
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        const errorText = await response.text().catch(() => 'Unknown error');
+        throw new Error(sanitizeError(`API Error: ${response.status} ${response.statusText}`));
+      }
+
+      return response.json();
+    } catch (error) {
+      clearTimeout(timeoutId);
+      throw new Error(sanitizeError(error));
+    }
   }
 
   async createClaim(claimData: any): Promise<Claim> {
+    const validation = validateClaimData(claimData);
+    if (!validation.success) {
+      throw new Error(`Dados inválidos: ${validation.error.errors.map(e => e.message).join(', ')}`);
+    }
+
     return this.request<Claim>('/sinistros', {
       method: 'POST',
-      body: JSON.stringify({
-        tipo_sinistro: claimData.tipo_sinistro,
-        descricao: claimData.descricao,
-        valor_estimado: claimData.valor_estimado,
-        documentos: claimData.documentos || []
-      }),
+      body: JSON.stringify(validation.data),
     });
   }
 
