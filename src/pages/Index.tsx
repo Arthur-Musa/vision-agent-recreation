@@ -112,7 +112,7 @@ const Index = () => {
                     className="border-0 bg-transparent text-sm sm:text-lg placeholder:text-muted-foreground focus-visible:ring-0"
                   />
                 </div>
-                <Button size="lg" className="rounded-full px-6 w-full sm:w-auto" onClick={() => navigate('/upload')}>
+                <Button size="lg" className="rounded-full px-6 w-full sm:w-auto" onClick={() => navigate('/dashboard')}>
                   <Search className="h-5 w-5 mr-2 sm:mr-0" />
                   <span className="sm:hidden">Pesquisar</span>
                 </Button>
