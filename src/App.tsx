@@ -13,6 +13,9 @@ import ConversationAnalysis from "./pages/ConversationAnalysis";
 import CoverageAnalysis from "./pages/CoverageAnalysis";
 import { Chat } from "./pages/Chat";
 import NotFound from "./pages/NotFound";
+import AIAgents from "./pages/AIAgents";
+import LiveWorkflow from "./pages/LiveWorkflow";
+import UserJourney from "./pages/UserJourney";
 
 const queryClient = new QueryClient();
 
@@ -32,6 +35,9 @@ const App = () => (
           <Route path="/coverage-analysis" element={<CoverageAnalysis />} />
           <Route path="/conversation/:agentId" element={<ConversationAnalysis />} />
           <Route path="/chat" element={<Chat />} />
+          <Route path="/ai-agents" element={<AIAgents />} />
+          <Route path="/live-workflow" element={<LiveWorkflow />} />
+          <Route path="/user-journey" element={<UserJourney />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
