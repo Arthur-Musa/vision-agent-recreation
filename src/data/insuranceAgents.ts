@@ -125,6 +125,51 @@ export const insuranceAgents: InsuranceAgent[] = [
     }
   },
   {
+    id: 'coverage-verification',
+    name: {
+      'pt-BR': 'Olga Verificador de Cobertura',
+      'pt': 'Olga Verificador de Cobertura',
+      'en': 'Olga Coverage Verification Agent'
+    },
+    description: {
+      'pt-BR': 'Analisa linguagem complexa de apólices, mapeia provisões para requisitos, identifica gaps de cobertura e verifica compliance contratual.',
+      'pt': 'Analisa linguagem complexa de apólices, mapeia provisões para requisitos, identifica gaps de cobertura e verifica compliance contratual.',
+      'en': 'Analyzes complex policy language, maps provisions to requirements, identifies coverage gaps and verifies contractual compliance.'
+    },
+    category: 'underwriting',
+    features: [
+      {
+        'pt-BR': 'Mapeamento de Provisões',
+        'pt': 'Mapeamento de Provisões',
+        'en': 'Provision Mapping'
+      },
+      {
+        'pt-BR': 'Identificação de Gaps',
+        'pt': 'Identificação de Gaps',
+        'en': 'Gap Identification'
+      },
+      {
+        'pt-BR': 'Verificação de Compliance',
+        'pt': 'Verificação de Compliance',
+        'en': 'Compliance Verification'
+      },
+      {
+        'pt-BR': 'Análise de Exclusões',
+        'pt': 'Análise de Exclusões',
+        'en': 'Exclusions Analysis'
+      }
+    ],
+    estimatedTime: '3-6 min',
+    complexityLevel: 'high',
+    documentTypes: ['PDF', 'Word', 'Contracts'],
+    capabilities: ['coverage_analysis', 'compliance_check', 'gap_detection', 'provision_mapping'],
+    useCase: {
+      'pt-BR': 'Automatiza verificação de cobertura de apólices, garantindo compliance e identificando gaps antes da emissão ou renovação.',
+      'pt': 'Automatiza verificação de cobertura de apólices, garantindo compliance e identificando gaps antes da emissão ou renovação.',
+      'en': 'Automates policy coverage verification, ensuring compliance and identifying gaps before issuance or renewal.'
+    }
+  },
+  {
     id: 'policy-analyzer',
     name: {
       'pt-BR': 'Olga Analisador de Apólices',

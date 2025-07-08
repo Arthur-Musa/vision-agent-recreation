@@ -136,6 +136,11 @@ class ConciergeOrchestrator {
       data.tipo_sinistro = 'Residencial';
     }
     
+    // Identifica tipo de verificação para apólices
+    if (query.toLowerCase().includes('cobertura') || query.toLowerCase().includes('gap') || query.toLowerCase().includes('compliance')) {
+      data.tipo_verificacao = 'cobertura';
+    }
+    
     // Identifica documentos mencionados
     const docTypes = ['rg', 'cpf', 'cnh', 'laudo', 'orçamento', 'nota fiscal'];
     const mentionedDocs = docTypes.filter(doc => 
@@ -157,7 +162,10 @@ class ConciergeOrchestrator {
         return 'claims-processor';
         
       case 'policies':
-        return 'underwriting-agent';
+        if (extractedData.tipo_verificacao === 'cobertura') {
+          return 'coverage-verification';
+        }
+        return 'underwriting-assistant';
         
       case 'legal':
         return 'legal-analyst';
