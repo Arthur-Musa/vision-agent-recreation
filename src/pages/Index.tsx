@@ -7,7 +7,7 @@ import { LanguageSelector } from "../components/LanguageSelector";
 import { insuranceAgents } from "../data/insuranceAgents";
 import { AgentCategory, InsuranceAgent } from "../types/agents";
 import { useLanguage } from "../hooks/useLanguage";
-import { Search, Bot, Shield, Zap, Users } from "lucide-react";
+import { Search, Bot, Shield, Zap, Users, MessageCircle } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { conciergeOrchestrator } from "../services/conciergeOrchestrator";
@@ -180,11 +180,23 @@ const Index = () => {
                 </Button>
               </div>
               
-              <div className="flex flex-wrap items-center gap-3 sm:gap-6 mt-4 text-xs sm:text-sm text-muted-foreground">
-                <span>Apólices</span>
-                <span>Sinistros</span>
-                <span>Jurídico</span>
-                <span>Atendimento</span>
+              <div className="flex flex-wrap items-center justify-between gap-3 sm:gap-6 mt-4">
+                <div className="flex flex-wrap items-center gap-3 sm:gap-6 text-xs sm:text-sm text-muted-foreground">
+                  <span>Apólices</span>
+                  <span>Sinistros</span>
+                  <span>Jurídico</span>
+                  <span>Atendimento</span>
+                </div>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => navigate('/chat')}
+                  className="gap-2"
+                >
+                  <MessageCircle className="h-4 w-4" />
+                  <span className="hidden sm:inline">Chat Conversacional</span>
+                  <span className="sm:hidden">Chat</span>
+                </Button>
               </div>
             </div>
           </div>

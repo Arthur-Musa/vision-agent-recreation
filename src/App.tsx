@@ -11,6 +11,7 @@ import CaseDetail from "./pages/CaseDetail";
 import AgentDetail from "./pages/AgentDetail";
 import ConversationAnalysis from "./pages/ConversationAnalysis";
 import CoverageAnalysis from "./pages/CoverageAnalysis";
+import { Chat } from "./pages/Chat";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -30,6 +31,7 @@ const App = () => (
           <Route path="/agent/:id" element={<AgentDetail />} />
           <Route path="/coverage-analysis" element={<CoverageAnalysis />} />
           <Route path="/conversation/:agentId" element={<ConversationAnalysis />} />
+          <Route path="/chat" element={<Chat />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
