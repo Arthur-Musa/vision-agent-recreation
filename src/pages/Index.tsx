@@ -10,6 +10,7 @@ import { useLanguage } from "../hooks/useLanguage";
 import { Search, Bot, Shield, Zap, Users } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
+import { conciergeOrchestrator } from "../services/conciergeOrchestrator";
 
 const Index = () => {
   const { t } = useLanguage();
@@ -29,6 +30,57 @@ const Index = () => {
 
   const handleAgentSelect = (agent: InsuranceAgent) => {
     navigate(`/agent/${agent.id}`);
+  };
+
+  const handleConciergeQuery = async (query: string) => {
+    try {
+      toast({
+        title: "Analisando sua solicitação...",
+        description: "O concierge está processando e acionando os agentes especializados.",
+      });
+
+      // Processa com o orquestrador
+      const response = await conciergeOrchestrator.processQuery(query);
+      
+      if (response.success) {
+        toast({
+          title: "Análise concluída",
+          description: response.message,
+        });
+
+        // Redireciona conforme a decisão do concierge
+        if (response.redirectTo) {
+          if (response.redirectTo === '/upload') {
+            navigate('/upload', { 
+              state: { 
+                initialQuery: query,
+                context: response.context 
+              } 
+            });
+          } else {
+            navigate(response.redirectTo, { 
+              state: { 
+                query: query,
+                context: response.context,
+                extractedData: response.context.extractedData
+              } 
+            });
+          }
+        }
+      } else {
+        toast({
+          title: "Erro na análise",
+          description: "Não foi possível processar sua solicitação.",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Erro",
+        description: "Falha no sistema de concierge.",
+        variant: "destructive"
+      });
+    }
   };
 
   const heroTexts = {
@@ -103,9 +155,26 @@ const Index = () => {
                     type="text"
                     placeholder="Descreva o que você precisa ou faça upload de documentos..."
                     className="border-0 bg-transparent text-sm sm:text-lg placeholder:text-muted-foreground focus-visible:ring-0"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    onKeyPress={(e) => {
+                      if (e.key === 'Enter' && searchTerm.trim()) {
+                        handleConciergeQuery(searchTerm);
+                      }
+                    }}
                   />
                 </div>
-                <Button size="lg" className="rounded-full px-6 w-full sm:w-auto" onClick={() => navigate('/upload')}>
+                <Button 
+                  size="lg" 
+                  className="rounded-full px-6 w-full sm:w-auto" 
+                  onClick={() => {
+                    if (searchTerm.trim()) {
+                      handleConciergeQuery(searchTerm);
+                    } else {
+                      navigate('/upload');
+                    }
+                  }}
+                >
                   <Search className="h-5 w-5 mr-2 sm:mr-0" />
                   <span className="sm:hidden">Iniciar</span>
                 </Button>
