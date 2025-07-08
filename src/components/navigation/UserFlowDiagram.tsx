@@ -87,31 +87,40 @@ const userFlows: Record<string, FlowStep[]> = {
   
   analyst: [
     {
-      id: 'agents',
-      title: 'Agentes Especializados',
-      description: 'Configurar e testar agentes de IA',
-      icon: <Users className="h-5 w-5" />,
-      route: '/ai-agents',
+      id: 'cases',
+      title: 'Revisar Casos',
+      description: 'Analisar sinistros e documentos pendentes',
+      icon: <FileText className="h-5 w-5" />,
+      route: '/cases',
       status: 'recommended',
-      nextSteps: ['live-workflow', 'settings']
-    },
-    {
-      id: 'conversation',
-      title: 'Análise de Conversas',
-      description: 'Revisar interações e resultados',
-      icon: <MessageSquare className="h-5 w-5" />,
-      route: '/conversation/:agentId',
-      status: 'available',
-      nextSteps: ['coverage', 'cases']
+      nextSteps: ['case-detail', 'coverage']
     },
     {
       id: 'coverage',
       title: 'Análise de Cobertura',
-      description: 'Verificar adequação de apólices',
+      description: 'Verificar adequação e validar apólices',
       icon: <CheckCircle className="h-5 w-5" />,
       route: '/coverage-analysis',
+      status: 'required',
+      nextSteps: ['dashboard', 'agents']
+    },
+    {
+      id: 'dashboard',
+      title: 'Dashboard Analítico',
+      description: 'Métricas, relatórios e performance',
+      icon: <BarChart3 className="h-5 w-5" />,
+      route: '/dashboard',
       status: 'available',
-      nextSteps: ['cases', 'dashboard']
+      nextSteps: ['agents', 'live-workflow']
+    },
+    {
+      id: 'agents',
+      title: 'Configurar Agentes',
+      description: 'Otimizar e personalizar agentes IA',
+      icon: <Users className="h-5 w-5" />,
+      route: '/ai-agents',
+      status: 'available',
+      nextSteps: ['live-workflow']
     }
   ]
 };

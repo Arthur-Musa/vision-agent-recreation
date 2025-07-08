@@ -53,10 +53,10 @@ const UserJourney = () => {
       icon: <Users className="h-5 w-5" />,
       color: 'bg-purple-100 text-purple-800 border-purple-200',
       recommendations: [
-        'Configure agentes de IA personalizados',
-        'Use análise de conversação para insights',
-        'Configure workflows complexos',
-        'Monitore métricas e performance'
+        'Revise casos pendentes e sinistros em aberto',
+        'Analise coberturas e validação de apólices',
+        'Monitore métricas e performance do sistema', 
+        'Configure agentes apenas quando necessário'
       ]
     }
   };
