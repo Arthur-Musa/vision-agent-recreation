@@ -123,8 +123,8 @@ const Dashboard = () => {
 
   const handleChatSubmit = () => {
     if (!chatInput.trim()) return;
-    // Simulate navigation to upload with the query
-    navigate('/upload', { state: { query: chatInput } });
+    // Navigate to upload with the user's query
+    navigate('/upload', { state: { initialQuery: chatInput } });
   };
 
   const getStatusIcon = (status: string) => {

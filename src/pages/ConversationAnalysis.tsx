@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -25,12 +25,32 @@ const ConversationAnalysis = () => {
   const { t } = useLanguage();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const location = useLocation();
   const { createClaim, loading } = useCreateClaim();
   
-  const [suggestedAgent, setSuggestedAgent] = useState<string | null>(null);
+  const [suggestedAgent, setSuggestedAgent] = useState<string | null>(agentId || null);
   const [extractedData, setExtractedData] = useState<Record<string, any>>({});
-  const [activeView, setActiveView] = useState<'concierge' | 'properties' | 'review' | 'processing' | 'test'>('test');
+  const [activeView, setActiveView] = useState<'concierge' | 'properties' | 'review' | 'processing' | 'test'>('concierge');
   const [createdClaimId, setCreatedClaimId] = useState<string | null>(null);
+  const [uploadedFiles, setUploadedFiles] = useState<any[]>([]);
+
+  // Handle context from upload flow
+  useEffect(() => {
+    if (location.state) {
+      const { files, agent, query } = location.state;
+      if (files) setUploadedFiles(files);
+      if (agent) setSuggestedAgent(agent.id);
+      if (query) {
+        setExtractedData(prev => ({ ...prev, initial_query: query }));
+      }
+      
+      // Show context received toast
+      toast({
+        title: "Contexto Recebido",
+        description: `${files?.length || 0} arquivo(s) e agente ${agent?.name || agentId}`,
+      });
+    }
+  }, [location.state, agentId, toast]);
 
   // Mock property types for insurance claims
   const propertyTypes: PropertyType[] = [
@@ -336,10 +356,19 @@ const ConversationAnalysis = () => {
             <div>
               <h3 className="text-sm font-medium text-foreground mb-3">Documentos</h3>
               <div className="space-y-2">
-                <div className="flex items-center gap-2 p-2 rounded border border-border/50">
-                  <FileText className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-xs text-muted-foreground">Aguardando upload...</span>
-                </div>
+                {uploadedFiles.length > 0 ? (
+                  uploadedFiles.map((file, index) => (
+                    <div key={index} className="flex items-center gap-2 p-2 rounded border border-border/50">
+                      <FileText className="h-4 w-4 text-primary" />
+                      <span className="text-xs text-foreground truncate">{file.name}</span>
+                    </div>
+                  ))
+                ) : (
+                  <div className="flex items-center gap-2 p-2 rounded border border-border/50">
+                    <FileText className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-xs text-muted-foreground">Aguardando upload...</span>
+                  </div>
+                )}
               </div>
             </div>
 

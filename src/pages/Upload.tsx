@@ -1,5 +1,5 @@
-import { useState, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useCallback, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { DocumentUploader } from "@/components/upload/DocumentUploader";
@@ -16,11 +16,24 @@ const Upload = () => {
   const { t } = useLanguage();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const location = useLocation();
   
   const [files, setFiles] = useState<DocumentUpload[]>([]);
   const [selectedAgent, setSelectedAgent] = useState<InsuranceAgent | null>(null);
   const [step, setStep] = useState<'upload' | 'select-agent' | 'review'>('upload');
   const [showApiTest, setShowApiTest] = useState(false);
+  const [initialQuery, setInitialQuery] = useState<string>('');
+
+  // Handle initial query from navigation state
+  useEffect(() => {
+    if (location.state?.initialQuery) {
+      setInitialQuery(location.state.initialQuery);
+      toast({
+        title: t({ 'pt-BR': 'Consulta Recebida', 'pt': 'Consulta Recebida', 'en': 'Query Received' }),
+        description: `"${location.state.initialQuery}"`,
+      });
+    }
+  }, [location.state, t, toast]);
 
   const handleFilesAdded = useCallback((newFiles: DocumentUpload[]) => {
     setFiles(prev => [...prev, ...newFiles]);
@@ -46,9 +59,15 @@ const Upload = () => {
       }),
     });
     
-    // Navigate to conversation analysis
-    navigate(`/conversation/${selectedAgent.id}`);
-  }, [selectedAgent, files, t, toast, navigate]);
+    // Navigate to conversation analysis with context
+    navigate(`/conversation/${selectedAgent.id}`, {
+      state: {
+        files: files,
+        agent: selectedAgent,
+        query: initialQuery
+      }
+    });
+  }, [selectedAgent, files, initialQuery, t, toast, navigate]);
 
   const texts = {
     title: { 'pt-BR': 'Upload de Documentos', 'pt': 'Upload de Documentos', 'en': 'Document Upload' },
