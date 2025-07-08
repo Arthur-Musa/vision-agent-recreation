@@ -1,6 +1,7 @@
 import { workflowEngine } from './workflowEngine';
 import { conciergeOrchestrator } from './conciergeOrchestrator';
 import { ProcessingResult, Citation } from '@/types/workflow';
+import { openaiService } from './openaiService';
 
 export interface ChatAnalysisResult {
   documentType: string;
@@ -35,8 +36,8 @@ class ChatService {
 
   private async processDocuments(userMessage: string, files: File[]): Promise<ChatResponse> {
     try {
-      // Simula análise de documentos com os agentes
-      const analysisResult = await this.analyzeDocuments(files);
+      // Analisa documentos com IA real
+      const analysisResult = await this.analyzeDocumentsWithAI(files, userMessage);
       
       const suggestions = this.generateSuggestions(analysisResult);
       const nextActions = this.generateNextActions(analysisResult);
@@ -48,14 +49,43 @@ class ChatService {
         nextActions
       };
     } catch (error) {
+      console.error('Erro ao processar documentos:', error);
+      // Fallback para simulação se IA não estiver configurada
+      const analysisResult = await this.analyzeDocuments(files);
+      
       return {
-        content: 'Ocorreu um erro ao processar os documentos. Por favor, tente novamente.',
-        suggestions: ['Tentar novamente', 'Verificar formato do arquivo', 'Contatar suporte']
+        content: this.generateAnalysisMessage(analysisResult) + '\n\n⚠️ Modo demonstração - Configure OpenAI para IA real.',
+        analysis: analysisResult,
+        suggestions: this.generateSuggestions(analysisResult),
+        nextActions: this.generateNextActions(analysisResult)
       };
     }
   }
 
   private async processTextQuery(message: string): Promise<ChatResponse> {
+    try {
+      // Tenta usar IA real para consultas de texto
+      const agents = openaiService.getInsuranceAgents();
+      const customerServiceAgent = agents.customerService;
+      
+      const response = await openaiService.processWithAgent(
+        customerServiceAgent,
+        message
+      );
+      
+      return {
+        content: response.content,
+        suggestions: response.recommendations.slice(0, 4),
+        nextActions: response.validations.length > 0 ? ['Ver detalhes', 'Continuar conversa'] : undefined
+      };
+    } catch (error) {
+      console.error('Erro ao processar consulta:', error);
+      // Fallback para lógica baseada em palavras-chave
+      return this.processTextQueryFallback(message);
+    }
+  }
+
+  private processTextQueryFallback(message: string): ChatResponse {
     const lowerMessage = message.toLowerCase();
 
     // Identifica o tipo de consulta
@@ -131,6 +161,67 @@ class ChatService {
         'Detectar fraudes'
       ]
     };
+  }
+
+  private async analyzeDocumentsWithAI(files: File[], userMessage: string): Promise<ChatAnalysisResult> {
+    const firstFile = files[0];
+    const fileName = firstFile.name.toLowerCase();
+    
+    // Simula extração de texto do documento (em produção, usaria OCR real)
+    const mockDocumentText = `
+    Documento: ${firstFile.name}
+    Tipo: ${firstFile.type}
+    Tamanho: ${firstFile.size} bytes
+    
+    Conteúdo simulado baseado no nome do arquivo...
+    `;
+
+    // Determina qual agente usar baseado no tipo de documento
+    const agents = openaiService.getInsuranceAgents();
+    let selectedAgent = agents.claimsProcessor; // padrão
+
+    if (fileName.includes('sinistro') || fileName.includes('aviso')) {
+      selectedAgent = agents.claimsProcessor;
+    } else if (fileName.includes('apolice') || fileName.includes('seguro')) {
+      selectedAgent = agents.policyAnalyzer;
+    } else if (fileName.includes('fraude') || userMessage.toLowerCase().includes('fraude')) {
+      selectedAgent = agents.fraudDetector;
+    } else if (fileName.includes('juridico') || fileName.includes('legal')) {
+      selectedAgent = agents.legalAnalyzer;
+    }
+
+    const response = await openaiService.processWithAgent(
+      selectedAgent,
+      `Analise este documento: ${userMessage || 'Análise completa do documento'}`,
+      mockDocumentText,
+      {
+        fileName: firstFile.name,
+        fileType: firstFile.type,
+        fileSize: firstFile.size
+      }
+    );
+
+    return {
+      documentType: this.getDocumentTypeFromFileName(fileName),
+      extractedData: response.extractedData || {},
+      confidence: response.confidence,
+      validations: response.validations,
+      recommendations: response.recommendations,
+      citations: response.citations
+    };
+  }
+
+  private getDocumentTypeFromFileName(fileName: string): string {
+    if (fileName.includes('sinistro') || fileName.includes('aviso')) {
+      return 'Aviso de Sinistro';
+    } else if (fileName.includes('apolice') || fileName.includes('seguro')) {
+      return 'Apólice de Seguro';
+    } else if (fileName.includes('endosso')) {
+      return 'Endosso';
+    } else if (fileName.includes('laudo')) {
+      return 'Laudo de Vistoria';
+    }
+    return 'Documento de Seguro';
   }
 
   private async analyzeDocuments(files: File[]): Promise<ChatAnalysisResult> {
