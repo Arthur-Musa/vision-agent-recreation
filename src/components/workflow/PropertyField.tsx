@@ -40,8 +40,8 @@ export const PropertyField: React.FC<PropertyFieldProps> = ({
             value={value || ''}
             onChange={(e) => onChange(parseFloat(e.target.value))}
             placeholder={property.description}
-            min={property.validation?.min}
-            max={property.validation?.max}
+        min={typeof property.validation === 'object' && !Array.isArray(property.validation) ? property.validation.min : undefined}
+        max={typeof property.validation === 'object' && !Array.isArray(property.validation) ? property.validation.max : undefined}
           />
         );
 

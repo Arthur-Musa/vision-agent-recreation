@@ -1,7 +1,10 @@
 /**
- * Concierge Orchestrator - Sistema principal que analisa tarefas e aciona subagentes
- * Baseado no padrão V7Labs e nos princípios de Context Engineering
+ * Enhanced Concierge Orchestrator - Intelligent task routing and agent coordination
+ * Inspired by V7Labs architecture with advanced context engineering
  */
+
+import { workflowEngine } from './workflowEngine';
+import { WorkflowExecution } from '@/types/workflow';
 
 export interface TaskContext {
   id: string;
@@ -10,13 +13,22 @@ export interface TaskContext {
   priority: 'urgent' | 'high' | 'medium' | 'low';
   extractedData: Record<string, any>;
   suggestedAgent: string;
+  suggestedWorkflow?: string;
   confidence: number;
   subAgentResults: Record<string, any>;
+  workflowExecution?: WorkflowExecution;
+  metadata: {
+    documentsAttached: number;
+    estimatedComplexity: 'low' | 'medium' | 'high';
+    requiresHumanReview: boolean;
+    complianceRisk: 'low' | 'medium' | 'high';
+  };
   decisions: Array<{
     timestamp: string;
     agent: string;
     decision: any;
     justification: string;
+    confidence: number;
   }>;
 }
 
@@ -26,31 +38,42 @@ export interface ConciergeResponse {
   message: string;
   nextSteps: string[];
   redirectTo?: string;
+  workflowId?: string;
+  estimatedDuration?: string;
+  requiresDocuments?: string[];
+  escalationReasons?: string[];
 }
 
 class ConciergeOrchestrator {
   
-  async processQuery(query: string): Promise<ConciergeResponse> {
-    // 1. Criar contexto inicial
+  async processQuery(query: string, documents?: File[]): Promise<ConciergeResponse> {
+    // 1. Criar contexto inicial avançado
     const context: TaskContext = {
-      id: `task_${Date.now()}`,
+      id: `task_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       originalQuery: query,
       taskType: this.classifyTask(query),
       priority: this.assessPriority(query),
       extractedData: {},
       suggestedAgent: '',
+      suggestedWorkflow: '',
       confidence: 0,
       subAgentResults: {},
+      metadata: {
+        documentsAttached: documents?.length || 0,
+        estimatedComplexity: this.assessComplexity(query),
+        requiresHumanReview: false,
+        complianceRisk: this.assessComplianceRisk(query)
+      },
       decisions: []
     };
 
     // 2. Triagem inicial
     await this.performInitialTriage(context);
     
-    // 3. Análise paralela com subagentes (apenas leitura)
+    // 3. Análise paralela com subagentes
     await this.executeParallelAnalysis(context);
     
-    // 4. Consolidação e decisão
+    // 4. Consolidação e decisão final
     const response = await this.consolidateAndDecide(context);
     
     return response;
@@ -92,6 +115,43 @@ class ConciergeOrchestrator {
     return 'medium';
   }
 
+  private assessComplexity(query: string): 'low' | 'medium' | 'high' {
+    const complexityIndicators = {
+      high: ['múltiplos', 'complexo', 'judicial', 'fraude', 'internacional'],
+      medium: ['avaliação', 'análise', 'verificação', 'compliance'],
+      low: ['informação', 'consulta', 'dúvida', 'simples']
+    };
+    
+    const queryLower = query.toLowerCase();
+    
+    if (complexityIndicators.high.some(indicator => queryLower.includes(indicator))) {
+      return 'high';
+    }
+    
+    if (complexityIndicators.medium.some(indicator => queryLower.includes(indicator))) {
+      return 'medium';
+    }
+    
+    return 'low';
+  }
+
+  private assessComplianceRisk(query: string): 'low' | 'medium' | 'high' {
+    const highRiskTerms = ['judicial', 'processo', 'susep', 'regulamentação'];
+    const mediumRiskTerms = ['compliance', 'legal', 'auditoria'];
+    
+    const queryLower = query.toLowerCase();
+    
+    if (highRiskTerms.some(term => queryLower.includes(term))) {
+      return 'high';
+    }
+    
+    if (mediumRiskTerms.some(term => queryLower.includes(term))) {
+      return 'medium';
+    }
+    
+    return 'low';
+  }
+
   private async performInitialTriage(context: TaskContext): Promise<void> {
     // Simula análise inicial inteligente
     const extractedData = this.extractDataFromQuery(context.originalQuery);
@@ -110,7 +170,8 @@ class ConciergeOrchestrator {
         suggestedAgent: context.suggestedAgent,
         extractedData: context.extractedData
       },
-      justification: `Classificação inicial baseada na análise do conteúdo: "${context.originalQuery}"`
+      justification: `Classificação inicial baseada na análise do conteúdo: "${context.originalQuery}"`,
+      confidence: context.confidence
     });
   }
 
@@ -224,7 +285,8 @@ class ConciergeOrchestrator {
       timestamp: new Date().toISOString(),
       agent: 'parallel_sub_agents',
       decision: context.subAgentResults,
-      justification: 'Análise paralela completada pelos subagentes especializados'
+      justification: 'Análise paralela completada pelos subagentes especializados',
+      confidence: context.confidence
     });
   }
 
@@ -349,7 +411,8 @@ class ConciergeOrchestrator {
         nextSteps,
         requiresManualReview: riskScore > 50
       },
-      justification: `Decisão baseada na consolidação de todas as análises realizadas`
+      justification: `Decisão baseada na consolidação de todas as análises realizadas`,
+      confidence: context.confidence
     });
     
     return {
