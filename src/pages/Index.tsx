@@ -4,10 +4,11 @@ import { Button } from "@/components/ui/button";
 import { AgentCard } from "../components/AgentCard";
 import { CategoryFilter } from "../components/CategoryFilter";
 import { LanguageSelector } from "../components/LanguageSelector";
+import { QuickApiTest } from "../components/debug/QuickApiTest";
 import { insuranceAgents } from "../data/insuranceAgents";
 import { AgentCategory, InsuranceAgent } from "../types/agents";
 import { useLanguage } from "../hooks/useLanguage";
-import { Search, Bot, Shield, Zap, Users, MessageCircle } from "lucide-react";
+import { Search, Bot, Shield, Zap, Users, MessageCircle, Activity } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { conciergeOrchestrator } from "../services/conciergeOrchestrator";
@@ -199,6 +200,28 @@ const Index = () => {
                 </Button>
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* API Status Section */}
+      <section className="py-8 sm:py-12 bg-muted/30">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-500/10 rounded-full mb-4">
+              <Activity className="h-4 w-4 text-emerald-600" />
+              <span className="text-sm font-medium text-emerald-600">Status da API</span>
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-bold mb-4">
+              Conectividade das APIs de IA
+            </h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto">
+              Verificação da conexão com os serviços de inteligência artificial
+            </p>
+          </div>
+          
+          <div className="flex justify-center">
+            <QuickApiTest />
           </div>
         </div>
       </section>
