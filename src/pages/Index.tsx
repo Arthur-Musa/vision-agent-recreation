@@ -10,10 +10,11 @@ import { QuickStart } from "../components/onboarding/QuickStart";
 import { insuranceAgents } from "../data/insuranceAgents";
 import { AgentCategory, InsuranceAgent } from "../types/agents";
 import { useLanguage } from "../hooks/useLanguage";
-import { Search, Bot, Shield, Zap, Users, MessageCircle, ArrowRight, Sparkles, HelpCircle } from "lucide-react";
+import { Search, Bot, Shield, Zap, Users, MessageCircle, ArrowRight, Sparkles, HelpCircle, Settings } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { conciergeOrchestrator } from "../services/conciergeOrchestrator";
+import { OpenAISettings } from "@/components/settings/OpenAISettings";
 
 const Index = () => {
   const { t } = useLanguage();
@@ -22,6 +23,7 @@ const Index = () => {
   const [selectedCategory, setSelectedCategory] = useState<AgentCategory | 'all'>('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [showQuickStart, setShowQuickStart] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
 
   const filteredAgents = insuranceAgents.filter(agent => {
     const categoryMatch = selectedCategory === 'all' || agent.category === selectedCategory;
@@ -133,18 +135,27 @@ const Index = () => {
             </div>
             <h1 className="text-xl sm:text-2xl olga-logo text-foreground">Olga</h1>
           </div>
-          <div className="flex items-center gap-2">
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={() => setShowQuickStart(true)}
-              className="gap-2"
-            >
-              <HelpCircle className="h-4 w-4" />
-              <span className="hidden sm:inline">Começar</span>
-            </Button>
-            <LanguageSelector />
-          </div>
+           <div className="flex items-center gap-2">
+             <Button 
+               variant="outline" 
+               size="sm"
+               onClick={() => setShowSettings(true)}
+               className="gap-2"
+             >
+               <Settings className="h-4 w-4" />
+               <span className="hidden sm:inline">Configurar IA</span>
+             </Button>
+             <Button 
+               variant="outline" 
+               size="sm"
+               onClick={() => setShowQuickStart(true)}
+               className="gap-2"
+             >
+               <HelpCircle className="h-4 w-4" />
+               <span className="hidden sm:inline">Começar</span>
+             </Button>
+             <LanguageSelector />
+           </div>
           </div>
         </div>
       </header>
@@ -222,6 +233,27 @@ const Index = () => {
 
       {/* Navigation and Content */}
       <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+        {/* Settings Modal */}
+        {showSettings && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-background rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+              <div className="p-6">
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-2xl font-semibold">Configurações</h2>
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => setShowSettings(false)}
+                  >
+                    ×
+                  </Button>
+                </div>
+                <OpenAISettings />
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Quick Start Modal */}
         {showQuickStart && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
