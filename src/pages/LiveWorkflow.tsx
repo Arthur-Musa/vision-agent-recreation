@@ -3,7 +3,7 @@ import { ConversationalChat } from '@/components/chat/ConversationalChat';
 import { LiveAnalysisPanel } from '@/components/live-analysis/LiveAnalysisPanel';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Maximize2, Minimize2 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { openaiService } from '@/services/openaiService';
 
@@ -43,6 +43,7 @@ interface AnalysisStep {
 
 const LiveWorkflow = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
   
   const [messages, setMessages] = useState<Message[]>([]);
@@ -50,6 +51,17 @@ const LiveWorkflow = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [currentTask, setCurrentTask] = useState<string>('');
   const [isAnalysisMininized, setIsAnalysisMinimized] = useState(false);
+
+  // Process initial query from navigation state
+  useEffect(() => {
+    const state = location.state as { initialQuery?: string };
+    if (state?.initialQuery) {
+      // Auto-send the initial query
+      handleMessageSent(state.initialQuery);
+      // Clear the state to prevent re-sending
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location.state]);
 
   // Simula steps de análise em tempo real
   const simulateAnalysisSteps = async (userMessage: string, files?: File[]) => {

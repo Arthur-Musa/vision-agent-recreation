@@ -4,11 +4,13 @@ import { Button } from "@/components/ui/button";
 import { AgentCard } from "../components/AgentCard";
 import { CategoryFilter } from "../components/CategoryFilter";
 import { LanguageSelector } from "../components/LanguageSelector";
+import { ImprovedNavigation } from "../components/navigation/ImprovedNavigation";
+import { QuickStart } from "../components/onboarding/QuickStart";
 
 import { insuranceAgents } from "../data/insuranceAgents";
 import { AgentCategory, InsuranceAgent } from "../types/agents";
 import { useLanguage } from "../hooks/useLanguage";
-import { Search, Bot, Shield, Zap, Users, MessageCircle } from "lucide-react";
+import { Search, Bot, Shield, Zap, Users, MessageCircle, ArrowRight, Sparkles, HelpCircle } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { conciergeOrchestrator } from "../services/conciergeOrchestrator";
@@ -19,6 +21,7 @@ const Index = () => {
   const navigate = useNavigate();
   const [selectedCategory, setSelectedCategory] = useState<AgentCategory | 'all'>('all');
   const [searchTerm, setSearchTerm] = useState('');
+  const [showQuickStart, setShowQuickStart] = useState(false);
 
   const filteredAgents = insuranceAgents.filter(agent => {
     const categoryMatch = selectedCategory === 'all' || agent.category === selectedCategory;
@@ -124,13 +127,24 @@ const Index = () => {
       <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="w-6 h-6 sm:w-7 sm:h-7 bg-foreground rounded-full flex items-center justify-center">
-                <div className="w-2 h-2 sm:w-3 sm:h-3 bg-background rounded-full"></div>
-              </div>
-              <h1 className="text-xl sm:text-2xl olga-logo text-foreground">Olga</h1>
+          <div className="flex items-center space-x-3">
+            <div className="w-6 h-6 sm:w-7 sm:h-7 bg-foreground rounded-full flex items-center justify-center">
+              <div className="w-2 h-2 sm:w-3 sm:h-3 bg-background rounded-full"></div>
             </div>
+            <h1 className="text-xl sm:text-2xl olga-logo text-foreground">Olga</h1>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => setShowQuickStart(true)}
+              className="gap-2"
+            >
+              <HelpCircle className="h-4 w-4" />
+              <span className="hidden sm:inline">Começar</span>
+            </Button>
             <LanguageSelector />
+          </div>
           </div>
         </div>
       </header>
@@ -147,68 +161,100 @@ const Index = () => {
             </p>
           </div>
 
-          {/* Chat Input */}
-          <div className="max-w-4xl mx-auto mb-8 sm:mb-12">
-            <div className="bg-card rounded-2xl border shadow-sm p-4 sm:p-6">
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
-                <div className="flex-1">
-                  <Input
-                    type="text"
-                    placeholder="Descreva o que você precisa ou faça upload de documentos..."
-                    className="border-0 bg-transparent text-sm sm:text-lg placeholder:text-muted-foreground focus-visible:ring-0"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    onKeyPress={(e) => {
-                      if (e.key === 'Enter' && searchTerm.trim()) {
-                        handleConciergeQuery(searchTerm);
-                      }
-                    }}
-                  />
-                </div>
-                <Button 
-                  size="lg" 
-                  className="rounded-full px-6 w-full sm:w-auto" 
-                  onClick={() => {
-                    if (searchTerm.trim()) {
-                      handleConciergeQuery(searchTerm);
-                    } else {
-                      navigate('/upload');
-                    }
-                  }}
-                >
-                  <Search className="h-5 w-5 mr-2 sm:mr-0" />
-                  <span className="sm:hidden">Iniciar</span>
-                </Button>
-              </div>
-              
-              <div className="flex flex-wrap items-center justify-between gap-3 sm:gap-6 mt-4">
-                <div className="flex flex-wrap items-center gap-3 sm:gap-6 text-xs sm:text-sm text-muted-foreground">
-                  <span>Apólices</span>
-                  <span>Sinistros</span>
-                  <span>Jurídico</span>
-                  <span>Atendimento</span>
-                </div>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={() => navigate('/chat')}
-                  className="gap-2"
-                >
-                  <MessageCircle className="h-4 w-4" />
-                  <span className="hidden sm:inline">Chat Conversacional</span>
-                  <span className="sm:hidden">Chat</span>
-                </Button>
-              </div>
+      {/* Quick Actions - V7 Style */}
+      <div className="max-w-4xl mx-auto mb-8 sm:mb-12">
+        <div className="bg-card rounded-2xl border shadow-sm p-4 sm:p-6">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
+            <div className="flex-1">
+              <Input
+                type="text"
+                placeholder="Descreva o que você precisa ou faça upload de documentos..."
+                className="border-0 bg-transparent text-sm sm:text-lg placeholder:text-muted-foreground focus-visible:ring-0"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter' && searchTerm.trim()) {
+                    navigate('/live-workflow', { state: { initialQuery: searchTerm } });
+                  }
+                }}
+              />
             </div>
+            <Button 
+              size="lg" 
+              className="rounded-full px-6 w-full sm:w-auto" 
+              onClick={() => {
+                if (searchTerm.trim()) {
+                  navigate('/live-workflow', { state: { initialQuery: searchTerm } });
+                } else {
+                  navigate('/live-workflow');
+                }
+              }}
+            >
+              <Sparkles className="h-5 w-5 mr-2" />
+              <span className="hidden sm:inline">Iniciar Live Workflow</span>
+              <span className="sm:hidden">Iniciar</span>
+            </Button>
           </div>
+          
+          <div className="flex flex-wrap items-center justify-between gap-3 sm:gap-6 mt-4">
+            <div className="flex flex-wrap items-center gap-3 sm:gap-6 text-xs sm:text-sm text-muted-foreground">
+              <span>Apólices</span>
+              <span>Sinistros</span>
+              <span>Jurídico</span>
+              <span>Atendimento</span>
+            </div>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => navigate('/live-workflow')}
+              className="gap-2"
+            >
+              <MessageCircle className="h-4 w-4" />
+              <span className="hidden sm:inline">Experiência Live</span>
+              <span className="sm:hidden">Live</span>
+            </Button>
+          </div>
+        </div>
+      </div>
         </div>
       </section>
 
 
-      {/* Main Content */}
+      {/* Navigation and Content */}
       <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
-        {/* Search and Filters */}
+        {/* Quick Start Modal */}
+        {showQuickStart && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div className="bg-background rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+              <div className="p-6">
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-2xl font-semibold">Começar com Olga</h2>
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => setShowQuickStart(false)}
+                  >
+                    ×
+                  </Button>
+                </div>
+                <QuickStart onComplete={() => setShowQuickStart(false)} />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Improved Navigation */}
+        <div className="mb-8 sm:mb-12">
+          <ImprovedNavigation />
+        </div>
+
+        {/* Traditional Agent Search - Secondary */}
         <div className="mb-6 sm:mb-8">
+          <div className="flex items-center gap-2 mb-4">
+            <h2 className="text-xl font-medium">Ou explore nossos agentes especializados</h2>
+            <ArrowRight className="h-5 w-5 text-muted-foreground" />
+          </div>
+          
           <div className="relative mb-4 sm:mb-6">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
