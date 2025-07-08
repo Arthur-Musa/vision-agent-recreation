@@ -2,6 +2,7 @@ import { workflowEngine } from './workflowEngine';
 import { conciergeOrchestrator } from './conciergeOrchestrator';
 import { ProcessingResult, Citation } from '@/types/workflow';
 import { openaiService } from './openaiService';
+import { olgaApi } from './olgaApiService';
 
 export interface ChatAnalysisResult {
   documentType: string;
@@ -164,6 +165,33 @@ class ChatService {
   }
 
   private async analyzeDocumentsWithAI(files: File[], userMessage: string): Promise<ChatAnalysisResult> {
+    try {
+      // Primeira tentativa: usar API da Olga se disponível
+      const olgaStatus = olgaApi.getConnectionStatus();
+      
+      if (olgaStatus.connected) {
+        const result = await this.processWithOlgaAPI(files, userMessage);
+        return result;
+      }
+
+      // Segunda tentativa: usar agentes configurados se disponível
+      const openaiKey = localStorage.getItem('openai_api_key') || localStorage.getItem('anthropic_api_key');
+      
+      if (openaiKey) {
+        // Processa documentos com agente de IA real
+        const result = await this.processWithRealAI(files, userMessage);
+        return result;
+      }
+
+      // Fallback: usar análise simulada
+      return this.simulateDocumentAnalysis(files, userMessage);
+    } catch (error) {
+      console.error('Erro na análise com IA:', error);
+      return this.simulateDocumentAnalysis(files, userMessage);
+    }
+  }
+
+  private async processWithRealAI(files: File[], userMessage: string): Promise<ChatAnalysisResult> {
     const firstFile = files[0];
     const fileName = firstFile.name.toLowerCase();
     
@@ -209,6 +237,11 @@ class ChatService {
       recommendations: response.recommendations,
       citations: response.citations
     };
+  }
+
+  private async simulateDocumentAnalysis(files: File[], userMessage: string): Promise<ChatAnalysisResult> {
+    // Usa a lógica existente de simulação
+    return this.analyzeDocuments(files);
   }
 
   private getDocumentTypeFromFileName(fileName: string): string {
@@ -392,6 +425,130 @@ class ChatService {
     message += `\nAbaixo estão os detalhes extraídos e as recomendações para próximos passos.`;
 
     return message;
+  }
+
+  private async processWithOlgaAPI(files: File[], userMessage: string): Promise<ChatAnalysisResult> {
+    try {
+      // Determinar tipo de documento baseado no nome/extensão
+      const documentType = this.determineDocumentType(files[0]);
+      
+      // Executar workflow na Olga API
+      const workflowRequest = {
+        workflowType: 'claims_processing' as const,
+        documents: files,
+        context: {
+          userMessage,
+          analysisType: documentType,
+          timestamp: new Date().toISOString()
+        },
+        priority: 'medium' as const
+      };
+
+      const workflowExecution = await olgaApi.executeWorkflow(workflowRequest);
+      
+      // Aguardar conclusão do workflow
+      let status = await olgaApi.getWorkflowStatus(workflowExecution.executionId);
+      
+      // Poll até completar (max 30 segundos)
+      const maxAttempts = 15;
+      let attempts = 0;
+      
+      while (status.status === 'running' && attempts < maxAttempts) {
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        status = await olgaApi.getWorkflowStatus(workflowExecution.executionId);
+        attempts++;
+      }
+
+      if (status.status === 'completed') {
+        return this.convertOlgaResultToAnalysis(status.results, documentType);
+      } else {
+        throw new Error(`Workflow não concluído: ${status.status}`);
+      }
+    } catch (error) {
+      console.error('Erro ao processar com Olga API:', error);
+      throw error;
+    }
+  }
+
+  private convertOlgaResultToAnalysis(results: Record<string, any>, documentType: string): ChatAnalysisResult {
+    const docAnalysis = results.document_analysis || {};
+    const fraudCheck = results.fraud_check || {};
+    const complianceCheck = results.compliance_check || {};
+
+    // Compilar dados extraídos
+    const extractedData = {
+      ...docAnalysis.extractedData,
+      fraudScore: fraudCheck.riskScore,
+      complianceScore: complianceCheck.complianceScore
+    };
+
+    // Gerar validações baseadas nos resultados
+    const validations = [];
+    
+    if (docAnalysis.confidence > 0.8) {
+      validations.push({
+        field: 'document_quality',
+        status: 'success' as const,
+        message: 'Documento analisado com alta confiança'
+      });
+    }
+
+    if (fraudCheck.riskScore < 30) {
+      validations.push({
+        field: 'fraud_risk',
+        status: 'success' as const,
+        message: 'Baixo risco de fraude detectado'
+      });
+    } else if (fraudCheck.riskScore > 70) {
+      validations.push({
+        field: 'fraud_risk',
+        status: 'error' as const,
+        message: 'Alto risco de fraude - revisão necessária'
+      });
+    }
+
+    if (complianceCheck.complianceScore > 0.9) {
+      validations.push({
+        field: 'compliance',
+        status: 'success' as const,
+        message: 'Documento em conformidade com regulamentações'
+      });
+    }
+
+    // Compilar recomendações
+    const recommendations = [
+      ...(docAnalysis.recommendations || []),
+      ...(fraudCheck.recommendations || []),
+      ...(complianceCheck.recommendations || [])
+    ].filter(Boolean);
+
+    return {
+      documentType,
+      extractedData,
+      confidence: docAnalysis.confidence || 0.8,
+      validations,
+      recommendations,
+      citations: docAnalysis.citations || []
+    };
+  }
+
+  private determineDocumentType(file: File): 'claim' | 'policy' | 'medical' | 'invoice' {
+    const fileName = file.name.toLowerCase();
+    
+    if (fileName.includes('sinistro') || fileName.includes('claim')) {
+      return 'claim';
+    }
+    if (fileName.includes('apolice') || fileName.includes('policy')) {
+      return 'policy';
+    }
+    if (fileName.includes('medico') || fileName.includes('laudo') || fileName.includes('medical')) {
+      return 'medical';
+    }
+    if (fileName.includes('nota') || fileName.includes('invoice') || fileName.includes('fatura')) {
+      return 'invoice';
+    }
+    
+    return 'claim'; // Default
   }
 }
 
