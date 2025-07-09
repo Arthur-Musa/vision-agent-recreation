@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { ArrowLeft, Search, Filter, Plus, FileText, Calendar, User } from 'lucide-react';
+import { ArrowLeft, Search, Filter, Plus, FileText, Calendar, User, BarChart3 } from 'lucide-react';
 
 interface Claim {
   id: string;
@@ -137,10 +137,16 @@ const ClaimsDashboard = () => {
               </div>
             </div>
             
-            <Button onClick={() => navigate('/live')} className="gap-2">
-              <Plus className="h-4 w-4" />
-              Novo Sinistro
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button onClick={() => navigate('/claims-processing')} className="gap-2">
+                <Plus className="h-4 w-4" />
+                Processar Sinistros
+              </Button>
+              <Button onClick={() => navigate('/claims-metrics')} variant="outline" className="gap-2">
+                <BarChart3 className="h-4 w-4" />
+                Métricas
+              </Button>
+            </div>
           </div>
         </div>
       </header>

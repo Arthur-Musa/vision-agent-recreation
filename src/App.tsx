@@ -14,6 +14,8 @@ import SmartSpreadsheet from "./pages/SmartSpreadsheet";
 import ManusLiveView from "./pages/ManusLiveView";
 import ConnectorsConfig from "./pages/ConnectorsConfig";
 import SettingsPage from "./pages/SettingsPage";
+import AutomatedClaimsProcessing from "./pages/AutomatedClaimsProcessing";
+import ClaimsMetricsDashboard from "./pages/ClaimsMetricsDashboard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -28,6 +30,8 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/claims" element={<ClaimsDashboard />} />
           <Route path="/claims/:id" element={<ClaimDetail />} />
+          <Route path="/claims-processing" element={<AutomatedClaimsProcessing />} />
+          <Route path="/claims-metrics" element={<ClaimsMetricsDashboard />} />
           <Route path="/renewal" element={<RenewalAssistant />} />
           <Route path="/renewal/preview" element={<RenewalPreview />} />
           <Route path="/underwriting" element={<UnderwritingForm />} />

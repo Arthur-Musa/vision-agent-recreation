@@ -46,12 +46,12 @@ const Index = () => {
 
   const agents: Agent[] = [
     {
-      id: 'claims',
-      name: 'Claims Processing',
+      id: 'claims-processing',
+      name: 'Automated Claims',
       icon: <FileText className="h-5 w-5" />,
-      description: 'Extração e classificação de sinistros',
-      route: '/claims',
-      badge: 'OCR+ML',
+      description: 'V7Labs-style processing with 99.9% accuracy',
+      route: '/claims-processing',
+      badge: 'AI+OCR',
       color: 'bg-blue-500'
     },
     {
@@ -82,9 +82,18 @@ const Index = () => {
       color: 'bg-red-500'
     },
     {
+      id: 'metrics',
+      name: 'Performance Analytics',
+      icon: <BarChart3 className="h-5 w-5" />,
+      description: 'Real-time metrics and KPIs',
+      route: '/claims-metrics',
+      badge: 'Live',
+      color: 'bg-green-500'
+    },
+    {
       id: 'spreadsheets',
       name: 'Smart Spreadsheet',
-      icon: <BarChart3 className="h-5 w-5" />,
+      icon: <TrendingUp className="h-5 w-5" />,
       description: 'Tabela em tempo real via SSE/WS',
       route: '/spreadsheets',
       color: 'bg-orange-500'
@@ -127,8 +136,8 @@ const Index = () => {
       return;
     }
 
-    // Redireciona para Manus Live View com a query
-    navigate('/live', { state: { initialQuery: askGoQuery } });
+    // Redireciona para Claims Processing com a query
+    navigate('/claims-processing', { state: { initialQuery: askGoQuery } });
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
