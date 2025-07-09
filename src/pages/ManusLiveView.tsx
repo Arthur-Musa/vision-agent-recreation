@@ -32,7 +32,7 @@ interface PipelineStep {
   timestamp?: string;
 }
 
-const ManusLiveView = () => {
+const OlgaLiveView = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
@@ -404,4 +404,4 @@ const ManusLiveView = () => {
   );
 };
 
-export default ManusLiveView;
+export default OlgaLiveView;
