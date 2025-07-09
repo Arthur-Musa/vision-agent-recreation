@@ -26,6 +26,8 @@ import ConversationAnalysis from "./pages/ConversationAnalysis";
 import CoverageAnalysis from "./pages/CoverageAnalysis";
 import AIAgents from "./pages/AIAgents";
 import AgentDetail from "./pages/AgentDetail";
+import ConversationClaimsProcessor from "./pages/ConversationClaimsProcessor";
+import UnderwritingIntake from "./pages/UnderwritingIntake";
 import Integrations from "./pages/Integrations";
 import NotFound from "./pages/NotFound";
 
@@ -59,6 +61,8 @@ const App = () => (
           <Route path="/spreadsheets" element={<SmartSpreadsheet />} />
           <Route path="/ai-agents" element={<AIAgents />} />
           <Route path="/agent/:id" element={<AgentDetail />} />
+          <Route path="/conversation/claims-processor" element={<ConversationClaimsProcessor />} />
+          <Route path="/underwriting/intake" element={<UnderwritingIntake />} />
           <Route path="/integrations" element={<Integrations />} />
           <Route path="/connectors" element={<ConnectorsConfig />} />
           <Route path="/settings" element={<SettingsPage />} />
