@@ -6,6 +6,8 @@ import { ArrowLeft, Maximize2, Minimize2 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { openaiService } from '@/services/openaiService';
+import { claimsApi } from '@/services/claimsApi';
+import { useCreateClaim } from '@/hooks/useClaims';
 
 interface Message {
   id: string;
@@ -187,66 +189,92 @@ const LiveWorkflow = () => {
     
     setMessages(prev => [...prev, userMessage]);
     setIsProcessing(true);
-    setCurrentTask(`Analisando: ${message.length > 50 ? message.slice(0, 50) + '...' : message}`);
+    setCurrentTask(`Criando sinistro: ${message.length > 50 ? message.slice(0, 50) + '...' : message}`);
     
     try {
-      // Simulate live analysis
-      const steps = await simulateAnalysisSteps(message, files);
+      // 1. Criar sinistro na API REAL
+      const claimData = {
+        tipo_sinistro: detectClaimType(message),
+        descricao: message,
+        valor_estimado: extractAmount(message),
+        documentos: files?.map(f => f.name) || []
+      };
       
-      // Generate AI response
-      const agents = openaiService.getInsuranceAgents();
-      let selectedAgent = agents.claimsProcessor;
+      const claim = await claimsApi.createClaim(claimData);
       
-      // Simple agent selection logic
-      if (message.toLowerCase().includes('apólice') || message.toLowerCase().includes('apolice')) {
-        selectedAgent = agents.policyAnalyzer;
-      } else if (message.toLowerCase().includes('fraude')) {
-        selectedAgent = agents.fraudDetector;
-      } else if (message.toLowerCase().includes('legal') || message.toLowerCase().includes('jurídico')) {
-        selectedAgent = agents.legalAnalyzer;
+      // 2. Upload de arquivos se houver
+      if (files && files.length > 0) {
+        for (const file of files) {
+          await claimsApi.uploadDocument(claim.id, file);
+        }
       }
       
-      const response = await openaiService.processWithAgent(
-        selectedAgent,
-        message,
-        files ? `Documentos anexados: ${files.map(f => f.name).join(', ')}` : undefined
-      );
+      // 3. Iniciar análise REAL
+      setCurrentTask('Iniciando análise do sinistro...');
+      await claimsApi.startAnalysis(claim.id);
       
-      // Add assistant response with citations
+      // 4. Simular live analysis steps (visual)
+      const steps = await simulateAnalysisSteps(message, files);
+      
+      // 5. Buscar resultado da análise REAL
+      setCurrentTask('Buscando resultado da análise...');
+      await new Promise(resolve => setTimeout(resolve, 2000)); // Wait for analysis
+      
+      const report = await claimsApi.getClaimReport(claim.id);
+      
+      // 6. Resposta com dados REAIS da API
       const assistantMessage: Message = {
         id: `msg-${Date.now()}`,
         type: 'assistant',
-        content: response.content,
+        content: `✅ **Sinistro ${claim.numero_sinistro} analisado com sucesso!**
+
+**Resumo da Análise:**
+${report.analysis_summary}
+
+**Achados Principais:**
+${report.findings.map(f => `• ${f}`).join('\n')}
+
+**Recomendação:** ${report.recommendation}
+
+**Confiança:** ${(report.confidence * 100).toFixed(1)}%
+**Documentos analisados:** ${report.documents_analyzed}
+**Tempo de processamento:** ${report.processing_time}ms`,
         timestamp: new Date().toISOString(),
-        agent: selectedAgent.name,
-        citations: steps
-          .filter(s => s.sources && s.sources.length > 0)
-          .flatMap(s => s.sources!)
-          .map((source, idx) => ({
-            id: `citation-${idx}`,
-            document: source.document,
-            page: source.page,
-            text: source.text,
-            confidence: 0.9,
-            coordinates: source.coordinates
-          })),
+        agent: 'Claims API Real',
+        citations: files?.map((file, idx) => ({
+          id: `citation-${idx}`,
+          document: file.name,
+          page: 1,
+          text: `Documento ${file.name} processado pela API`,
+          confidence: report.confidence,
+          coordinates: [0, 0, 100, 100] as [number, number, number, number]
+        })) || [],
         status: 'completed'
       };
       
       setMessages(prev => [...prev, assistantMessage]);
       
       toast({
-        title: '✅ Análise concluída',
-        description: `${selectedAgent.name} processou sua solicitação com sucesso.`
+        title: '✅ Análise Real Concluída',
+        description: `Sinistro ${claim.numero_sinistro} processado pela API especializada.`
       });
       
     } catch (error) {
-      console.error('Erro no processamento:', error);
+      console.error('Erro na API de sinistros:', error);
       
       const errorMessage: Message = {
         id: `msg-${Date.now()}`,
         type: 'assistant',
-        content: 'Desculpe, ocorreu um erro ao processar sua solicitação. Tente novamente ou configure a API key da OpenAI para melhor funcionamento.',
+        content: `❌ **Erro na API de Sinistros**
+
+${error instanceof Error ? error.message : 'Erro desconhecido'}
+
+💡 **Possíveis soluções:**
+• Verificar se a API está online: https://sinistros-ia-sistema-production.up.railway.app
+• Configurar CORS no backend
+• Verificar conectividade de rede
+
+🔄 **Fallback:** Usando OpenAI como backup...`,
         timestamp: new Date().toISOString(),
         agent: 'Sistema',
         status: 'completed'
@@ -254,15 +282,56 @@ const LiveWorkflow = () => {
       
       setMessages(prev => [...prev, errorMessage]);
       
+      // Fallback para OpenAI se a API falhar
+      try {
+        const agents = openaiService.getInsuranceAgents();
+        const response = await openaiService.processWithAgent(
+          agents.claimsProcessor,
+          message,
+          files ? `Documentos anexados: ${files.map(f => f.name).join(', ')}` : undefined
+        );
+        
+        const fallbackMessage: Message = {
+          id: `msg-${Date.now()}`,
+          type: 'assistant',
+          content: `🔄 **Fallback OpenAI:**\n\n${response.content}`,
+          timestamp: new Date().toISOString(),
+          agent: 'OpenAI Fallback',
+          status: 'completed'
+        };
+        
+        setMessages(prev => [...prev, fallbackMessage]);
+      } catch (fallbackError) {
+        console.error('Fallback também falhou:', fallbackError);
+      }
+      
       toast({
-        title: '❌ Erro no processamento',
-        description: 'Verifique a configuração da OpenAI ou tente novamente.',
+        title: '❌ Erro na API Real',
+        description: 'Usando OpenAI como fallback. Verifique a API de sinistros.',
         variant: 'destructive'
       });
     } finally {
       setIsProcessing(false);
       setCurrentTask('');
     }
+  };
+
+  // Helper functions
+  const detectClaimType = (message: string): string => {
+    const lower = message.toLowerCase();
+    if (lower.includes('auto') || lower.includes('carro') || lower.includes('colisão')) return 'Automotivo';
+    if (lower.includes('casa') || lower.includes('residencial') || lower.includes('incêndio')) return 'Residencial';
+    if (lower.includes('vida') || lower.includes('morte') || lower.includes('doença')) return 'Vida';
+    return 'Geral';
+  };
+
+  const extractAmount = (message: string): number | undefined => {
+    const regex = /R\$\s?(\d{1,3}(?:\.\d{3})*(?:,\d{2})?)/;
+    const match = message.match(regex);
+    if (match) {
+      return parseFloat(match[1].replace(/\./g, '').replace(',', '.'));
+    }
+    return undefined;
   };
 
   const handleCitationClick = (citation: any) => {
