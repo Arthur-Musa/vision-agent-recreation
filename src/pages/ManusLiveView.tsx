@@ -251,7 +251,7 @@ const ManusLiveView = () => {
               <div>
                 <h1 className="text-xl font-semibold flex items-center gap-2">
                   <Zap className="h-5 w-5" />
-                  Manus Live View
+                  Olga Live View
                 </h1>
                 <p className="text-sm text-muted-foreground">
                   Chat interativo com pipeline em tempo real
