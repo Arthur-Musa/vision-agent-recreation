@@ -4,18 +4,17 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
-import Dashboard from "./pages/Dashboard";
-import Upload from "./pages/Upload";
-import Cases from "./pages/Cases";
-import CaseDetail from "./pages/CaseDetail";
-import AgentDetail from "./pages/AgentDetail";
-import ConversationAnalysis from "./pages/ConversationAnalysis";
-import CoverageAnalysis from "./pages/CoverageAnalysis";
-import { Chat } from "./pages/Chat";
+import ClaimsDashboard from "./pages/ClaimsDashboard";
+import ClaimDetail from "./pages/ClaimDetail";
+import RenewalAssistant from "./pages/RenewalAssistant";
+import RenewalPreview from "./pages/RenewalPreview";
+import UnderwritingForm from "./pages/UnderwritingForm";
+import FraudDashboard from "./pages/FraudDashboard";
+import SmartSpreadsheet from "./pages/SmartSpreadsheet";
+import ManusLiveView from "./pages/ManusLiveView";
+import ConnectorsConfig from "./pages/ConnectorsConfig";
+import SettingsPage from "./pages/SettingsPage";
 import NotFound from "./pages/NotFound";
-import AIAgents from "./pages/AIAgents";
-import LiveWorkflow from "./pages/LiveWorkflow";
-import UserJourney from "./pages/UserJourney";
 
 const queryClient = new QueryClient();
 
@@ -27,18 +26,16 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/upload" element={<Upload />} />
-          <Route path="/cases" element={<Cases />} />
-          <Route path="/case/:id" element={<CaseDetail />} />
-          <Route path="/agent/:id" element={<AgentDetail />} />
-          <Route path="/coverage-analysis" element={<CoverageAnalysis />} />
-          <Route path="/conversation/:agentId" element={<ConversationAnalysis />} />
-          <Route path="/chat" element={<Chat />} />
-          <Route path="/ai-agents" element={<AIAgents />} />
-          <Route path="/live-workflow" element={<LiveWorkflow />} />
-          <Route path="/user-journey" element={<UserJourney />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+          <Route path="/claims" element={<ClaimsDashboard />} />
+          <Route path="/claims/:id" element={<ClaimDetail />} />
+          <Route path="/renewal" element={<RenewalAssistant />} />
+          <Route path="/renewal/preview" element={<RenewalPreview />} />
+          <Route path="/underwriting" element={<UnderwritingForm />} />
+          <Route path="/fraud" element={<FraudDashboard />} />
+          <Route path="/spreadsheets" element={<SmartSpreadsheet />} />
+          <Route path="/live" element={<ManusLiveView />} />
+          <Route path="/connectors" element={<ConnectorsConfig />} />
+          <Route path="/settings" element={<SettingsPage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
