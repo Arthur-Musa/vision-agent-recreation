@@ -44,7 +44,7 @@ const Index = () => {
   const [askGoQuery, setAskGoQuery] = useState('');
   const [userName] = useState('Ana'); // Mock user name
 
-  const agents: Agent[] = [
+const agents: Agent[] = [
     {
       id: 'claims-processing',
       name: 'Automated Claims',
@@ -52,7 +52,7 @@ const Index = () => {
       description: 'V7Labs-style processing with 99.9% accuracy',
       route: '/claims-processing',
       badge: 'AI+OCR',
-      color: 'bg-blue-500'
+      color: 'gradient-claims'
     },
     {
       id: 'renewal',
@@ -61,7 +61,7 @@ const Index = () => {
       description: 'Comparação e renovação de apólices',
       route: '/renewal',
       badge: 'Diff+AI',
-      color: 'bg-green-500'
+      color: 'gradient-underwriting'
     },
     {
       id: 'underwriting',
@@ -70,7 +70,7 @@ const Index = () => {
       description: 'Risk scoring e cotação instantânea',
       route: '/underwriting',
       badge: 'Score',
-      color: 'bg-purple-500'
+      color: 'gradient-legal'
     },
     {
       id: 'fraud',
@@ -79,7 +79,7 @@ const Index = () => {
       description: 'Detecção de fraudes e anomalias',
       route: '/fraud',
       badge: 'Beta',
-      color: 'bg-red-500'
+      color: 'gradient-customer'
     },
     {
       id: 'metrics',
@@ -88,7 +88,7 @@ const Index = () => {
       description: 'Real-time metrics and KPIs',
       route: '/claims-metrics',
       badge: 'Live',
-      color: 'bg-green-500'
+      color: 'gradient-claims'
     },
     {
       id: 'spreadsheets',
@@ -96,7 +96,7 @@ const Index = () => {
       icon: <TrendingUp className="h-5 w-5" />,
       description: 'Tabela em tempo real via SSE/WS',
       route: '/spreadsheets',
-      color: 'bg-orange-500'
+      color: 'gradient-underwriting'
     }
   ];
 
@@ -155,10 +155,10 @@ const Index = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'processing': return 'bg-blue-100 text-blue-800';
-      case 'completed': return 'bg-green-100 text-green-800';
-      case 'pending': return 'bg-yellow-100 text-yellow-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'processing': return 'bg-accent text-accent-foreground';
+      case 'completed': return 'bg-primary text-primary-foreground';
+      case 'pending': return 'bg-muted text-muted-foreground';
+      default: return 'bg-muted text-muted-foreground';
     }
   };
 
@@ -210,7 +210,7 @@ const Index = () => {
 
         {/* Ask Go Box */}
         <div className="max-w-4xl mx-auto mb-12">
-          <Card className="border-2 border-dashed border-border/50 hover:border-border transition-colors">
+          <Card className="gradient-hero border border-border/50 hover:shadow-[var(--shadow-card-hover)] transition-all duration-200">
             <CardContent className="p-6">
               <div className="flex items-center gap-4 mb-4">
                 <div className="flex-1">
@@ -220,7 +220,7 @@ const Index = () => {
                     value={askGoQuery}
                     onChange={(e) => setAskGoQuery(e.target.value)}
                     onKeyDown={handleKeyDown}
-                    className="border-0 bg-transparent text-lg placeholder:text-muted-foreground focus-visible:ring-0 h-12"
+                    className="border-0 bg-background/50 backdrop-blur-sm text-lg placeholder:text-muted-foreground focus-visible:ring-0 h-12"
                   />
                 </div>
                 <Button onClick={handleAskGo} size="lg" className="px-8">
@@ -286,14 +286,14 @@ const Index = () => {
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
             {agents.map((agent) => (
-              <Card 
+                <Card 
                 key={agent.id}
-                className="cursor-pointer hover:shadow-lg transition-shadow"
+                className="agent-card cursor-pointer hover:scale-105 transition-all duration-200"
                 onClick={() => navigate(agent.route)}
               >
                 <CardContent className="p-4">
                   <div className="flex items-center gap-3 mb-3">
-                    <div className={`p-2 rounded-lg ${agent.color} text-white`}>
+                    <div className={`p-3 rounded-lg ${agent.color} text-foreground/80`}>
                       {agent.icon}
                     </div>
                     {agent.badge && (
@@ -302,7 +302,7 @@ const Index = () => {
                       </Badge>
                     )}
                   </div>
-                  <h3 className="font-medium mb-1">{agent.name}</h3>
+                  <h3 className="font-medium mb-1 text-foreground">{agent.name}</h3>
                   <p className="text-sm text-muted-foreground">{agent.description}</p>
                 </CardContent>
               </Card>
@@ -326,12 +326,12 @@ const Index = () => {
             {recentCases.map((case_) => (
               <Card 
                 key={case_.id}
-                className="cursor-pointer hover:shadow-lg transition-shadow"
+                className="agent-card cursor-pointer hover:scale-105 transition-all duration-200"
                 onClick={() => navigate(`/claims/${case_.id}`)}
               >
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between mb-2">
-                    <h3 className="font-medium">{case_.type}</h3>
+                    <h3 className="font-medium text-foreground">{case_.type}</h3>
                     <Badge className={getStatusColor(case_.status)}>
                       {getStatusText(case_.status)}
                     </Badge>
