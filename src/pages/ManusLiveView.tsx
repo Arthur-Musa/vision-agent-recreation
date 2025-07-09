@@ -173,7 +173,7 @@ const ManusLiveView = () => {
 
   const addSystemMessage = (content: string) => {
     const systemMessage: Message = {
-      id: Date.now().toString(),
+      id: `system_${Date.now()}_${Math.random()}`,
       type: 'system',
       content,
       timestamp: new Date().toISOString()
