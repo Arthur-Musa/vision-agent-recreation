@@ -1,8 +1,8 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Clock, FileText, Shield, Bot } from "lucide-react";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface RecentCase {
   id: string;
@@ -14,7 +14,6 @@ interface RecentCase {
   insuredName: string;
   estimatedAmount: number;
 }
-
 
 const RecentCasesSection = () => {
   const navigate = useNavigate();
@@ -142,19 +141,21 @@ const RecentCasesSection = () => {
 
   const getTypeIcon = (type: string) => {
     switch (type) {
-      case 'APE':
-      case 'BAG': return <FileText className="h-4 w-4" />;
-      case 'Auto':
-      case 'Residencial': return <Shield className="h-4 w-4" />;
-      case 'Vida': return <Bot className="h-4 w-4" />;
-      default: return <FileText className="h-4 w-4" />;
+      case 'APE': return '🩺';
+      case 'BAG': return '🧳';
+      case 'Auto': return '🚗';
+      case 'Residencial': return '🏠';
+      case 'Vida': return '❤️';
+      default: return '📄';
     }
   };
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
-      currency: 'BRL'
+      currency: 'BRL',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
     }).format(amount);
   };
 
@@ -167,61 +168,63 @@ const RecentCasesSection = () => {
     });
   };
 
-
   return (
     <section aria-label="Recent Cases">
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-semibold">Casos Recentes</h2>
-        <Button 
-          variant="outline" 
-          onClick={() => navigate('/spreadsheets')}
-        >
-          Ver todos
-        </Button>
-      </div>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
-        {recentCases.map((case_) => (
-          <Card 
-            key={case_.id}
-            className="cursor-pointer hover:shadow-[var(--shadow-card-hover)] transition-all duration-200 border border-border/50"
-            onClick={() => navigate('/spreadsheets')}
-          >
-            <CardContent className="p-4">
-              <div className="flex items-start gap-3 mb-3">
-                <div className="w-8 h-8 rounded-full bg-muted/50 flex items-center justify-center border border-border/20 flex-shrink-0">
-                  {getTypeIcon(case_.type)}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <h3 className="font-medium text-sm truncate">{case_.claimNumber}</h3>
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-lg font-medium">Casos Recentes</CardTitle>
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => navigate('/spreadsheets')}
+            >
+              Ver todos
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow className="border-b">
+                <TableHead className="w-[100px]">Tipo</TableHead>
+                <TableHead className="w-[120px]">Nº Sinistro</TableHead>
+                <TableHead>Segurado</TableHead>
+                <TableHead className="w-[100px]">Status</TableHead>
+                <TableHead className="w-[120px]">Valor</TableHead>
+                <TableHead className="w-[120px]">Agente</TableHead>
+                <TableHead className="w-[100px]">Data</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {recentCases.map((case_) => (
+                <TableRow 
+                  key={case_.id}
+                  className="cursor-pointer hover:bg-muted/50 transition-colors"
+                  onClick={() => navigate('/spreadsheets')}
+                >
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      <span className="text-base">{getTypeIcon(case_.type)}</span>
+                      <span className="text-sm font-medium">{case_.type}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell className="font-mono text-sm">{case_.claimNumber}</TableCell>
+                  <TableCell className="text-sm">{case_.insuredName}</TableCell>
+                  <TableCell>
                     <Badge variant="outline" className={`text-xs ${getStatusColor(case_.status)}`}>
                       {getStatusText(case_.status)}
                     </Badge>
-                  </div>
-                  <p className="text-xs text-muted-foreground mb-1">
-                    {case_.insuredName}
-                  </p>
-                  <p className="text-xs font-medium text-foreground mb-1">
-                    {formatCurrency(case_.estimatedAmount)}
-                  </p>
-                </div>
-              </div>
-              
-              <div className="space-y-1">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-muted-foreground">Agente:</span>
-                  <span className="text-xs font-medium">{case_.agent}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-muted-foreground">Processado:</span>
-                  <span className="text-xs">{formatDate(case_.processedAt)}</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+                  </TableCell>
+                  <TableCell className="text-sm font-medium">{formatCurrency(case_.estimatedAmount)}</TableCell>
+                  <TableCell className="text-sm text-muted-foreground">{case_.agent}</TableCell>
+                  <TableCell className="text-xs text-muted-foreground">{formatDate(case_.processedAt)}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
     </section>
   );
 };
