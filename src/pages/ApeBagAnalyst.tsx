@@ -1,15 +1,15 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { ArrowLeft, FileText, Bot, Loader2, Upload } from 'lucide-react';
+import { ArrowLeft, FileText, Bot } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { openaiService } from '@/services/openaiService';
 import { useToast } from '@/hooks/use-toast';
-import { DocumentUploader } from '@/components/upload/DocumentUploader';
 import { DocumentUpload } from '@/types/agents';
+import { DocumentUploadSection } from '@/components/ape-bag/DocumentUploadSection';
+import { AnalysisInputSection } from '@/components/ape-bag/AnalysisInputSection';
+import { AnalysisResultsSection } from '@/components/ape-bag/AnalysisResultsSection';
 
 const ApeBagAnalyst = () => {
   const [inputText, setInputText] = useState('');
@@ -113,152 +113,21 @@ Por favor, forneça uma análise completa incluindo:
         </div>
 
         <div className="space-y-6">
-          {/* Upload de Documentos */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Upload className="h-5 w-5" />
-                Documentos do Sinistro
-              </CardTitle>
-              <CardDescription>
-                Anexe documentos relacionados ao sinistro APE/BAG (laudos, fotos, comprovantes, etc.)
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <DocumentUploader onFilesAdded={handleFilesAdded} />
-              
-              {uploadedFiles.length > 0 && (
-                <div className="mt-4">
-                  <h4 className="font-medium mb-2">Arquivos anexados ({uploadedFiles.length}):</h4>
-                  <div className="space-y-2">
-                    {uploadedFiles.map((file, index) => (
-                      <div key={index} className="flex items-center gap-2 p-2 bg-muted rounded-md">
-                        <FileText className="h-4 w-4" />
-                        <span className="text-sm flex-1">{file.name}</span>
-                        <Badge variant="outline" className="text-xs">
-                          {(file.size / 1024 / 1024).toFixed(2)}MB
-                        </Badge>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+          <DocumentUploadSection 
+            uploadedFiles={uploadedFiles}
+            onFilesAdded={handleFilesAdded}
+          />
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Input Section */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Bot className="h-5 w-5" />
-                  Descrição do Sinistro
-                </CardTitle>
-                <CardDescription>
-                  Descreva o sinistro APE (Acidentes Pessoais) ou BAG (Bagagem) para análise especializada
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <Textarea
-                  placeholder="Descreva o sinistro: local, data, circunstâncias, danos, valores, documentos disponíveis..."
-                  value={inputText}
-                  onChange={(e) => setInputText(e.target.value)}
-                  rows={6}
-                  className="resize-none"
-                />
-                
-                <Button 
-                  onClick={handleAnalysis} 
-                  disabled={isProcessing || (!inputText.trim() && uploadedFiles.length === 0)}
-                  className="w-full"
-                >
-                  {isProcessing ? (
-                    <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Analisando em tempo real...
-                    </>
-                  ) : (
-                    <>
-                      <Bot className="h-4 w-4 mr-2" />
-                      Analisar Sinistro APE + BAG
-                    </>
-                  )}
-                </Button>
-              </CardContent>
-            </Card>
+            <AnalysisInputSection
+              inputText={inputText}
+              setInputText={setInputText}
+              isProcessing={isProcessing}
+              uploadedFiles={uploadedFiles}
+              onAnalysis={handleAnalysis}
+            />
 
-            {/* Results Section */}
-            <Card>
-            <CardHeader>
-              <CardTitle>Resultado da Análise</CardTitle>
-              <CardDescription>
-                Análise especializada em sinistros APE + BAG
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {!result ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p>Aguardando análise do sinistro...</p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  <Alert>
-                    <Bot className="h-4 w-4" />
-                    <AlertDescription>
-                      <strong>Análise:</strong> {result.content}
-                    </AlertDescription>
-                  </Alert>
-
-                  {result.extractedData && Object.keys(result.extractedData).length > 0 && (
-                    <div>
-                      <h4 className="font-medium mb-2">Dados Extraídos:</h4>
-                      <div className="bg-muted p-3 rounded-md">
-                        <pre className="text-sm">
-                          {JSON.stringify(result.extractedData, null, 2)}
-                        </pre>
-                      </div>
-                    </div>
-                  )}
-
-                  {result.validations && result.validations.length > 0 && (
-                    <div>
-                      <h4 className="font-medium mb-2">Validações:</h4>
-                      <div className="space-y-2">
-                        {result.validations.map((validation: any, index: number) => (
-                          <Badge 
-                            key={index} 
-                            variant={validation.status === 'success' ? 'default' : 
-                                   validation.status === 'warning' ? 'secondary' : 'destructive'}
-                          >
-                            {validation.field}: {validation.message}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {result.recommendations && result.recommendations.length > 0 && (
-                    <div>
-                      <h4 className="font-medium mb-2">Recomendações:</h4>
-                      <ul className="list-disc list-inside space-y-1 text-sm">
-                        {result.recommendations.map((rec: string, index: number) => (
-                          <li key={index}>{rec}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-
-                  <div className="flex items-center justify-between text-sm text-muted-foreground">
-                    <span>Confiança: {Math.round(result.confidence * 100)}%</span>
-                    <Badge variant="outline">
-                      {result.validations?.find((v: any) => v.field === 'assistant') ? 'OpenAI Assistant' : 'Padrão'}
-                    </Badge>
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+            <AnalysisResultsSection result={result} />
           </div>
 
           <Alert className="mt-6">
