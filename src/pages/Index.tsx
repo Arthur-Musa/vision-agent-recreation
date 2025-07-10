@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Header from "@/components/home/Header";
 import AskGoBox from "@/components/home/AskGoBox";
+import AgentCards from "@/components/home/AgentCards";
 import RecentCasesSection from "@/components/home/RecentCasesSection";
 
 const Index = () => {
@@ -19,6 +20,7 @@ const Index = () => {
       
       <main className="container mx-auto px-4 py-8">
         <AskGoBox userName={userName} getTimeGreeting={getTimeGreeting} />
+        <AgentCards />
         <RecentCasesSection />
       </main>
     </div>
