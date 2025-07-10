@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Settings, Key, Users, Bell, Palette, Database } from 'lucide-react';
 import { OpenAISettings } from '@/components/settings/OpenAISettings';
+import { AssistantSettings } from '@/components/settings/AssistantSettings';
 import { OlgaApiSettings } from '@/components/settings/OlgaApiSettings';
 
 const SettingsPage = () => {
@@ -93,6 +94,11 @@ const SettingsPage = () => {
                   <div className="border-t pt-6">
                     <h3 className="text-lg font-medium mb-4">OpenAI</h3>
                     <OpenAISettings />
+                  </div>
+                  
+                  <div className="border-t pt-6">
+                    <h3 className="text-lg font-medium mb-4">Assistants OpenAI</h3>
+                    <AssistantSettings />
                   </div>
                   
                   <div className="border-t pt-6">
