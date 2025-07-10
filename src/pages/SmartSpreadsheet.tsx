@@ -204,11 +204,11 @@ const SmartSpreadsheet = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'processing': return 'bg-blue-100 text-blue-700 border-blue-200';
-      case 'completed': return 'bg-green-100 text-green-700 border-green-200';
-      case 'flagged': return 'bg-red-100 text-red-700 border-red-200';
-      case 'pending': return 'bg-yellow-100 text-yellow-700 border-yellow-200';
-      default: return 'bg-gray-100 text-gray-700 border-gray-200';
+      case 'processing': return 'bg-blue-50 text-blue-600 border-blue-200';
+      case 'completed': return 'bg-green-50 text-green-600 border-green-200';
+      case 'flagged': return 'bg-red-50 text-red-600 border-red-200';
+      case 'pending': return 'bg-amber-50 text-amber-600 border-amber-200';
+      default: return 'bg-muted text-muted-foreground border-border';
     }
   };
 
@@ -303,193 +303,175 @@ const SmartSpreadsheet = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4">
+      <header className="border-b border-border/40 bg-background sticky top-0 z-50">
+        <div className="container mx-auto px-6 py-3">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
               <Button
-                variant="outline"
+                variant="ghost"
                 size="sm"
                 onClick={() => navigate('/')}
+                className="text-muted-foreground hover:text-foreground"
               >
-                <ArrowLeft className="h-4 w-4 mr-2" />
+                <ArrowLeft className="h-4 w-4 mr-1" />
                 Voltar
               </Button>
               
-              <div>
-                <h1 className="text-xl font-semibold">Todos os Casos</h1>
-                <p className="text-sm text-muted-foreground">
-                  Tabela em tempo real • {filteredCases.length} casos
+              <div className="border-l border-border/40 pl-3">
+                <h1 className="text-lg font-medium text-foreground">Todos os Casos</h1>
+                <p className="text-xs text-muted-foreground">
+                  {filteredCases.length} casos
                 </p>
               </div>
             </div>
             
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1">
               <Button
-                variant="outline"
+                variant="ghost"
                 size="sm"
                 onClick={handleRefresh}
                 disabled={isRefreshing}
-                className="gap-2"
+                className="gap-1 text-muted-foreground hover:text-foreground"
               >
-                <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+                <RefreshCw className={`h-3 w-3 ${isRefreshing ? 'animate-spin' : ''}`} />
                 Atualizar
               </Button>
               
               <Button
-                variant="outline"
+                variant="ghost"
                 size="sm"
                 onClick={handleExportCSV}
-                className="gap-2"
+                className="gap-1 text-muted-foreground hover:text-foreground"
               >
-                <Download className="h-4 w-4" />
-                Exportar CSV
+                <Download className="h-3 w-3" />
+                CSV
               </Button>
 
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    if (confirm('Limpar todos os dados do spreadsheet?')) {
-                      localStorageService.clearAllData();
-                      setCases([]);
-                    }
-                  }}
-                  className="gap-2 text-destructive hover:text-destructive"
-                >
-                  <Trash2 className="h-4 w-4" />
-                  Limpar
-                </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  if (confirm('Limpar todos os dados?')) {
+                    localStorageService.clearAllData();
+                    setCases([]);
+                  }
+                }}
+                className="gap-1 text-muted-foreground hover:text-destructive"
+              >
+                <Trash2 className="h-3 w-3" />
+                Limpar
+              </Button>
             </div>
           </div>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-6 py-6">
         {/* Filters */}
-        <Card className="mb-6">
-          <CardContent className="p-4">
-            <div className="flex flex-col sm:flex-row gap-4">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Buscar por nome, sinistro ou tipo..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-              
-              <div className="flex gap-2">
-                <select 
-                  value={filterStatus}
-                  onChange={(e) => setFilterStatus(e.target.value)}
-                  className="px-3 py-2 border rounded-md bg-background"
-                >
-                  <option value="all">Todos os Status</option>
-                  <option value="completed">Concluído</option>
-                  <option value="processing">Processando</option>
-                  <option value="pending">Pendente</option>
-                  <option value="flagged">Sinalizado</option>
-                  <option value="error">Erro</option>
-                </select>
-                
-                <Button variant="outline" size="sm">
-                  <Filter className="h-4 w-4 mr-2" />
-                  Filtros
-                </Button>
-              </div>
+        <div className="mb-4 p-3 border border-border/40 rounded-lg bg-muted/20">
+          <div className="flex flex-col sm:flex-row gap-3">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-3 w-3 text-muted-foreground" />
+              <Input
+                placeholder="Buscar..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-9 h-8 text-sm border-border/40 bg-background"
+              />
             </div>
-          </CardContent>
-        </Card>
+            
+            <div className="flex gap-2">
+              <select 
+                value={filterStatus}
+                onChange={(e) => setFilterStatus(e.target.value)}
+                className="px-2 py-1 text-sm border border-border/40 rounded bg-background text-muted-foreground"
+              >
+                <option value="all">Todos</option>
+                <option value="completed">Concluído</option>
+                <option value="processing">Processando</option>
+                <option value="pending">Pendente</option>
+                <option value="flagged">Sinalizado</option>
+              </select>
+            </div>
+          </div>
+        </div>
 
         {/* Cases Table */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Casos de Seguro</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b">
-                    <th className="text-left p-3 w-[100px]">Tipo</th>
-                    <th className="text-left p-3 w-[120px]">Nº Sinistro</th>
-                    <th className="text-left p-3">Segurado</th>
-                    <th className="text-left p-3 w-[100px]">Status</th>
-                    <th className="text-left p-3 w-[120px]">Valor</th>
-                    <th className="text-left p-3 w-[120px]">Agente</th>
-                    <th className="text-left p-3 w-[100px]">Data</th>
-                    <th className="text-left p-3 w-[80px]">Ações</th>
+        <div className="border border-border/40 rounded-lg bg-background">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="border-b border-border/40">
+                <tr className="text-xs text-muted-foreground uppercase tracking-wide">
+                  <th className="text-left px-3 py-2 font-medium">Tipo</th>
+                  <th className="text-left px-3 py-2 font-medium">Sinistro</th>
+                  <th className="text-left px-3 py-2 font-medium">Segurado</th>
+                  <th className="text-left px-3 py-2 font-medium">Status</th>
+                  <th className="text-left px-3 py-2 font-medium">Valor</th>
+                  <th className="text-left px-3 py-2 font-medium">Agente</th>
+                  <th className="text-left px-3 py-2 font-medium">Data</th>
+                  <th className="text-left px-3 py-2 font-medium w-12"></th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredCases.map((case_) => (
+                  <tr key={case_.id} className="border-b border-border/20 hover:bg-muted/30 transition-colors">
+                    <td className="px-3 py-2">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm">{getTypeIcon(case_.type)}</span>
+                        <span className="text-xs font-medium text-muted-foreground">{case_.type}</span>
+                      </div>
+                    </td>
+                    <td className="px-3 py-2 font-mono text-xs text-muted-foreground">{case_.claimNumber}</td>
+                    <td className="px-3 py-2 text-sm">{case_.insuredName}</td>
+                    <td className="px-3 py-2">
+                      <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${getStatusColor(case_.status)}`}>
+                        {getStatusText(case_.status)}
+                      </span>
+                    </td>
+                    <td className="px-3 py-2 text-sm font-medium">{formatCurrency(case_.estimatedAmount)}</td>
+                    <td className="px-3 py-2 text-xs text-muted-foreground">{case_.agent}</td>
+                    <td className="px-3 py-2 text-xs text-muted-foreground">{formatDate(case_.processedAt)}</td>
+                    <td className="px-3 py-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          if (case_.type === 'APE' || case_.type === 'BAG') {
+                            navigate('/ape-bag-analyst');
+                          } else if (case_.type === 'Auto') {
+                            navigate('/claims-dashboard');
+                          } else {
+                            navigate('/live', { state: { caseId: case_.id } });
+                          }
+                        }}
+                        className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
+                      >
+                        <Eye className="h-3 w-3" />
+                      </Button>
+                    </td>
                   </tr>
-                </thead>
-                <tbody>
-                  {filteredCases.map((case_) => (
-                    <tr key={case_.id} className="border-b hover:bg-muted/50">
-                      <td className="p-3">
-                        <div className="flex items-center gap-2">
-                          <span className="text-base">{getTypeIcon(case_.type)}</span>
-                          <span className="text-sm font-medium">{case_.type}</span>
-                        </div>
-                      </td>
-                      <td className="p-3 font-mono text-sm">{case_.claimNumber}</td>
-                      <td className="p-3 text-sm">{case_.insuredName}</td>
-                      <td className="p-3">
-                        <Badge variant="outline" className={`text-xs ${getStatusColor(case_.status)}`}>
-                          {getStatusText(case_.status)}
-                        </Badge>
-                      </td>
-                      <td className="p-3 text-sm font-medium">{formatCurrency(case_.estimatedAmount)}</td>
-                      <td className="p-3 text-sm text-muted-foreground">{case_.agent}</td>
-                      <td className="p-3 text-xs text-muted-foreground">{formatDate(case_.processedAt)}</td>
-                      <td className="p-3">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => {
-                            if (case_.type === 'APE' || case_.type === 'BAG') {
-                              navigate('/ape-bag-analyst');
-                            } else if (case_.type === 'Auto') {
-                              navigate('/claims-dashboard');
-                            } else {
-                              navigate('/live', { state: { caseId: case_.id } });
-                            }
-                          }}
-                          className="gap-1"
-                        >
-                          <Eye className="h-3 w-3" />
-                        </Button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-              
-              {filteredCases.length === 0 && (
-                <div className="text-center py-8 text-muted-foreground">
-                  <p>Nenhum caso encontrado com os filtros aplicados.</p>
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+                ))}
+              </tbody>
+            </table>
+            
+            {filteredCases.length === 0 && (
+              <div className="text-center py-8 text-muted-foreground text-sm">
+                <p>Nenhum caso encontrado</p>
+              </div>
+            )}
+          </div>
+        </div>
 
         {/* Real-time Info */}
-        <Card className="mt-6 bg-blue-50 border-blue-200">
-          <CardContent className="p-4">
-            <div className="flex items-start gap-3">
-              <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 animate-pulse"></div>
-              <div>
-                <h4 className="font-medium text-blue-900 mb-1">Atualização em Tempo Real</h4>
-                <p className="text-sm text-blue-800">
-                  Esta tabela é atualizada automaticamente. 
-                  Novos casos e mudanças de status aparecem em tempo real.
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="mt-4 p-3 border border-border/40 rounded-lg bg-muted/10">
+          <div className="flex items-center gap-2">
+            <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></div>
+            <p className="text-xs text-muted-foreground">
+              Atualização automática ativa
+            </p>
+          </div>
+        </div>
       </main>
     </div>
   );
