@@ -76,6 +76,15 @@ const AgentsSection = () => {
       description: 'Tabela em tempo real via SSE/WS',
       route: '/spreadsheets',
       color: 'gradient-underwriting'
+    },
+    {
+      id: 'ape-bag-analyst',
+      name: 'Analista APE + BAG',
+      icon: <FileText className="h-5 w-5" />,
+      description: 'Análise especializada de sinistros APE + BAG',
+      route: '/ape-bag-analyst',
+      badge: 'OpenAI',
+      color: 'gradient-claims'
     }
   ];
 

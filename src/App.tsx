@@ -29,6 +29,7 @@ import AgentDetail from "./pages/AgentDetail";
 import ConversationClaimsProcessor from "./pages/ConversationClaimsProcessor";
 import UnderwritingIntake from "./pages/UnderwritingIntake";
 import Integrations from "./pages/Integrations";
+import ApeBagAnalyst from "./pages/ApeBagAnalyst";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -64,6 +65,7 @@ const App = () => (
           <Route path="/conversation/claims-processor" element={<ConversationClaimsProcessor />} />
           <Route path="/underwriting/intake" element={<UnderwritingIntake />} />
           <Route path="/integrations" element={<Integrations />} />
+          <Route path="/ape-bag-analyst" element={<ApeBagAnalyst />} />
           <Route path="/connectors" element={<ConnectorsConfig />} />
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="*" element={<NotFound />} />
