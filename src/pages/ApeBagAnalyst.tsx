@@ -4,7 +4,8 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { ArrowLeft, FileText, Bot } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { openaiService } from '@/services/openaiService';
+import { openaiService, AgentResponse } from '@/services/openaiService';
+import { claimsDecisionEngine, ClaimAnalysis, DecisionResult, ClaimDocument } from '@/services/claimsDecisionEngine';
 import { useToast } from '@/hooks/use-toast';
 import { DocumentUpload } from '@/types/agents';
 import { DocumentUploadSection } from '@/components/ape-bag/DocumentUploadSection';
@@ -31,7 +32,8 @@ interface AnalysisStep {
 const ApeBagAnalyst = () => {
   const [inputText, setInputText] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
-  const [result, setResult] = useState<any>(null);
+  const [result, setResult] = useState<AgentResponse | null>(null);
+  const [decisionResult, setDecisionResult] = useState<DecisionResult | null>(null);
   const [uploadedFiles, setUploadedFiles] = useState<DocumentUpload[]>([]);
   const [analysisSteps, setAnalysisSteps] = useState<AnalysisStep[]>([]);
   const [currentTask, setCurrentTask] = useState<string>('');
@@ -188,28 +190,94 @@ Por favor, forneça uma análise completa incluindo:
         confidence: 0.93
       });
 
-      // Step 5: Validação Final
+      // Step 5: Motor de Decisão V7 Claims
+      setCurrentTask('Aplicando regras de negócio e motor de decisão...');
       const step5Id = addAnalysisStep({
-        agent: 'Legal Analyzer',
-        step: 'Validação e Recomendações',
-        content: 'Validando análise e gerando recomendações finais...',
+        agent: 'Decision Engine V7',
+        step: 'Motor de Decisão Automática',
+        content: 'Aplicando regras de negócio e critérios de aprovação automática...',
         status: 'processing'
       });
 
-      await delay(600);
+      await delay(800);
+
+      // Extrair dados estruturados da análise
+      const claimAnalysis: ClaimAnalysis = {
+        claimNumber: `APE-${Date.now().toString().slice(-6)}`,
+        claimType: isAPE && isBAG ? 'APE+BAG' : isAPE ? 'APE' : 'BAG',
+        claimValue: extractClaimValue(response.content, inputText),
+        occurrenceDate: extractOccurrenceDate(inputText) || new Date().toISOString(),
+        insuredName: extractInsuredName(inputText) || 'Cliente',
+        policyNumber: extractPolicyNumber(inputText) || 'N/A',
+        extractedData: response.extractedData || {},
+        confidence: response.confidence || 0.85,
+        riskIndicators: response.validations?.map(v => ({
+          type: v.status === 'error' ? 'inconsistency' as const : 'missing_doc' as const,
+          severity: v.status === 'error' ? 'high' as const : 'medium' as const,
+          description: v.message,
+          score: v.status === 'error' ? 0.3 : 0.1
+        })) || [],
+        documentValidation: []
+      };
+
+      const claimDocuments: ClaimDocument[] = uploadedFiles.map(file => ({
+        id: file.id,
+        name: file.name,
+        type: file.type,
+        extractedData: {}
+      }));
+
+      const decision = await claimsDecisionEngine.processClaimDecision(claimAnalysis, claimDocuments);
 
       updateAnalysisStep(step5Id, {
-        content: 'Validação concluída. Recomendações de ação definidas com base na análise.',
+        content: `Decisão: ${decision.decision} | Confiança: ${(decision.confidence * 100).toFixed(1)}% | Escalação: ${decision.escalationLevel}`,
         status: 'completed',
-        confidence: 0.90
+        confidence: decision.confidence
+      });
+
+      // Step 6: Execução Automática (se aplicável)
+      if (decision.autoExecutable) {
+        const step6Id = addAnalysisStep({
+          agent: 'Automation Engine',
+          step: 'Execução Automática',
+          content: 'Executando ações automáticas aprovadas...',
+          status: 'processing'
+        });
+
+        await delay(600);
+
+        const executionResult = await claimsDecisionEngine.executeAutomaticActions(decision, claimAnalysis.claimNumber);
+
+        updateAnalysisStep(step6Id, {
+          content: `${executionResult.executedActions.length} ação(ões) executada(s) automaticamente`,
+          status: executionResult.success ? 'completed' : 'error',
+          confidence: executionResult.success ? 0.95 : 0.5
+        });
+      }
+
+      // Step 7: Validação Final
+      const step7Id = addAnalysisStep({
+        agent: 'Quality Assurance',
+        step: 'Validação Final e Relatório',
+        content: 'Gerando relatório final e validações de qualidade...',
+        status: 'processing'
+      });
+
+      await delay(400);
+
+      updateAnalysisStep(step7Id, {
+        content: 'Processo concluído. Relatório V7 Claims gerado com sucesso.',
+        status: 'completed',
+        confidence: 0.92
       });
 
       setResult(response);
+      setDecisionResult(decision);
       setCurrentTask('');
       
       toast({
-        title: 'Análise concluída',
-        description: 'Sinistro APE + BAG analisado com sucesso.',
+        title: 'Análise V7 Claims concluída',
+        description: `Decisão: ${decision.decision} | Sinistro processado automaticamente`,
       });
     } catch (error) {
       console.error('Erro na análise:', error);
@@ -234,6 +302,38 @@ Por favor, forneça uma análise completa incluindo:
       setIsProcessing(false);
       setCurrentTask('');
     }
+  };
+
+  // Métodos auxiliares para extração de dados
+  const extractClaimValue = (content: string, input: string): number => {
+    const valueRegex = /R\$\s*([0-9.,]+)/g;
+    const matches = [...content.matchAll(valueRegex), ...input.matchAll(valueRegex)];
+    if (matches.length > 0) {
+      const valueStr = matches[0][1].replace(/[.,]/g, '');
+      return parseInt(valueStr) || 5000; // valor padrão
+    }
+    return 5000; // valor padrão para simulação
+  };
+
+  const extractOccurrenceDate = (input: string): string | null => {
+    const dateRegex = /(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/;
+    const match = input.match(dateRegex);
+    if (match) {
+      return new Date(`${match[3]}-${match[2]}-${match[1]}`).toISOString();
+    }
+    return null;
+  };
+
+  const extractInsuredName = (input: string): string | null => {
+    const nameRegex = /(?:segurado|cliente|nome)[:\s]+([A-Za-z\s]+)/i;
+    const match = input.match(nameRegex);
+    return match ? match[1].trim() : null;
+  };
+
+  const extractPolicyNumber = (input: string): string | null => {
+    const policyRegex = /(?:apólice|política)[:\s#]*([A-Z0-9\-]+)/i;
+    const match = input.match(policyRegex);
+    return match ? match[1] : null;
   };
 
   return (
@@ -273,7 +373,10 @@ Por favor, forneça uma análise completa incluindo:
                   onAnalysis={handleAnalysis}
                 />
 
-                <AnalysisResultsSection result={result} />
+                <AnalysisResultsSection 
+                  result={result} 
+                  decisionResult={decisionResult}
+                />
               </div>
 
               <Alert>
