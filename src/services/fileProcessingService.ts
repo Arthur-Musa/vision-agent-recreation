@@ -120,40 +120,97 @@ class FileProcessingService {
   private extractInsuranceFields(text: string): Record<string, any> {
     const fields: Record<string, any> = {};
     
-    // CPF extraction
+    // Dados Pessoais
     const cpfMatch = text.match(/\b\d{3}\.?\d{3}\.?\d{3}-?\d{2}\b/);
     if (cpfMatch) fields.cpf = cpfMatch[0];
     
-    // CNPJ extraction
     const cnpjMatch = text.match(/\b\d{2}\.?\d{3}\.?\d{3}\/?\d{4}-?\d{2}\b/);
     if (cnpjMatch) fields.cnpj = cnpjMatch[0];
     
-    // Policy number extraction
-    const policyMatch = text.match(/(?:apólice|política|policy)[:\s#]*([A-Z0-9\-]+)/i);
-    if (policyMatch) fields.policyNumber = policyMatch[1];
-    
-    // Name extraction
-    const nameMatch = text.match(/(?:segurado|cliente|nome)[:\s]+([A-ZÀ-ÿ\s]+)/i);
+    const nameMatch = text.match(/(?:segurado|cliente|nome|proponente)[:\s]+([A-ZÀ-ÿ\s]{2,50})/i);
     if (nameMatch) fields.insuredName = nameMatch[1].trim();
     
-    // Value extraction
-    const valueMatch = text.match(/R\$\s*([0-9.,]+)/);
-    if (valueMatch) {
-      const valueStr = valueMatch[1].replace(/[.,]/g, '');
-      fields.claimValue = parseInt(valueStr) || 0;
+    const emailMatch = text.match(/[\w\.-]+@[\w\.-]+\.\w+/);
+    if (emailMatch) fields.email = emailMatch[0];
+    
+    const phoneMatch = text.match(/\(?(\d{2})\)?\s?(\d{4,5})-?(\d{4})/);
+    if (phoneMatch) fields.telefone = phoneMatch[0];
+    
+    const addressMatch = text.match(/(?:endereço|rua|av\.|avenida)[:\s]+([^,\n]{5,100})/i);
+    if (addressMatch) fields.endereco = addressMatch[1].trim();
+    
+    const birthMatch = text.match(/(?:nascimento|nasc\.|data de nascimento)[:\s]*(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/i);
+    if (birthMatch) fields.dataNascimento = `${birthMatch[3]}-${birthMatch[2].padStart(2, '0')}-${birthMatch[1].padStart(2, '0')}`;
+    
+    // Dados da Apólice
+    const policyMatch = text.match(/(?:apólice|política|policy|número)[:\s#]*([A-Z0-9\-]{6,20})/i);
+    if (policyMatch) fields.policyNumber = policyMatch[1];
+    
+    const vigenciaInicioMatch = text.match(/(?:vigência|início|inicio)[:\s]*(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/i);
+    if (vigenciaInicioMatch) fields.vigenciaInicio = `${vigenciaInicioMatch[3]}-${vigenciaInicioMatch[2].padStart(2, '0')}-${vigenciaInicioMatch[1].padStart(2, '0')}`;
+    
+    const vigenciaFimMatch = text.match(/(?:vencimento|fim|término)[:\s]*(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/i);
+    if (vigenciaFimMatch) fields.vigenciaFim = `${vigenciaFimMatch[3]}-${vigenciaFimMatch[2].padStart(2, '0')}-${vigenciaFimMatch[1].padStart(2, '0')}`;
+    
+    // Valores e Coberturas
+    const premiumMatch = text.match(/(?:prêmio|premium|valor do seguro)[:\s]*R\$\s*([0-9.,]+)/i);
+    if (premiumMatch) {
+      const valueStr = premiumMatch[1].replace(/[.,]/g, '');
+      fields.premioTotal = parseInt(valueStr) || 0;
     }
     
-    // Date extraction
-    const dateMatch = text.match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
-    if (dateMatch) {
-      fields.eventDate = `${dateMatch[3]}-${dateMatch[2].padStart(2, '0')}-${dateMatch[1].padStart(2, '0')}`;
+    // Coberturas APE
+    const apeDeathMatch = text.match(/(?:morte acidental|óbito)[:\s]*R\$\s*([0-9.,]+)/i);
+    if (apeDeathMatch) {
+      const valueStr = apeDeathMatch[1].replace(/[.,]/g, '');
+      fields.coberturaObitoAPE = parseInt(valueStr) || 0;
     }
     
-    // Claim type detection
-    if (text.toLowerCase().includes('acidente')) fields.claimType = 'APE';
-    if (text.toLowerCase().includes('bagagem')) fields.claimType = 'BAG';
+    const apeDisabilityMatch = text.match(/(?:invalidez|incapacidade)[:\s]*R\$\s*([0-9.,]+)/i);
+    if (apeDisabilityMatch) {
+      const valueStr = apeDisabilityMatch[1].replace(/[.,]/g, '');
+      fields.coberturaInvalidezAPE = parseInt(valueStr) || 0;
+    }
+    
+    const medicalMatch = text.match(/(?:despesas médicas|médico)[:\s]*R\$\s*([0-9.,]+)/i);
+    if (medicalMatch) {
+      const valueStr = medicalMatch[1].replace(/[.,]/g, '');
+      fields.coberturaDespesasMedicas = parseInt(valueStr) || 0;
+    }
+    
+    const incomeMatch = text.match(/(?:perda de renda|renda|diária)[:\s]*R\$\s*([0-9.,]+)/i);
+    if (incomeMatch) {
+      const valueStr = incomeMatch[1].replace(/[.,]/g, '');
+      fields.coberturaPerdaRenda = parseInt(valueStr) || 0;
+    }
+    
+    // Coberturas BAG
+    const bagMatch = text.match(/(?:bagagem|pertences)[:\s]*R\$\s*([0-9.,]+)/i);
+    if (bagMatch) {
+      const valueStr = bagMatch[1].replace(/[.,]/g, '');
+      fields.coberturaBagagem = parseInt(valueStr) || 0;
+    }
+    
+    // Beneficiários
+    const beneficiaryMatch = text.match(/(?:beneficiário|beneficiária)[:\s]+([A-ZÀ-ÿ\s]{2,50})/i);
+    if (beneficiaryMatch) fields.beneficiario = beneficiaryMatch[1].trim();
+    
+    // Tipo de Sinistro/Seguro
+    if (text.toLowerCase().includes('acidente') || text.toLowerCase().includes('ape')) fields.claimType = 'APE';
+    if (text.toLowerCase().includes('bagagem') || text.toLowerCase().includes('bag')) fields.claimType = 'BAG';  
     if (text.toLowerCase().includes('auto')) fields.claimType = 'AUTO';
     if (text.toLowerCase().includes('residencial')) fields.claimType = 'RESIDENCIAL';
+    if (text.toLowerCase().includes('viagem')) fields.claimType = 'VIAGEM';
+    
+    // Informações Adicionais
+    const professionMatch = text.match(/(?:profissão|ocupação)[:\s]+([A-ZÀ-ÿ\s]{2,30})/i);
+    if (professionMatch) fields.profissao = professionMatch[1].trim();
+    
+    const sexMatch = text.match(/(?:sexo|gênero)[:\s]+(masculino|feminino|m|f)/i);
+    if (sexMatch) fields.sexo = sexMatch[1].toLowerCase() === 'm' || sexMatch[1].toLowerCase() === 'masculino' ? 'M' : 'F';
+    
+    const civilStatusMatch = text.match(/(?:estado civil)[:\s]+(solteiro|casado|divorciado|viúvo)/i);
+    if (civilStatusMatch) fields.estadoCivil = civilStatusMatch[1];
     
     return fields;
   }
