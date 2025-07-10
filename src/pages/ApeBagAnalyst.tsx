@@ -12,6 +12,8 @@ import { DocumentUploadSection } from '@/components/ape-bag/DocumentUploadSectio
 import { AnalysisInputSection } from '@/components/ape-bag/AnalysisInputSection';
 import { AnalysisResultsSection } from '@/components/ape-bag/AnalysisResultsSection';
 import { LiveAnalysisPanel } from '@/components/live-analysis/LiveAnalysisPanel';
+import { InteractiveAnalysisChat } from '@/components/claims/InteractiveAnalysisChat';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface AnalysisStep {
   id: string;
@@ -389,19 +391,44 @@ Por favor, forneça uma análise completa incluindo:
 
             <div className="xl:col-span-1">
               <div className="sticky top-4">
-                <div className="h-[600px] border rounded-lg bg-card">
-                  <LiveAnalysisPanel
-                    isActive={isProcessing || analysisSteps.length > 0}
-                    currentTask={currentTask}
-                    steps={analysisSteps}
-                    onCitationClick={(source) => {
-                      toast({
-                        title: 'Citação',
-                        description: `Documento: ${source.document} - Página ${source.page}`,
-                      });
-                    }}
-                  />
-                </div>
+                <Tabs defaultValue="live-view" className="h-[600px]">
+                  <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger value="live-view">Live View</TabsTrigger>
+                    <TabsTrigger value="chat">Chat IA</TabsTrigger>
+                  </TabsList>
+                  
+                  <TabsContent value="live-view" className="h-[550px] border rounded-lg bg-card mt-2">
+                    <LiveAnalysisPanel
+                      isActive={isProcessing || analysisSteps.length > 0}
+                      currentTask={currentTask}
+                      steps={analysisSteps}
+                      onCitationClick={(source) => {
+                        toast({
+                          title: 'Citação',
+                          description: `Documento: ${source.document} - Página ${source.page}`,
+                        });
+                      }}
+                    />
+                  </TabsContent>
+                  
+                  <TabsContent value="chat" className="h-[550px] border rounded-lg bg-card mt-2">
+                    <InteractiveAnalysisChat
+                      claimId={`APE-${Date.now().toString().slice(-6)}`}
+                      onActionRequested={(action, details) => {
+                        toast({
+                          title: 'Ação Solicitada',
+                          description: `${action}: ${details.description}`,
+                        });
+                      }}
+                      onCitationClick={(citation) => {
+                        toast({
+                          title: 'Citação Selecionada',
+                          description: `${citation.document} - Página ${citation.page}: "${citation.text}"`,
+                        });
+                      }}
+                    />
+                  </TabsContent>
+                </Tabs>
               </div>
             </div>
           </div>
