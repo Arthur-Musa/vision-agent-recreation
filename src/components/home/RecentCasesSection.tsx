@@ -168,61 +168,69 @@ const RecentCasesSection = () => {
     });
   };
 
+  // Mostrar apenas os 5 casos mais recentes para a home
+  const displayedCases = recentCases.slice(0, 5);
+
   return (
     <section aria-label="Recent Cases">
       <Card>
-        <CardHeader>
+        <CardHeader className="pb-4">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-lg font-medium">Casos Recentes</CardTitle>
+            <CardTitle className="text-base font-medium text-muted-foreground">Casos Recentes</CardTitle>
             <Button 
-              variant="outline" 
+              variant="ghost" 
               size="sm"
               onClick={() => navigate('/spreadsheets')}
+              className="text-xs text-muted-foreground hover:text-foreground"
             >
-              Ver todos
+              Ver todos →
             </Button>
           </div>
         </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow className="border-b">
-                <TableHead className="w-[100px]">Tipo</TableHead>
-                <TableHead className="w-[120px]">Nº Sinistro</TableHead>
-                <TableHead>Segurado</TableHead>
-                <TableHead className="w-[100px]">Status</TableHead>
-                <TableHead className="w-[120px]">Valor</TableHead>
-                <TableHead className="w-[120px]">Agente</TableHead>
-                <TableHead className="w-[100px]">Data</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {recentCases.map((case_) => (
-                <TableRow 
-                  key={case_.id}
-                  className="cursor-pointer hover:bg-muted/50 transition-colors"
-                  onClick={() => navigate('/spreadsheets')}
-                >
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <span className="text-base">{getTypeIcon(case_.type)}</span>
-                      <span className="text-sm font-medium">{case_.type}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell className="font-mono text-sm">{case_.claimNumber}</TableCell>
-                  <TableCell className="text-sm">{case_.insuredName}</TableCell>
-                  <TableCell>
-                    <Badge variant="outline" className={`text-xs ${getStatusColor(case_.status)}`}>
-                      {getStatusText(case_.status)}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-sm font-medium">{formatCurrency(case_.estimatedAmount)}</TableCell>
-                  <TableCell className="text-sm text-muted-foreground">{case_.agent}</TableCell>
-                  <TableCell className="text-xs text-muted-foreground">{formatDate(case_.processedAt)}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+        <CardContent className="pt-0">
+          <div className="space-y-2">
+            {displayedCases.map((case_) => (
+              <div 
+                key={case_.id}
+                className="flex items-center justify-between p-3 rounded-lg border hover:bg-muted/50 transition-colors cursor-pointer group"
+                onClick={() => navigate('/spreadsheets')}
+              >
+                <div className="flex items-center gap-3 flex-1">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm">{getTypeIcon(case_.type)}</span>
+                    <span className="text-sm font-mono text-muted-foreground">{case_.claimNumber}</span>
+                  </div>
+                  <span className="text-sm">{case_.insuredName}</span>
+                </div>
+                
+                <div className="flex items-center gap-4">
+                  <Badge 
+                    variant="outline" 
+                    className={`text-xs ${getStatusColor(case_.status)}`}
+                  >
+                    {getStatusText(case_.status)}
+                  </Badge>
+                  <span className="text-sm font-medium">{formatCurrency(case_.estimatedAmount)}</span>
+                  <span className="text-xs text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity">
+                    {formatDate(case_.processedAt)}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+          
+          {recentCases.length > 5 && (
+            <div className="mt-4 pt-4 border-t">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="w-full"
+                onClick={() => navigate('/spreadsheets')}
+              >
+                Ver mais {recentCases.length - 5} casos
+              </Button>
+            </div>
+          )}
         </CardContent>
       </Card>
     </section>
