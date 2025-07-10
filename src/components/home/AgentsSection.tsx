@@ -1,8 +1,8 @@
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { 
   FileText, 
   RefreshCw, 
@@ -100,54 +100,75 @@ const AgentsSection = () => {
     }
   ];
 
+  const handleAgentSelect = (value: string) => {
+    const agent = agents.find(a => a.id === value);
+    if (agent) {
+      navigate(agent.route);
+    }
+  };
+
+  const handleAssistantSelect = (value: string) => {
+    const assistant = openaiAssistants.find(a => a.id === value);
+    if (assistant) {
+      navigate('/upload');
+    }
+  };
+
   return (
     <>
       {/* Seção de Agents Pré-construídos */}
       <section className="mb-8" aria-label="Agents">
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-4 mb-6">
           <h2 className="text-2xl font-semibold">Agents Especializados</h2>
-          <Button 
-            variant="outline" 
-            onClick={() => navigate('/spreadsheets')}
-          >
-            Ver todos
-          </Button>
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
-          {agents.map((agent) => (
-            <Card 
-              key={agent.id}
-              className="agent-card cursor-pointer hover:scale-105 transition-all duration-200"
-              onClick={() => navigate(agent.route)}
-            >
-              <CardContent className="p-4">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className={`p-3 rounded-lg ${agent.color} text-foreground/80`}>
+          <Select onValueChange={handleAgentSelect}>
+            <SelectTrigger className="w-80">
+              <SelectValue placeholder="Selecione um agent..." />
+            </SelectTrigger>
+            <SelectContent>
+              {agents.map((agent) => (
+                <SelectItem key={agent.id} value={agent.id}>
+                  <div className="flex items-center gap-2">
                     {agent.icon}
+                    <span>{agent.name}</span>
+                    {agent.badge && (
+                      <Badge variant="secondary" className="text-xs ml-2">
+                        {agent.badge}
+                      </Badge>
+                    )}
                   </div>
-                  {agent.badge && (
-                    <Badge variant="secondary" className="text-xs">
-                      {agent.badge}
-                    </Badge>
-                  )}
-                </div>
-                <h3 className="font-medium mb-1 text-foreground">{agent.name}</h3>
-                <p className="text-sm text-muted-foreground">{agent.description}</p>
-              </CardContent>
-            </Card>
-          ))}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       </section>
 
       {/* Seção de OpenAI Assistants */}
       {openaiAssistants.length > 0 && (
         <section className="mb-12" aria-label="OpenAI Assistants">
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-4 mb-6">
             <div className="flex items-center gap-2">
               <Bot className="h-6 w-6 text-pink-600" />
               <h2 className="text-2xl font-semibold">Seus Assistants OpenAI</h2>
             </div>
+            <Select onValueChange={handleAssistantSelect}>
+              <SelectTrigger className="w-80">
+                <SelectValue placeholder="Selecione um assistant..." />
+              </SelectTrigger>
+              <SelectContent>
+                {openaiAssistants.map((assistant) => (
+                  <SelectItem key={assistant.id} value={assistant.id}>
+                    <div className="flex items-center gap-2">
+                      <Bot className="h-4 w-4 text-pink-600" />
+                      <span>{assistant.name}</span>
+                      <Badge variant="outline" className="text-xs bg-pink-50 text-pink-700 border-pink-200 ml-2">
+                        OpenAI
+                      </Badge>
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             <Button 
               variant="outline" 
               onClick={() => navigate('/settings')}
@@ -156,46 +177,6 @@ const AgentsSection = () => {
               <Settings className="h-4 w-4" />
               Gerenciar
             </Button>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {openaiAssistants.map((assistant) => (
-              <Card 
-                key={assistant.id}
-                className="cursor-pointer hover:scale-105 transition-all duration-200 border-pink-200 hover:border-pink-300"
-                onClick={() => navigate('/upload')}
-              >
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="p-3 rounded-lg bg-gradient-to-br from-pink-100 to-pink-200 text-pink-700">
-                      <Bot className="h-5 w-5" />
-                    </div>
-                    <Badge variant="outline" className="text-xs bg-pink-50 text-pink-700 border-pink-200">
-                      OpenAI
-                    </Badge>
-                  </div>
-                  <h3 className="font-medium mb-1 text-foreground">{assistant.name}</h3>
-                  <p className="text-sm text-muted-foreground mb-2">
-                    {assistant.description || 'Assistant personalizado da OpenAI'}
-                  </p>
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <span>ID: {assistant.assistantId.slice(0, 12)}...</span>
-                    {assistant.knowledgeFiles > 0 && (
-                      <>
-                        <span>•</span>
-                        <span>{assistant.knowledgeFiles} arquivos</span>
-                      </>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-          
-          <div className="mt-4 p-4 bg-muted/50 rounded-lg border border-dashed">
-            <p className="text-sm text-muted-foreground text-center">
-              💡 <strong>Para usar seus assistants:</strong> Vá para Upload de Documentos ou Teste de Agentes
-            </p>
           </div>
         </section>
       )}
