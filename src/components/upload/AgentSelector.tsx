@@ -8,8 +8,9 @@ import { InsuranceAgent, DocumentUpload } from "@/types/agents";
 import { insuranceAgents } from "@/data/insuranceAgents";
 import { CategoryFilter } from "@/components/CategoryFilter";
 import { AgentCategory } from "@/types/agents";
-import { Search, Clock, CheckCircle } from "lucide-react";
+import { Search, Clock, CheckCircle, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { AgentDropdown } from "@/components/agents/AgentDropdown";
 
 interface AgentSelectorProps {
   files: DocumentUpload[];
@@ -72,23 +73,35 @@ export const AgentSelector = ({ files, onAgentSelected, onBack }: AgentSelectorP
         </p>
       </div>
 
-      {/* Search and Filters */}
+      {/* Agent Dropdown */}
       <div className="space-y-4">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            type="text"
-            placeholder={t(texts.searchPlaceholder)}
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-foreground">Selecionar Agente</label>
+          <AgentDropdown
+            value={selectedAgent?.id}
+            onValueChange={(agentId, agent) => setSelectedAgent(agent as InsuranceAgent)}
+            placeholder="Escolha um agente para analisar seus documentos..."
+            className="w-full"
           />
         </div>
         
-        <CategoryFilter 
-          selectedCategory={selectedCategory}
-          onCategoryChange={setSelectedCategory}
-        />
+        <div className="flex items-center gap-4">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              type="text"
+              placeholder={t(texts.searchPlaceholder)}
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+          
+          <CategoryFilter 
+            selectedCategory={selectedCategory}
+            onCategoryChange={setSelectedCategory}
+          />
+        </div>
       </div>
 
       {/* Agent Grid */}

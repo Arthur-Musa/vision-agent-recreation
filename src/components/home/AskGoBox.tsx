@@ -87,6 +87,15 @@ const AskGoBox = ({ userName, getTimeGreeting }: AskGoBoxProps) => {
                 <Button 
                   variant="ghost" 
                   size="sm"
+                  onClick={() => navigate('/agent-builder')}
+                  className="gap-2"
+                >
+                  <Plus className="h-4 w-4" />
+                  Criar Agente
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  size="sm"
                   onClick={() => navigate('/claims')}
                   className="gap-2"
                 >

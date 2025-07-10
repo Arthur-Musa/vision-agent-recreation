@@ -20,6 +20,7 @@ import FraudDashboard from "./pages/FraudDashboard";
 import SmartSpreadsheet from "./pages/SmartSpreadsheet";
 import ConnectorsConfig from "./pages/ConnectorsConfig";
 import SettingsPage from "./pages/SettingsPage";
+import AgentBuilder from "./pages/AgentBuilder";
 import AutomatedClaimsProcessing from "./pages/AutomatedClaimsProcessing";
 import ClaimsMetricsDashboard from "./pages/ClaimsMetricsDashboard";
 import ConversationAnalysis from "./pages/ConversationAnalysis";
@@ -68,6 +69,7 @@ const App = () => (
           <Route path="/ape-bag-analyst" element={<ApeBagAnalyst />} />
           <Route path="/connectors" element={<ConnectorsConfig />} />
           <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/agent-builder" element={<AgentBuilder />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
