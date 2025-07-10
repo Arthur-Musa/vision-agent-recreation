@@ -1,0 +1,158 @@
+import { useState } from "react";
+import { NavLink, useLocation } from "react-router-dom";
+import {
+  Home,
+  Bot,
+  FileText,
+  BookOpen,
+  Users,
+  Search,
+  Clock,
+  Settings,
+  Plus,
+  BarChart3,
+  Shield,
+  Briefcase
+} from "lucide-react";
+
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarTrigger,
+  useSidebar,
+} from "@/components/ui/sidebar";
+
+const navigationItems = [
+  { title: "Home", url: "/", icon: Home },
+  { title: "New agent", url: "/agent-builder", icon: Bot },
+  { title: "New case", url: "/upload", icon: Plus },
+];
+
+const toolsItems = [
+  { title: "Knowledge Hub", url: "/knowledge", icon: BookOpen },
+  { title: "Invite users", url: "/invite", icon: Users },
+  { title: "Search agents", url: "/ai-agents", icon: Search },
+];
+
+const recentCases = [
+  { title: "Claims Analytics Dashboard", url: "/spreadsheets", icon: BarChart3 },
+  { title: "Fraud Detection Analysis", url: "/fraud", icon: Shield },
+  { title: "APE + BAG Analysis", url: "/ape-bag-analyst", icon: FileText },
+  { title: "Underwriting Review", url: "/underwriting", icon: Briefcase },
+  { title: "Policy Renewal Cases", url: "/renewal", icon: Clock },
+];
+
+const agentItems = [
+  { title: "Aura", url: "/claims-processing", icon: Bot, color: "text-purple-600" },
+  { title: "Fraud Detector", url: "/fraud", icon: Shield, color: "text-blue-600" },
+  { title: "Claims Processor", url: "/claims-processing", icon: FileText, color: "text-green-600" },
+];
+
+export function AppSidebar() {
+  const { state } = useSidebar();
+  const location = useLocation();
+  const currentPath = location.pathname;
+  const collapsed = state === "collapsed";
+
+  const isActive = (path: string) => currentPath === path;
+  const getNavCls = ({ isActive }: { isActive: boolean }) =>
+    isActive 
+      ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium" 
+      : "hover:bg-sidebar-accent/50 text-sidebar-foreground";
+
+  return (
+    <Sidebar className={collapsed ? "w-14" : "w-64"} collapsible="icon">
+      <SidebarContent className="bg-sidebar">
+        {/* Main Navigation */}
+        <SidebarGroup>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {navigationItems.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton asChild>
+                    <NavLink to={item.url} end className={getNavCls}>
+                      <item.icon className="h-4 w-4" />
+                      {!collapsed && <span className="ml-2">{item.title}</span>}
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        {/* Tools Section */}
+        <SidebarGroup>
+          <SidebarGroupLabel className={collapsed ? "sr-only" : ""}>
+            Tools
+          </SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {toolsItems.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton asChild>
+                    <NavLink to={item.url} className={getNavCls}>
+                      <item.icon className="h-4 w-4" />
+                      {!collapsed && <span className="ml-2">{item.title}</span>}
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        {/* Recent Cases */}
+        <SidebarGroup>
+          <SidebarGroupLabel className={collapsed ? "sr-only" : ""}>
+            Recent cases
+          </SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {recentCases.map((case_) => (
+                <SidebarMenuItem key={case_.title}>
+                  <SidebarMenuButton asChild>
+                    <NavLink to={case_.url} className={getNavCls}>
+                      <case_.icon className="h-4 w-4" />
+                      {!collapsed && <span className="ml-2 truncate">{case_.title}</span>}
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        {/* All Agents */}
+        <SidebarGroup>
+          <SidebarGroupLabel className={collapsed ? "sr-only" : ""}>
+            All agents
+          </SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {agentItems.map((agent) => (
+                <SidebarMenuItem key={agent.title}>
+                  <SidebarMenuButton asChild>
+                    <NavLink to={agent.url} className={getNavCls}>
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                        <agent.icon className={`h-4 w-4 ${agent.color}`} />
+                      </div>
+                      {!collapsed && <span className="ml-2">{agent.title}</span>}
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+      </SidebarContent>
+    </Sidebar>
+  );
+}

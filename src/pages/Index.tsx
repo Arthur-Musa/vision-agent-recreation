@@ -1,5 +1,4 @@
 import { useState } from "react";
-import Header from "@/components/home/Header";
 import AskGoBox from "@/components/home/AskGoBox";
 import AgentCards from "@/components/home/AgentCards";
 import RecentCasesSection from "@/components/home/RecentCasesSection";
@@ -16,13 +15,11 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
-      
-      <main className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-8">
         <AskGoBox userName={userName} getTimeGreeting={getTimeGreeting} />
         <AgentCards />
         <RecentCasesSection />
-      </main>
+      </div>
     </div>
   );
 };
