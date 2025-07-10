@@ -14,6 +14,8 @@ import { AnalysisResultsSection } from '@/components/ape-bag/AnalysisResultsSect
 import { LiveAnalysisPanel } from '@/components/live-analysis/LiveAnalysisPanel';
 import { InteractiveAnalysisChat } from '@/components/claims/InteractiveAnalysisChat';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { fileProcessingService, ExtractedFileData } from '@/services/fileProcessingService';
+import { localStorageService, ProcessedClaim } from '@/services/localStorageService';
 
 interface AnalysisStep {
   id: string;
@@ -37,17 +39,36 @@ const ApeBagAnalyst = () => {
   const [result, setResult] = useState<AgentResponse | null>(null);
   const [decisionResult, setDecisionResult] = useState<DecisionResult | null>(null);
   const [uploadedFiles, setUploadedFiles] = useState<DocumentUpload[]>([]);
+  const [processedFileData, setProcessedFileData] = useState<ExtractedFileData[]>([]);
   const [analysisSteps, setAnalysisSteps] = useState<AnalysisStep[]>([]);
   const [currentTask, setCurrentTask] = useState<string>('');
+  const [currentClaimId, setCurrentClaimId] = useState<string>('');
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const handleFilesAdded = (files: DocumentUpload[]) => {
+  const handleFilesAdded = async (files: DocumentUpload[]) => {
     setUploadedFiles(prev => [...prev, ...files]);
-    toast({
-      title: 'Arquivos carregados',
-      description: `${files.length} arquivo(s) adicionado(s) para análise.`,
-    });
+    
+    // Process files immediately
+    setCurrentTask('Processando arquivos...');
+    try {
+      const fileObjects = files.map(f => f.file).filter(Boolean) as File[];
+      const processedData = await fileProcessingService.processBatch(fileObjects);
+      setProcessedFileData(prev => [...prev, ...processedData]);
+      
+      toast({
+        title: 'Arquivos processados',
+        description: `${files.length} arquivo(s) analisado(s) e dados extraídos com sucesso.`,
+      });
+    } catch (error) {
+      toast({
+        title: 'Erro no processamento',
+        description: 'Alguns arquivos não puderam ser processados completamente.',
+        variant: 'destructive'
+      });
+    } finally {
+      setCurrentTask('');
+    }
   };
 
   const addAnalysisStep = (step: Omit<AnalysisStep, 'id' | 'timestamp'>) => {
@@ -77,6 +98,10 @@ const ApeBagAnalyst = () => {
       });
       return;
     }
+
+    // Generate unique claim ID
+    const claimId = `APE-${Date.now().toString().slice(-6)}`;
+    setCurrentClaimId(claimId);
 
     setIsProcessing(true);
     setAnalysisSteps([]);
@@ -117,23 +142,32 @@ const ApeBagAnalyst = () => {
 
       await delay(1200);
 
+      // Use real processed file data
       let documentText = '';
       let documentSources = [];
-      if (uploadedFiles.length > 0) {
-        documentText = `\n\nDocumentos anexados:\n${uploadedFiles.map(f => 
-          `- ${f.name} (${f.type}, ${(f.size / 1024 / 1024).toFixed(2)}MB)`
+      let extractedClaimData: Record<string, any> = {};
+      
+      if (processedFileData.length > 0) {
+        documentText = `\n\nDocumentos processados:\n${processedFileData.map(f => 
+          `- ${f.fileName} (${f.fileType}): ${Object.keys(f.extractedFields).length} campos extraídos`
         ).join('\n')}`;
 
-        documentSources = uploadedFiles.map((file, index) => ({
-          document: file.name,
+        // Combine extracted data from all files
+        extractedClaimData = processedFileData.reduce((acc, file) => ({
+          ...acc,
+          ...file.extractedFields
+        }), {});
+
+        documentSources = processedFileData.map((file, index) => ({
+          document: file.fileName,
           page: 1,
           coordinates: [0, 0, 100, 100] as [number, number, number, number],
-          text: `Documento ${file.type} de ${(file.size / 1024 / 1024).toFixed(2)}MB anexado para análise`
+          text: `Dados extraídos: ${Object.entries(file.extractedFields).map(([k,v]) => `${k}: ${v}`).join(', ')}`
         }));
       }
 
       updateAnalysisStep(step2Id, {
-        content: `${uploadedFiles.length} documento(s) processado(s). Estrutura de dados extraída com sucesso.`,
+        content: `${processedFileData.length} documento(s) processado(s). ${Object.keys(extractedClaimData).length} campos extraídos automaticamente.`,
         status: 'completed',
         confidence: 0.88,
         sources: documentSources
@@ -149,8 +183,16 @@ const ApeBagAnalyst = () => {
 
       await delay(1000);
 
-      const isAPE = inputText.toLowerCase().includes('acidente') || inputText.toLowerCase().includes('lesão') || inputText.toLowerCase().includes('médico');
-      const isBAG = inputText.toLowerCase().includes('bagagem') || inputText.toLowerCase().includes('mala') || inputText.toLowerCase().includes('pertence');
+      // Use extracted data for better classification
+      const textToAnalyze = inputText + ' ' + Object.values(extractedClaimData).join(' ');
+      const isAPE = textToAnalyze.toLowerCase().includes('acidente') || 
+                   textToAnalyze.toLowerCase().includes('lesão') || 
+                   textToAnalyze.toLowerCase().includes('médico') ||
+                   extractedClaimData.claimType === 'APE';
+      const isBAG = textToAnalyze.toLowerCase().includes('bagagem') || 
+                   textToAnalyze.toLowerCase().includes('mala') || 
+                   textToAnalyze.toLowerCase().includes('pertence') ||
+                   extractedClaimData.claimType === 'BAG';
       
       updateAnalysisStep(step3Id, {
         content: `Sinistro classificado como: ${isAPE ? 'APE (Acidentes Pessoais)' : ''} ${isBAG ? 'BAG (Bagagem)' : ''} ${!isAPE && !isBAG ? 'Misto/Indefinido' : ''}`,
@@ -203,15 +245,15 @@ Por favor, forneça uma análise completa incluindo:
 
       await delay(800);
 
-      // Extrair dados estruturados da análise
+      // Use extracted data for better analysis
       const claimAnalysis: ClaimAnalysis = {
-        claimNumber: `APE-${Date.now().toString().slice(-6)}`,
+        claimNumber: claimId,
         claimType: isAPE && isBAG ? 'APE+BAG' : isAPE ? 'APE' : 'BAG',
-        claimValue: extractClaimValue(response.content, inputText),
-        occurrenceDate: extractOccurrenceDate(inputText) || new Date().toISOString(),
-        insuredName: extractInsuredName(inputText) || 'Cliente',
-        policyNumber: extractPolicyNumber(inputText) || 'N/A',
-        extractedData: response.extractedData || {},
+        claimValue: extractedClaimData.claimValue || extractClaimValue(response.content, inputText),
+        occurrenceDate: extractedClaimData.eventDate || extractOccurrenceDate(inputText) || new Date().toISOString(),
+        insuredName: extractedClaimData.insuredName || extractInsuredName(inputText) || 'Cliente',
+        policyNumber: extractedClaimData.policyNumber || extractPolicyNumber(inputText) || 'N/A',
+        extractedData: { ...response.extractedData, ...extractedClaimData },
         confidence: response.confidence || 0.85,
         riskIndicators: response.validations?.map(v => ({
           type: v.status === 'error' ? 'inconsistency' as const : 'missing_doc' as const,
@@ -268,18 +310,42 @@ Por favor, forneça uma análise completa incluindo:
       await delay(400);
 
       updateAnalysisStep(step7Id, {
-        content: 'Processo concluído. Relatório V7 Claims gerado com sucesso.',
+        content: 'Processo concluído. Dados salvos no Smart Spreadsheet.',
         status: 'completed',
         confidence: 0.92
       });
+
+      // Save processed claim to localStorage
+      const processedClaim: ProcessedClaim = {
+        id: claimId,
+        type: claimAnalysis.claimType,
+        status: decision.decision === 'APPROVE' ? 'completed' : 
+               decision.decision === 'DENY' ? 'flagged' : 'pending',
+        insuredName: claimAnalysis.insuredName,
+        policyNumber: claimAnalysis.policyNumber,
+        estimatedAmount: claimAnalysis.claimValue,
+        createdAt: new Date().toISOString(),
+        completedAt: decision.decision === 'APPROVE' ? new Date().toISOString() : null,
+        agent: 'APE+BAG Analyst',
+        files: processedFileData.map(f => ({
+          name: f.fileName,
+          type: f.fileType,
+          size: f.fileSize,
+          extractedData: f.extractedFields
+        })),
+        extractedData: claimAnalysis.extractedData,
+        description: inputText
+      };
+
+      localStorageService.saveClaim(processedClaim);
 
       setResult(response);
       setDecisionResult(decision);
       setCurrentTask('');
       
       toast({
-        title: 'Análise V7 Claims concluída',
-        description: `Decisão: ${decision.decision} | Sinistro processado automaticamente`,
+        title: 'Análise concluída e salva',
+        description: `Sinistro ${claimId} processado e adicionado ao Smart Spreadsheet.`,
       });
     } catch (error) {
       console.error('Erro na análise:', error);
@@ -413,7 +479,7 @@ Por favor, forneça uma análise completa incluindo:
                   
                   <TabsContent value="chat" className="h-[550px] border rounded-lg bg-card mt-2">
                     <InteractiveAnalysisChat
-                      claimId={`APE-${Date.now().toString().slice(-6)}`}
+                      claimId={currentClaimId || `APE-${Date.now().toString().slice(-6)}`}
                       onActionRequested={(action, details) => {
                         toast({
                           title: 'Ação Solicitada',
@@ -421,10 +487,19 @@ Por favor, forneça uma análise completa incluindo:
                         });
                       }}
                       onCitationClick={(citation) => {
-                        toast({
-                          title: 'Citação Selecionada',
-                          description: `${citation.document} - Página ${citation.page}: "${citation.text}"`,
-                        });
+                        // Find matching processed file data
+                        const fileData = processedFileData.find(f => f.fileName === citation.document);
+                        if (fileData) {
+                          toast({
+                            title: 'Arquivo Processado',
+                            description: `${citation.document}: ${Object.keys(fileData.extractedFields).length} campos extraídos`,
+                          });
+                        } else {
+                          toast({
+                            title: 'Citação Selecionada',
+                            description: `${citation.document} - Página ${citation.page}`,
+                          });
+                        }
                       }}
                     />
                   </TabsContent>

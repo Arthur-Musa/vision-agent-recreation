@@ -1,63 +1,67 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { ArrowLeft, Download, Filter, Search, RefreshCw } from 'lucide-react';
+import { ArrowLeft, Download, Filter, Search, RefreshCw, Trash2, Eye } from 'lucide-react';
+import { localStorageService } from '@/services/localStorageService';
 
 const SmartSpreadsheet = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [jobs, setJobs] = useState<any[]>([]);
 
-  const jobs = [
-    {
-      id: 'JOB-001',
-      type: 'Claims Processing',
-      status: 'completed',
-      insuredName: 'João Silva',
-      policyNumber: 'AUTO-123456',
-      estimatedAmount: 15750,
-      createdAt: '2024-01-15T10:30:00Z',
-      completedAt: '2024-01-15T11:45:00Z',
-      agent: 'Claims Processor'
-    },
-    {
-      id: 'JOB-002',
-      type: 'Underwriting',
-      status: 'processing',
-      insuredName: 'Maria Santos',
-      policyNumber: 'RES-789012',
-      estimatedAmount: 45000,
-      createdAt: '2024-01-15T09:15:00Z',
-      completedAt: null,
-      agent: 'Underwriting Agent'
-    },
-    {
-      id: 'JOB-003',
-      type: 'Policy Renewal',
-      status: 'pending',
-      insuredName: 'Carlos Oliveira',
-      policyNumber: 'VIDA-345678',
-      estimatedAmount: 100000,
-      createdAt: '2024-01-14T16:45:00Z',
-      completedAt: null,
-      agent: 'Renewal Assistant'
-    },
-    {
-      id: 'JOB-004',
-      type: 'Fraud Detection',
-      status: 'flagged',
-      insuredName: 'Ana Costa',
-      policyNumber: 'AUTO-987654',
-      estimatedAmount: 25000,
-      createdAt: '2024-01-14T14:20:00Z',
-      completedAt: null,
-      agent: 'Fraud Detector'
-    }
-  ];
+  // Load jobs from localStorage on component mount
+  useEffect(() => {
+    const loadJobs = () => {
+      try {
+        const savedJobs = localStorage.getItem('olga_spreadsheet_jobs');
+        if (savedJobs) {
+          setJobs(JSON.parse(savedJobs));
+        } else {
+          // Default demo data if no saved jobs
+          setJobs([
+            {
+              id: 'DEMO-001',
+              type: 'Claims Processing',
+              status: 'completed',
+              insuredName: 'João Silva',
+              policyNumber: 'AUTO-123456',
+              estimatedAmount: 15750,
+              createdAt: '2024-01-15T10:30:00Z',
+              completedAt: '2024-01-15T11:45:00Z',
+              agent: 'Claims Processor'
+            }
+          ]);
+        }
+      } catch (error) {
+        console.error('Error loading jobs:', error);
+        setJobs([]);
+      }
+    };
+
+    loadJobs();
+
+    // Listen for localStorage changes (real-time updates)
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'olga_spreadsheet_jobs') {
+        loadJobs();
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    
+    // Also set up interval to check for updates every 2 seconds
+    const interval = setInterval(loadJobs, 2000);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      clearInterval(interval);
+    };
+  }, []);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -111,8 +115,19 @@ const SmartSpreadsheet = () => {
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
-    // Simulate real-time update
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    // Force reload from localStorage
+    try {
+      const savedJobs = localStorage.getItem('olga_spreadsheet_jobs');
+      if (savedJobs) {
+        setJobs(JSON.parse(savedJobs));
+      }
+    } catch (error) {
+      console.error('Error refreshing jobs:', error);
+    }
+    
+    // Simulate loading time
+    await new Promise(resolve => setTimeout(resolve, 800));
     setIsRefreshing(false);
   };
 
@@ -183,6 +198,21 @@ const SmartSpreadsheet = () => {
               >
                 <Download className="h-4 w-4" />
                 Exportar CSV
+              </Button>
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  if (confirm('Limpar todos os dados do spreadsheet?')) {
+                    localStorageService.clearAllData();
+                    setJobs([]);
+                  }
+                }}
+                className="gap-2 text-destructive hover:text-destructive"
+              >
+                <Trash2 className="h-4 w-4" />
+                Limpar
               </Button>
             </div>
           </div>
@@ -274,13 +304,17 @@ const SmartSpreadsheet = () => {
                             variant="outline"
                             size="sm"
                             onClick={() => {
-                              if (job.type === 'Claims Processing') {
+                              if (job.type.includes('APE') || job.type.includes('BAG')) {
+                                navigate('/ape-bag-analyst');
+                              } else if (job.type === 'Claims Processing') {
                                 navigate(`/claims/${job.id.split('-')[1]}`);
                               } else {
                                 navigate('/live', { state: { jobId: job.id } });
                               }
                             }}
+                            className="gap-1"
                           >
+                            <Eye className="h-3 w-3" />
                             Ver
                           </Button>
                         </div>
