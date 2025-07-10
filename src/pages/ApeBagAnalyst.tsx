@@ -4,23 +4,34 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { ArrowLeft, FileText, Bot, Loader2 } from 'lucide-react';
+import { ArrowLeft, FileText, Bot, Loader2, Upload } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { openaiService } from '@/services/openaiService';
 import { useToast } from '@/hooks/use-toast';
+import { DocumentUploader } from '@/components/upload/DocumentUploader';
+import { DocumentUpload } from '@/types/agents';
 
 const ApeBagAnalyst = () => {
   const [inputText, setInputText] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [result, setResult] = useState<any>(null);
+  const [uploadedFiles, setUploadedFiles] = useState<DocumentUpload[]>([]);
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  const handleFilesAdded = (files: DocumentUpload[]) => {
+    setUploadedFiles(prev => [...prev, ...files]);
+    toast({
+      title: 'Arquivos carregados',
+      description: `${files.length} arquivo(s) adicionado(s) para análise.`,
+    });
+  };
+
   const handleAnalysis = async () => {
-    if (!inputText.trim()) {
+    if (!inputText.trim() && uploadedFiles.length === 0) {
       toast({
-        title: 'Campo obrigatório',
-        description: 'Digite o texto ou descrição do sinistro para análise.',
+        title: 'Dados necessários',
+        description: 'Digite uma descrição ou anexe documentos para análise.',
         variant: 'destructive'
       });
       return;
@@ -36,10 +47,31 @@ const ApeBagAnalyst = () => {
         agent.assistantId
       ) || agents.claimsProcessor;
 
+      // Preparar documentos para análise
+      let documentText = '';
+      if (uploadedFiles.length > 0) {
+        documentText = `\n\nDocumentos anexados:\n${uploadedFiles.map(f => 
+          `- ${f.name} (${f.type}, ${(f.size / 1024 / 1024).toFixed(2)}MB)`
+        ).join('\n')}`;
+      }
+
+      const analysisPrompt = `Analise este sinistro APE (Acidentes Pessoais) e/ou BAG (Bagagem):
+
+DESCRIÇÃO: ${inputText}
+
+DOCUMENTOS: ${uploadedFiles.length} arquivo(s) anexado(s)${documentText}
+
+Por favor, forneça uma análise completa incluindo:
+1. Tipo de sinistro (APE/BAG)
+2. Validação de documentos
+3. Valores e coberturas
+4. Recomendações de aprovação/negativa
+5. Próximos passos necessários`;
+
       const response = await openaiService.processWithAgent(
         apeBagAgent,
-        `Analise este sinistro focando em aspectos APE (Acidentes Pessoais) e BAG (Bagagem): ${inputText}`,
-        inputText
+        analysisPrompt,
+        inputText + documentText
       );
 
       setResult(response);
@@ -80,49 +112,83 @@ const ApeBagAnalyst = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Input Section */}
+        <div className="space-y-6">
+          {/* Upload de Documentos */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Bot className="h-5 w-5" />
-                Descrição do Sinistro
+                <Upload className="h-5 w-5" />
+                Documentos do Sinistro
               </CardTitle>
               <CardDescription>
-                Descreva o sinistro APE (Acidentes Pessoais) ou BAG (Bagagem) para análise especializada
+                Anexe documentos relacionados ao sinistro APE/BAG (laudos, fotos, comprovantes, etc.)
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <Textarea
-                placeholder="Descreva o sinistro: local, data, circunstâncias, danos, valores, documentos disponíveis..."
-                value={inputText}
-                onChange={(e) => setInputText(e.target.value)}
-                rows={8}
-                className="resize-none"
-              />
+            <CardContent>
+              <DocumentUploader onFilesAdded={handleFilesAdded} />
               
-              <Button 
-                onClick={handleAnalysis} 
-                disabled={isProcessing || !inputText.trim()}
-                className="w-full"
-              >
-                {isProcessing ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Analisando...
-                  </>
-                ) : (
-                  <>
-                    <Bot className="h-4 w-4 mr-2" />
-                    Analisar Sinistro
-                  </>
-                )}
-              </Button>
+              {uploadedFiles.length > 0 && (
+                <div className="mt-4">
+                  <h4 className="font-medium mb-2">Arquivos anexados ({uploadedFiles.length}):</h4>
+                  <div className="space-y-2">
+                    {uploadedFiles.map((file, index) => (
+                      <div key={index} className="flex items-center gap-2 p-2 bg-muted rounded-md">
+                        <FileText className="h-4 w-4" />
+                        <span className="text-sm flex-1">{file.name}</span>
+                        <Badge variant="outline" className="text-xs">
+                          {(file.size / 1024 / 1024).toFixed(2)}MB
+                        </Badge>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
 
-          {/* Results Section */}
-          <Card>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Input Section */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Bot className="h-5 w-5" />
+                  Descrição do Sinistro
+                </CardTitle>
+                <CardDescription>
+                  Descreva o sinistro APE (Acidentes Pessoais) ou BAG (Bagagem) para análise especializada
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <Textarea
+                  placeholder="Descreva o sinistro: local, data, circunstâncias, danos, valores, documentos disponíveis..."
+                  value={inputText}
+                  onChange={(e) => setInputText(e.target.value)}
+                  rows={6}
+                  className="resize-none"
+                />
+                
+                <Button 
+                  onClick={handleAnalysis} 
+                  disabled={isProcessing || (!inputText.trim() && uploadedFiles.length === 0)}
+                  className="w-full"
+                >
+                  {isProcessing ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Analisando em tempo real...
+                    </>
+                  ) : (
+                    <>
+                      <Bot className="h-4 w-4 mr-2" />
+                      Analisar Sinistro APE + BAG
+                    </>
+                  )}
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Results Section */}
+            <Card>
             <CardHeader>
               <CardTitle>Resultado da Análise</CardTitle>
               <CardDescription>
@@ -193,14 +259,15 @@ const ApeBagAnalyst = () => {
               )}
             </CardContent>
           </Card>
-        </div>
+          </div>
 
-        <Alert className="mt-6">
-          <Bot className="h-4 w-4" />
-          <AlertDescription>
-            <strong>Dica:</strong> Para melhor precisão, configure um Assistant OpenAI específico para APE+BAG em Configurações → APIs → Assistants OpenAI
-          </AlertDescription>
-        </Alert>
+          <Alert className="mt-6">
+            <Bot className="h-4 w-4" />
+            <AlertDescription>
+              <strong>Dica:</strong> Para melhor precisão, configure um Assistant OpenAI específico para APE+BAG em Configurações → APIs → Assistants OpenAI
+            </AlertDescription>
+          </Alert>
+        </div>
       </div>
     </div>
   );
