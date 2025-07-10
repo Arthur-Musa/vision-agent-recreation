@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { NavLink, useLocation } from "react-router-dom";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
   Home,
   Bot,
@@ -42,21 +42,22 @@ const toolsItems = [
 
 const recentCases = [
   { title: "Claims Analytics Dashboard", url: "/spreadsheets", icon: BarChart3 },
-  { title: "Fraud Detection Analysis", url: "/fraud", icon: Shield },
-  { title: "APE + BAG Analysis", url: "/ape-bag-analyst", icon: FileText },
-  { title: "Underwriting Review", url: "/underwriting", icon: Briefcase },
+  { title: "Fraud Detection Analysis", url: "/live", icon: Shield, agentId: "fraud-detection" },
+  { title: "APE + BAG Analysis", url: "/live", icon: FileText, agentId: "claims-processor" },
+  { title: "Underwriting Review", url: "/live", icon: Briefcase, agentId: "aura" },
   { title: "Policy Renewal Cases", url: "/renewal", icon: Clock },
 ];
 
 const agentItems = [
-  { title: "Aura", url: "/claims-processing", icon: Bot, color: "text-purple-600" },
-  { title: "Fraud Detector", url: "/fraud", icon: Shield, color: "text-blue-600" },
-  { title: "Claims Processor", url: "/claims-processing", icon: FileText, color: "text-green-600" },
+  { title: "Aura", url: "/live", icon: Bot, color: "text-purple-600", agentId: "aura" },
+  { title: "Fraud Detector", url: "/live", icon: Shield, color: "text-blue-600", agentId: "fraud-detection" },
+  { title: "Claims Processor", url: "/live", icon: FileText, color: "text-green-600", agentId: "claims-processor" },
 ];
 
 export function AppSidebar() {
   const { state } = useSidebar();
   const location = useLocation();
+  const navigate = useNavigate();
   const currentPath = location.pathname;
   const collapsed = state === "collapsed";
 
@@ -118,10 +119,28 @@ export function AppSidebar() {
               {recentCases.map((case_) => (
                 <SidebarMenuItem key={case_.title}>
                   <SidebarMenuButton asChild>
-                    <NavLink to={case_.url} className={getNavCls}>
-                      <case_.icon className="h-4 w-4" />
-                      {!collapsed && <span className="ml-2 truncate">{case_.title}</span>}
-                    </NavLink>
+                    {case_.agentId ? (
+                      <div 
+                        className={`${getNavCls({ isActive: isActive(case_.url) })} cursor-pointer`}
+                        onClick={() => {
+                          navigate(case_.url, { 
+                            state: { 
+                              selectedAgent: case_.agentId,
+                              agentName: case_.title.split(' ')[0],
+                              initialQuery: `Analisando ${case_.title}...`
+                            } 
+                          });
+                        }}
+                      >
+                        <case_.icon className="h-4 w-4" />
+                        {!collapsed && <span className="ml-2 truncate">{case_.title}</span>}
+                      </div>
+                    ) : (
+                      <NavLink to={case_.url} className={getNavCls}>
+                        <case_.icon className="h-4 w-4" />
+                        {!collapsed && <span className="ml-2 truncate">{case_.title}</span>}
+                      </NavLink>
+                    )}
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
@@ -139,13 +158,24 @@ export function AppSidebar() {
               {agentItems.map((agent) => (
                 <SidebarMenuItem key={agent.title}>
                   <SidebarMenuButton asChild>
-                    <NavLink to={agent.url} className={getNavCls}>
+                    <div 
+                      className={`${getNavCls({ isActive: isActive(agent.url) })} cursor-pointer`}
+                      onClick={() => {
+                        navigate(agent.url, { 
+                          state: { 
+                            selectedAgent: agent.agentId,
+                            agentName: agent.title,
+                            initialQuery: `Conectando com ${agent.title}...`
+                          } 
+                        });
+                      }}
+                    >
                       <div className="flex items-center gap-2">
                         <div className="w-2 h-2 rounded-full bg-green-500"></div>
                         <agent.icon className={`h-4 w-4 ${agent.color}`} />
                       </div>
                       {!collapsed && <span className="ml-2">{agent.title}</span>}
-                    </NavLink>
+                    </div>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}

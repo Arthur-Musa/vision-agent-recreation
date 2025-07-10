@@ -100,8 +100,8 @@ const AskGoBox = ({ userName, getTimeGreeting }: AskGoBoxProps) => {
       return;
     }
 
-    // Redireciona para Claims Processing com a query
-    navigate('/claims-processing', { state: { initialQuery: askGoQuery } });
+    // Redireciona para Live View com a query
+    navigate('/live', { state: { initialQuery: askGoQuery } });
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {

@@ -37,7 +37,7 @@ const AgentCards = () => {
       name: 'Aura',
       description: 'Análise inteligente de documentos e contratos',
       category: 'legal',
-      route: '/claims-processing',
+      route: '/live',
       status: 'active'
     },
     {
@@ -45,7 +45,7 @@ const AgentCards = () => {
       name: 'Detector de Fraudes',
       description: 'Identificação de padrões suspeitos em sinistros',
       category: 'claims',
-      route: '/fraud',
+      route: '/live',
       status: 'processing'
     },
     {
@@ -53,7 +53,7 @@ const AgentCards = () => {
       name: 'Processador de Sinistros',
       description: 'Análise automatizada de claims e documentação',
       category: 'claims',
-      route: '/claims-processing',
+      route: '/live',
       status: 'active'
     }
   ];
@@ -70,9 +70,9 @@ const AgentCards = () => {
     {
       id: 'analysis-1',
       name: 'APE + BAG Analysis',
-      description: 'Relatório de análise especializada',
+      description: 'Análise especializada com IA',
       type: 'analysis',
-      route: '/ape-bag-analyst',
+      route: '/live',
       lastUpdated: '5 min ago'
     }
   ];
@@ -135,7 +135,13 @@ const AgentCards = () => {
             <Card 
               key={agent.id}
               className="cursor-pointer hover:shadow-[var(--shadow-card-hover)] transition-all duration-200 border border-border/50"
-              onClick={() => navigate(agent.route)}
+              onClick={() => navigate(agent.route, { 
+                state: { 
+                  selectedAgent: agent.id,
+                  agentName: agent.name,
+                  initialQuery: `Iniciando análise com ${agent.name} - ${agent.description}`
+                } 
+              })}
             >
               <CardContent className="p-4">
                 <div className="flex items-start gap-3">
@@ -177,7 +183,19 @@ const AgentCards = () => {
             <Card 
               key={case_.id}
               className="cursor-pointer hover:shadow-[var(--shadow-card-hover)] transition-all duration-200 border border-border/50"
-              onClick={() => navigate(case_.route)}
+              onClick={() => {
+                if (case_.route === '/live') {
+                  navigate(case_.route, { 
+                    state: { 
+                      selectedAgent: 'claims-processor',
+                      agentName: 'Claims Processor',
+                      initialQuery: `Analisando ${case_.name}...`
+                    } 
+                  });
+                } else {
+                  navigate(case_.route);
+                }
+              }}
             >
               <CardContent className="p-4">
                 <div className="flex items-start gap-3">
