@@ -7,7 +7,15 @@ import {
   RefreshCw, 
   TrendingUp, 
   AlertTriangle,
-  BarChart3
+  BarChart3,
+  Scale,
+  Building2,
+  Receipt,
+  ShieldCheck,
+  FileSearch,
+  Briefcase,
+  Search,
+  Target
 } from "lucide-react";
 
 interface Agent {
@@ -25,66 +33,76 @@ const AgentsSection = () => {
 
   const agents: Agent[] = [
     {
+      id: '10q-reports',
+      name: '10Q Reports',
+      icon: <BarChart3 className="h-5 w-5" />,
+      description: 'Analyze 10Q reports in detail',
+      route: '/spreadsheets',
+      badge: 'Q1-Q4',
+      color: 'gradient-claims'
+    },
+    {
+      id: 'artificial-lawyer',
+      name: 'Artificial Lawyer',
+      icon: <Scale className="h-5 w-5" />,
+      description: 'Lease Analysis & Legal Review',
+      route: '/ape-bag-analyst',
+      badge: 'Legal',
+      color: 'gradient-legal'
+    },
+    {
+      id: 'due-diligence',
+      name: 'Due Diligence',
+      icon: <Search className="h-5 w-5" />,
+      description: 'Comprehensive due diligence reports',
+      route: '/ape-bag-analyst',
+      badge: 'DD',
+      color: 'gradient-underwriting'
+    },
+    {
+      id: 'receipt-analyzer',
+      name: 'Receipt Analyzer',
+      icon: <Receipt className="h-5 w-5" />,
+      description: 'Extract and categorize receipt data',
+      route: '/ape-bag-analyst',
+      badge: 'OCR',
+      color: 'gradient-customer'
+    },
+    {
+      id: 'nda-analyzer',
+      name: 'NDA Analyzer',
+      icon: <ShieldCheck className="h-5 w-5" />,
+      description: 'Review and score NDAs automatically',
+      route: '/ape-bag-analyst',
+      badge: 'Score',
+      color: 'gradient-legal'
+    },
+    {
       id: 'claims-processing',
-      name: 'Automated Claims',
+      name: 'Claims Processing',
       icon: <FileText className="h-5 w-5" />,
-      description: 'V7Labs-style processing with 99.9% accuracy',
+      description: 'Automated APE + BAG claims analysis',
       route: '/claims-processing',
       badge: 'AI+OCR',
       color: 'gradient-claims'
     },
     {
-      id: 'renewal',
-      name: 'Policy Renewal',
-      icon: <RefreshCw className="h-5 w-5" />,
-      description: 'Comparação e renovação de apólices',
-      route: '/renewal',
-      badge: 'Diff+AI',
+      id: 'document-intel',
+      name: 'Document Intelligence',
+      icon: <FileSearch className="h-5 w-5" />,
+      description: 'Extract insights from any document',
+      route: '/ape-bag-analyst',
+      badge: 'Multi',
       color: 'gradient-underwriting'
     },
     {
-      id: 'underwriting',
-      name: 'Underwriting',
-      icon: <TrendingUp className="h-5 w-5" />,
-      description: 'Risk scoring e cotação instantânea',
-      route: '/underwriting',
-      badge: 'Score',
-      color: 'gradient-legal'
-    },
-    {
-      id: 'fraud',
+      id: 'fraud-detection',
       name: 'Fraud Detection',
       icon: <AlertTriangle className="h-5 w-5" />,
-      description: 'Detecção de fraudes e anomalias',
+      description: 'Detect anomalies and fraud patterns',
       route: '/fraud',
       badge: 'Beta',
       color: 'gradient-customer'
-    },
-    {
-      id: 'metrics',
-      name: 'Performance Analytics',
-      icon: <BarChart3 className="h-5 w-5" />,
-      description: 'Real-time metrics and KPIs',
-      route: '/claims-metrics',
-      badge: 'Live',
-      color: 'gradient-claims'
-    },
-    {
-      id: 'spreadsheets',
-      name: 'Smart Spreadsheet',
-      icon: <TrendingUp className="h-5 w-5" />,
-      description: 'Tabela em tempo real via SSE/WS',
-      route: '/spreadsheets',
-      color: 'gradient-underwriting'
-    },
-    {
-      id: 'ape-bag-analyst',
-      name: 'Analista APE + BAG',
-      icon: <FileText className="h-5 w-5" />,
-      description: 'Análise especializada de sinistros APE + BAG',
-      route: '/ape-bag-analyst',
-      badge: 'OpenAI',
-      color: 'gradient-claims'
     }
   ];
 
