@@ -44,12 +44,12 @@
     --agent-legal: 220 9% 80%;
     --agent-customer: 220 9% 85%;
 
-    /* Modern gradients inspired by design references */
-    --gradient-claims: linear-gradient(135deg, hsl(214 100% 97%), hsl(220 38% 95%));
-    --gradient-underwriting: linear-gradient(135deg, hsl(142 76% 97%), hsl(142 53% 94%));
-    --gradient-legal: linear-gradient(135deg, hsl(258 90% 97%), hsl(258 58% 95%));
-    --gradient-customer: linear-gradient(135deg, hsl(24 100% 97%), hsl(24 74% 94%));
-    --gradient-hero: linear-gradient(135deg, hsl(214 100% 97%), hsl(220 38% 95%));
+    /* Minimal gradients */
+    --gradient-claims: linear-gradient(135deg, hsl(220 9% 96%), hsl(220 9% 92%));
+    --gradient-underwriting: linear-gradient(135deg, hsl(220 9% 95%), hsl(220 9% 91%));
+    --gradient-legal: linear-gradient(135deg, hsl(220 9% 94%), hsl(220 9% 90%));
+    --gradient-customer: linear-gradient(135deg, hsl(220 9% 93%), hsl(220 9% 89%));
+    --gradient-hero: linear-gradient(135deg, hsl(220 9% 96%), hsl(220 9% 92%));
 
     /* Subtle shadows */
     --shadow-card: 0 1px 3px 0 hsl(0 0% 0% / 0.1), 0 1px 2px -1px hsl(0 0% 0% / 0.1);
@@ -102,12 +102,12 @@
     --input: 220 13% 18%;
     --ring: 220 9% 85%;
 
-    /* Dark modern gradients */
-    --gradient-claims: linear-gradient(135deg, hsl(214 32% 17%), hsl(220 25% 14%));
-    --gradient-underwriting: linear-gradient(135deg, hsl(142 25% 16%), hsl(142 30% 13%));
-    --gradient-legal: linear-gradient(135deg, hsl(258 25% 17%), hsl(258 30% 14%));
-    --gradient-customer: linear-gradient(135deg, hsl(24 30% 16%), hsl(24 35% 13%));
-    --gradient-hero: linear-gradient(135deg, hsl(214 32% 17%), hsl(220 25% 14%));
+    /* Dark minimal gradients */
+    --gradient-claims: linear-gradient(135deg, hsl(220 13% 15%), hsl(220 13% 11%));
+    --gradient-underwriting: linear-gradient(135deg, hsl(220 13% 16%), hsl(220 13% 12%));
+    --gradient-legal: linear-gradient(135deg, hsl(220 13% 17%), hsl(220 13% 13%));
+    --gradient-customer: linear-gradient(135deg, hsl(220 13% 18%), hsl(220 13% 14%));
+    --gradient-hero: linear-gradient(135deg, hsl(220 13% 15%), hsl(220 13% 11%));
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 224.3 76.3% 48%;
