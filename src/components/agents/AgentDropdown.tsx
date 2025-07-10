@@ -81,23 +81,47 @@ export const AgentDropdown = ({
 
   const getCategoryIcon = (category: string) => {
     switch (category) {
-      case 'claims': return '🔍';
-      case 'underwriting': return '📊';
-      case 'legal': return '⚖️';
-      case 'customer': return '🎧';
-      case 'assistant': return '🤖';
-      default: return '⚙️';
+      case 'claims': return <Bot className="h-4 w-4" strokeWidth={1.5} />;
+      case 'underwriting': return <Bot className="h-4 w-4" strokeWidth={1.5} />;
+      case 'legal': return <Bot className="h-4 w-4" strokeWidth={1.5} />;
+      case 'customer': return <Bot className="h-4 w-4" strokeWidth={1.5} />;
+      case 'assistant': return <Bot className="h-4 w-4" strokeWidth={1.5} />;
+      default: return <Bot className="h-4 w-4" strokeWidth={1.5} />;
     }
   };
 
-  const getCategoryColor = (category: string) => {
+  const getCategoryColors = (category: string) => {
     switch (category) {
-      case 'claims': return 'bg-blue-50 text-blue-700 border-blue-200';
-      case 'underwriting': return 'bg-green-50 text-green-700 border-green-200';
-      case 'legal': return 'bg-purple-50 text-purple-700 border-purple-200';
-      case 'customer': return 'bg-orange-50 text-orange-700 border-orange-200';
-      case 'assistant': return 'bg-pink-50 text-pink-700 border-pink-200';
-      default: return 'bg-gray-50 text-gray-700 border-gray-200';
+      case 'claims': return {
+        bg: 'hsl(214, 32%, 91%)',
+        accent: 'hsl(214, 32%, 35%)',
+        gradient: 'gradient-claims'
+      };
+      case 'underwriting': return {
+        bg: 'hsl(142, 28%, 91%)',
+        accent: 'hsl(142, 28%, 35%)',
+        gradient: 'gradient-underwriting'
+      };
+      case 'legal': return {
+        bg: 'hsl(271, 35%, 91%)',
+        accent: 'hsl(271, 35%, 35%)',
+        gradient: 'gradient-legal'
+      };
+      case 'customer': return {
+        bg: 'hsl(25, 35%, 91%)',
+        accent: 'hsl(25, 35%, 35%)',
+        gradient: 'gradient-customer'
+      };
+      case 'assistant': return {
+        bg: 'hsl(320, 30%, 91%)',
+        accent: 'hsl(320, 30%, 35%)',
+        gradient: 'gradient-assistant'
+      };
+      default: return {
+        bg: 'hsl(220, 9%, 91%)',
+        accent: 'hsl(220, 9%, 35%)',
+        gradient: 'gradient-hero'
+      };
     }
   };
 
@@ -120,19 +144,32 @@ export const AgentDropdown = ({
       <SelectTrigger className={className}>
         <SelectValue>
           {selectedAgent ? (
-            <div className="flex items-center gap-2">
-              <span className="text-base">{getCategoryIcon(selectedAgent.category)}</span>
-              <span className="font-medium">
-                {typeof selectedAgent.name === 'string' ? selectedAgent.name : t(selectedAgent.name)}
-              </span>
-              <Badge variant="outline" className={`text-xs ${getCategoryColor(selectedAgent.category)}`}>
-                {selectedAgent.category}
-              </Badge>
-              {(selectedAgent as any).knowledgeFiles && (selectedAgent as any).knowledgeFiles > 0 && (
-                <Badge variant="outline" className="text-xs bg-emerald-50 text-emerald-700 border-emerald-200">
-                  RAG
-                </Badge>
-              )}
+            <div className="flex items-center gap-3">
+              <div 
+                className={`w-8 h-8 rounded-full ${getCategoryColors(selectedAgent.category).gradient} flex items-center justify-center border border-border/20`}
+                style={{ color: getCategoryColors(selectedAgent.category).accent }}
+              >
+                {getCategoryIcon(selectedAgent.category)}
+              </div>
+              <div className="flex-1 min-w-0">
+                <span className="font-medium text-sm">
+                  {typeof selectedAgent.name === 'string' ? selectedAgent.name : t(selectedAgent.name)}
+                </span>
+                <div className="flex items-center gap-1 mt-0.5">
+                  <Badge variant="outline" className="text-xs" style={{ 
+                    backgroundColor: getCategoryColors(selectedAgent.category).bg,
+                    color: getCategoryColors(selectedAgent.category).accent,
+                    borderColor: getCategoryColors(selectedAgent.category).accent + '40'
+                  }}>
+                    {selectedAgent.category}
+                  </Badge>
+                  {(selectedAgent as any).knowledgeFiles && (selectedAgent as any).knowledgeFiles > 0 && (
+                    <Badge variant="outline" className="text-xs bg-emerald-50 text-emerald-700 border-emerald-200">
+                      RAG
+                    </Badge>
+                  )}
+                </div>
+              </div>
             </div>
           ) : (
             <span className="text-muted-foreground">{placeholder}</span>
@@ -162,23 +199,30 @@ export const AgentDropdown = ({
           {insuranceAgents.map((agent) => (
             <SelectItem key={agent.id} value={agent.id} className="py-3">
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
-                  <span className="text-sm">{getCategoryIcon(agent.category)}</span>
+                <div 
+                  className={`w-8 h-8 rounded-full ${getCategoryColors(agent.category).gradient} flex items-center justify-center border border-border/20 shadow-sm`}
+                  style={{ color: getCategoryColors(agent.category).accent }}
+                >
+                  {getCategoryIcon(agent.category)}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 mb-1">
                     <span className="font-medium truncate">{t(agent.name)}</span>
-                    <Badge variant="outline" className={`text-xs ${getCategoryColor(agent.category)}`}>
+                    <Badge variant="outline" className="text-xs" style={{ 
+                      backgroundColor: getCategoryColors(agent.category).bg,
+                      color: getCategoryColors(agent.category).accent,
+                      borderColor: getCategoryColors(agent.category).accent + '40'
+                    }}>
                       {agent.category}
                     </Badge>
                   </div>
-                  <div className="text-xs text-muted-foreground truncate">
+                  <div className="text-xs text-muted-foreground truncate mb-1">
                     {t(agent.description)}
                   </div>
-                  <div className="flex items-center gap-2 mt-1">
-                    <span className="text-xs text-muted-foreground">{agent.estimatedTime}</span>
-                    <span className="text-xs text-muted-foreground">•</span>
-                    <span className="text-xs text-muted-foreground">{agent.complexityLevel}</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-muted-foreground/70">{agent.estimatedTime}</span>
+                    <span className="text-xs text-muted-foreground/50">•</span>
+                    <span className="text-xs text-muted-foreground/70 capitalize">{agent.complexityLevel}</span>
                   </div>
                 </div>
               </div>
@@ -195,13 +239,20 @@ export const AgentDropdown = ({
             {customAgents.map((agent) => (
               <SelectItem key={agent.id} value={agent.id} className="py-3">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
-                    <span className="text-sm">{getCategoryIcon(agent.category)}</span>
+                  <div 
+                    className={`w-8 h-8 rounded-full ${getCategoryColors(agent.category).gradient} flex items-center justify-center border border-border/20 shadow-sm`}
+                    style={{ color: getCategoryColors(agent.category).accent }}
+                  >
+                    {getCategoryIcon(agent.category)}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 mb-1">
                       <span className="font-medium truncate">{agent.name}</span>
-                      <Badge variant="outline" className={`text-xs ${getCategoryColor(agent.category)}`}>
+                      <Badge variant="outline" className="text-xs" style={{ 
+                        backgroundColor: getCategoryColors(agent.category).bg,
+                        color: getCategoryColors(agent.category).accent,
+                        borderColor: getCategoryColors(agent.category).accent + '40'
+                      }}>
                         custom
                       </Badge>
                       {agent.knowledgeFiles > 0 && (
@@ -210,15 +261,15 @@ export const AgentDropdown = ({
                         </Badge>
                       )}
                     </div>
-                    <div className="text-xs text-muted-foreground truncate">
+                    <div className="text-xs text-muted-foreground truncate mb-1">
                       {agent.description}
                     </div>
-                    <div className="flex items-center gap-2 mt-1">
-                      <span className="text-xs text-muted-foreground">{agent.capabilities.length} capacidades</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-muted-foreground/70">{agent.capabilities.length} capacidades</span>
                       {agent.knowledgeFiles > 0 && (
                         <>
-                          <span className="text-xs text-muted-foreground">•</span>
-                          <span className="text-xs text-muted-foreground">{agent.knowledgeFiles} documentos</span>
+                          <span className="text-xs text-muted-foreground/50">•</span>
+                          <span className="text-xs text-muted-foreground/70">{agent.knowledgeFiles} documentos</span>
                         </>
                       )}
                     </div>
@@ -238,25 +289,32 @@ export const AgentDropdown = ({
             {openaiAssistants.map((assistant) => (
               <SelectItem key={assistant.id} value={`assistant_${assistant.id}`} className="py-3">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center">
-                    <Bot className="h-4 w-4" />
+                  <div 
+                    className={`w-8 h-8 rounded-full ${getCategoryColors('assistant').gradient} flex items-center justify-center border border-border/20 shadow-sm`}
+                    style={{ color: getCategoryColors('assistant').accent }}
+                  >
+                    <Bot className="h-4 w-4" strokeWidth={1.5} />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 mb-1">
                       <span className="font-medium truncate">{assistant.name}</span>
-                      <Badge variant="outline" className="text-xs bg-pink-50 text-pink-700 border-pink-200">
+                      <Badge variant="outline" className="text-xs" style={{ 
+                        backgroundColor: getCategoryColors('assistant').bg,
+                        color: getCategoryColors('assistant').accent,
+                        borderColor: getCategoryColors('assistant').accent + '40'
+                      }}>
                         assistant
                       </Badge>
                     </div>
-                    <div className="text-xs text-muted-foreground truncate">
+                    <div className="text-xs text-muted-foreground truncate mb-1">
                       {assistant.description || 'OpenAI Assistant personalizado'}
                     </div>
-                    <div className="flex items-center gap-2 mt-1">
-                      <span className="text-xs text-muted-foreground">ID: {assistant.assistantId}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-muted-foreground/70">ID: {assistant.assistantId}</span>
                       {assistant.knowledgeFiles > 0 && (
                         <>
-                          <span className="text-xs text-muted-foreground">•</span>
-                          <span className="text-xs text-muted-foreground">{assistant.knowledgeFiles} arquivos</span>
+                          <span className="text-xs text-muted-foreground/50">•</span>
+                          <span className="text-xs text-muted-foreground/70">{assistant.knowledgeFiles} arquivos</span>
                         </>
                       )}
                     </div>

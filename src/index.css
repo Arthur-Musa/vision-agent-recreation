@@ -38,17 +38,24 @@
 
     --radius: 0.5rem;
 
-    /* Subtle category indicators */
-    --agent-claims: 220 9% 70%;
-    --agent-underwriting: 220 9% 75%; 
-    --agent-legal: 220 9% 80%;
-    --agent-customer: 220 9% 85%;
+    /* Subtle category indicators - Olga style */
+    --agent-claims: 214 32% 91%;
+    --agent-claims-accent: 214 32% 35%;
+    --agent-underwriting: 142 28% 91%;
+    --agent-underwriting-accent: 142 28% 35%;
+    --agent-legal: 271 35% 91%;
+    --agent-legal-accent: 271 35% 35%;
+    --agent-customer: 25 35% 91%;
+    --agent-customer-accent: 25 35% 35%;
+    --agent-assistant: 320 30% 91%;
+    --agent-assistant-accent: 320 30% 35%;
 
-    /* Minimal gradients */
-    --gradient-claims: linear-gradient(135deg, hsl(220 9% 96%), hsl(220 9% 92%));
-    --gradient-underwriting: linear-gradient(135deg, hsl(220 9% 95%), hsl(220 9% 91%));
-    --gradient-legal: linear-gradient(135deg, hsl(220 9% 94%), hsl(220 9% 90%));
-    --gradient-customer: linear-gradient(135deg, hsl(220 9% 93%), hsl(220 9% 89%));
+    /* Elegant agent gradients */
+    --gradient-claims: linear-gradient(135deg, hsl(214 32% 96%), hsl(214 32% 91%));
+    --gradient-underwriting: linear-gradient(135deg, hsl(142 28% 96%), hsl(142 28% 91%));
+    --gradient-legal: linear-gradient(135deg, hsl(271 35% 96%), hsl(271 35% 91%));
+    --gradient-customer: linear-gradient(135deg, hsl(25 35% 96%), hsl(25 35% 91%));
+    --gradient-assistant: linear-gradient(135deg, hsl(320 30% 96%), hsl(320 30% 91%));
     --gradient-hero: linear-gradient(135deg, hsl(220 9% 96%), hsl(220 9% 92%));
 
     /* Subtle shadows */
@@ -102,11 +109,12 @@
     --input: 220 13% 18%;
     --ring: 220 9% 85%;
 
-    /* Dark minimal gradients */
-    --gradient-claims: linear-gradient(135deg, hsl(220 13% 15%), hsl(220 13% 11%));
-    --gradient-underwriting: linear-gradient(135deg, hsl(220 13% 16%), hsl(220 13% 12%));
-    --gradient-legal: linear-gradient(135deg, hsl(220 13% 17%), hsl(220 13% 13%));
-    --gradient-customer: linear-gradient(135deg, hsl(220 13% 18%), hsl(220 13% 14%));
+    /* Dark elegant agent gradients */
+    --gradient-claims: linear-gradient(135deg, hsl(214 20% 18%), hsl(214 20% 14%));
+    --gradient-underwriting: linear-gradient(135deg, hsl(142 20% 18%), hsl(142 20% 14%));
+    --gradient-legal: linear-gradient(135deg, hsl(271 20% 18%), hsl(271 20% 14%));
+    --gradient-customer: linear-gradient(135deg, hsl(25 20% 18%), hsl(25 20% 14%));
+    --gradient-assistant: linear-gradient(135deg, hsl(320 20% 18%), hsl(320 20% 14%));
     --gradient-hero: linear-gradient(135deg, hsl(220 13% 15%), hsl(220 13% 11%));
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
@@ -156,6 +164,10 @@
   
   .gradient-customer {
     background: var(--gradient-customer);
+  }
+  
+  .gradient-assistant {
+    background: var(--gradient-assistant);
   }
   
   .gradient-hero {

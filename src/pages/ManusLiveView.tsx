@@ -45,9 +45,32 @@ const OlgaLiveView = () => {
 
   // Handle initial query from navigation state
   useEffect(() => {
-    const state = location.state as { initialQuery?: string };
-    if (state?.initialQuery) {
-      handleSendMessage(state.initialQuery);
+    const state = location.state as { 
+      initialQuery?: string;
+      files?: any[];
+      selectedAgent?: string;
+    };
+    
+    if (state?.initialQuery || state?.files?.length) {
+      let initialMessage = '';
+      
+      if (state.files?.length) {
+        const fileList = state.files.map(f => f.name).join(', ');
+        initialMessage += `📎 Arquivos anexados: ${fileList}\n\n`;
+      }
+      
+      if (state.initialQuery) {
+        initialMessage += state.initialQuery;
+      }
+      
+      if (state.selectedAgent && state.selectedAgent !== 'concierge') {
+        addSystemMessage(`🤖 Agente selecionado: ${state.selectedAgent}`);
+      }
+      
+      if (initialMessage.trim()) {
+        handleSendMessage(initialMessage);
+      }
+      
       // Clear the state to prevent re-sending
       navigate(location.pathname, { replace: true, state: {} });
     }
