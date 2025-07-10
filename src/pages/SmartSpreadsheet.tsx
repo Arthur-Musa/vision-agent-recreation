@@ -253,6 +253,10 @@ const SmartSpreadsheet = () => {
     setCases([]);
   };
 
+  const handleCasesUpdate = (updatedCases: any[]) => {
+    setCases(updatedCases);
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <SpreadsheetHeader
@@ -271,7 +275,7 @@ const SmartSpreadsheet = () => {
           onStatusChange={setFilterStatus}
         />
 
-        <CasesTable cases={filteredCases} />
+        <CasesTable cases={filteredCases} onCasesUpdate={handleCasesUpdate} />
 
         <RealTimeInfo />
       </main>
