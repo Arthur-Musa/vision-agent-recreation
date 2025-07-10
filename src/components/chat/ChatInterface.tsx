@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Paperclip, Loader2, Bot, User, FileText, AlertCircle, CheckCircle, Clock } from 'lucide-react';
+import { Send, Paperclip, Loader2, Bot, User, FileText, AlertCircle, CheckCircle, Clock, Brain, Play } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
@@ -8,7 +8,9 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
 import { DocumentUploader } from '@/components/upload/DocumentUploader';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { chatService, ChatAnalysisResult } from '@/services/chatService';
+import { useNavigate } from 'react-router-dom';
 
 interface ChatMessage {
   id: string;
@@ -33,12 +35,22 @@ interface AnalysisResult {
   recommendations: string[];
 }
 
+// Lista de agentes especializados
+const INSURANCE_AGENTS = [
+  { id: 'claims-processor', name: 'Processador de Sinistros', description: 'Análise completa de sinistros' },
+  { id: 'fraud-detector', name: 'Detector de Fraudes', description: 'Identificação de padrões suspeitos' },
+  { id: 'policy-analyzer', name: 'Analisador de Apólices', description: 'Verificação de coberturas e termos' },
+  { id: 'underwriting-agent', name: 'Agente de Subscrição', description: 'Avaliação de riscos' },
+  { id: 'legal-analyzer', name: 'Analisador Jurídico', description: 'Questões legais e regulamentares' }
+];
+
 export const ChatInterface: React.FC = () => {
+  const navigate = useNavigate();
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: '1',
       type: 'assistant',
-      content: 'Olá! Sou a Olga, sua assistente especializada em seguros. Como posso ajudar você hoje?',
+      content: 'Olá! Sou a Olga, sua assistente especializada em seguros. Você pode selecionar um agente especializado ou deixar que eu analise e roteie sua solicitação automaticamente.',
       timestamp: new Date().toISOString(),
       suggestions: [
         'Analisar um sinistro',
@@ -50,6 +62,7 @@ export const ChatInterface: React.FC = () => {
   ]);
   
   const [inputMessage, setInputMessage] = useState('');
+  const [selectedAgent, setSelectedAgent] = useState<string>('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [showUploader, setShowUploader] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -66,32 +79,72 @@ export const ChatInterface: React.FC = () => {
   const handleSendMessage = async () => {
     if (!inputMessage.trim() || isProcessing) return;
 
+    const currentMessage = inputMessage.trim();
+    const currentAgent = selectedAgent;
+    
+    // Se um agente específico foi selecionado, abrir Live Workflow diretamente
+    if (currentAgent) {
+      const agentName = INSURANCE_AGENTS.find(a => a.id === currentAgent)?.name || 'Agente Selecionado';
+      
+      toast({
+        title: `🤖 ${agentName} Ativado`,
+        description: 'Abrindo workspace de análise ao vivo...'
+      });
+      
+      // Navegar para Live Workflow com agente pré-selecionado
+      navigate('/live-workflow', {
+        state: {
+          selectedAgent: currentAgent,
+          initialQuery: currentMessage
+        }
+      });
+      return;
+    }
+
+    // Se nenhum agente foi selecionado, usar o Concierge
     const userMessage: ChatMessage = {
       id: Date.now().toString(),
       type: 'user',
-      content: inputMessage.trim(),
+      content: currentMessage,
       timestamp: new Date().toISOString()
     };
 
     setMessages(prev => [...prev, userMessage]);
-    const currentMessage = inputMessage.trim();
     setInputMessage('');
     setIsProcessing(true);
 
     try {
-      // Use o serviço real de chat
-      const response = await chatService.processUserMessage(currentMessage);
+      // Concierge analisa e roteia automaticamente
+      const conciergeResponse = await analyzeConciergeRequest(currentMessage);
       
-      const assistantMessage: ChatMessage = {
+      const conciergeMessage: ChatMessage = {
         id: Date.now().toString(),
         type: 'assistant',
-        content: response.content,
+        content: conciergeResponse.content,
         timestamp: new Date().toISOString(),
-        suggestions: response.suggestions,
-        analysis: response.analysis
+        suggestions: conciergeResponse.suggestions
       };
 
-      setMessages(prev => [...prev, assistantMessage]);
+      setMessages(prev => [...prev, conciergeMessage]);
+      
+      // Se o concierge recomendou um agente, abrir Live Workflow
+      if (conciergeResponse.recommendedAgent) {
+        setTimeout(() => {
+          toast({
+            title: '🎯 Roteamento Inteligente',
+            description: `Ativando ${conciergeResponse.agentName} para análise especializada...`
+          });
+          
+          navigate('/live-workflow', {
+            state: {
+              selectedAgent: conciergeResponse.recommendedAgent,
+              initialQuery: currentMessage,
+              conciergeAnalysis: conciergeResponse.analysis
+            }
+          });
+        }, 2000);
+      }
+      
     } catch (error) {
       toast({
         title: 'Erro',
@@ -101,6 +154,53 @@ export const ChatInterface: React.FC = () => {
     } finally {
       setIsProcessing(false);
     }
+  };
+
+  // Função para análise do Concierge
+  const analyzeConciergeRequest = async (message: string) => {
+    const lowerMessage = message.toLowerCase();
+    
+    // Simular análise inteligente
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    
+    if (lowerMessage.includes('sinistro') || lowerMessage.includes('claim') || lowerMessage.includes('acidente')) {
+      return {
+        content: '🔍 **Concierge Analisou sua Solicitação**\n\nIdentifiquei que você precisa de análise de sinistro. Vou ativar nosso **Processador de Sinistros** especializado que irá:\n\n• Analisar documentos com OCR avançado\n• Verificar padrões de fraude\n• Calcular valores de indenização\n• Gerar relatório completo\n\n*Abrindo workspace de análise ao vivo...*',
+        recommendedAgent: 'claims-processor',
+        agentName: 'Processador de Sinistros',
+        analysis: 'Solicitação de análise de sinistro identificada',
+        suggestions: ['Aguardar abertura do workspace', 'Preparar documentos para upload']
+      };
+    }
+    
+    if (lowerMessage.includes('fraude') || lowerMessage.includes('fraud') || lowerMessage.includes('suspeito')) {
+      return {
+        content: '🕵️ **Concierge Analisou sua Solicitação**\n\nDetectei necessidade de análise de fraude. Ativando nosso **Detector de Fraudes** que possui:\n\n• IA especializada em padrões suspeitos\n• Análise comportamental avançada\n• Verificação de histórico\n• Score de risco detalhado\n\n*Preparando ambiente de investigação...*',
+        recommendedAgent: 'fraud-detector',
+        agentName: 'Detector de Fraudes',
+        analysis: 'Solicitação de análise anti-fraude identificada',
+        suggestions: ['Preparar documentos suspeitos', 'Aguardar ativação do detector']
+      };
+    }
+    
+    if (lowerMessage.includes('apólice') || lowerMessage.includes('policy') || lowerMessage.includes('cobertura')) {
+      return {
+        content: '📋 **Concierge Analisou sua Solicitação**\n\nIdentifiquei análise de apólice. Ativando nosso **Analisador de Apólices** especializado em:\n\n• Verificação de coberturas\n• Análise de cláusulas\n• Validação de termos\n• Comparação com padrões de mercado\n\n*Carregando ferramentas de análise...*',
+        recommendedAgent: 'policy-analyzer',
+        agentName: 'Analisador de Apólices',
+        analysis: 'Solicitação de análise de apólice identificada',
+        suggestions: ['Upload do documento da apólice', 'Aguardar análise completa']
+      };
+    }
+    
+    // Caso geral - concierge escolhe o melhor agente
+    return {
+      content: '🤖 **Concierge Analisou sua Solicitação**\n\nBaseado no contexto, recomendo nosso **Processador de Sinistros** como melhor opção para sua demanda. Este agente oferece:\n\n• Análise multifuncional\n• Processamento de documentos\n• Inteligência contextual\n• Roteamento inteligente\n\n*Inicializando análise especializada...*',
+      recommendedAgent: 'claims-processor',
+      agentName: 'Processador de Sinistros',
+      analysis: 'Roteamento geral para processador de sinistros',
+      suggestions: ['Aguardar ativação', 'Preparar documentos relevantes']
+    };
   };
 
   const generateAssistantResponse = (userInput: string): ChatMessage => {
@@ -166,6 +266,26 @@ export const ChatInterface: React.FC = () => {
   const handleFileUpload = async (files: File[]) => {
     setShowUploader(false);
     
+    // Se há um agente selecionado, ir direto para Live Workflow
+    if (selectedAgent) {
+      const agentName = INSURANCE_AGENTS.find(a => a.id === selectedAgent)?.name || 'Agente Selecionado';
+      
+      toast({
+        title: `📎 Arquivos + ${agentName}`,
+        description: 'Abrindo análise ao vivo com documentos...'
+      });
+      
+      navigate('/live-workflow', {
+        state: {
+          selectedAgent: selectedAgent,
+          initialFiles: files,
+          initialQuery: `Analisar ${files.length} documento(s): ${files.map(f => f.name).join(', ')}`
+        }
+      });
+      return;
+    }
+    
+    // Se não há agente selecionado, concierge analisa os arquivos
     const fileMessage: ChatMessage = {
       id: Date.now().toString(),
       type: 'user',
@@ -179,16 +299,15 @@ export const ChatInterface: React.FC = () => {
     setIsProcessing(true);
 
     try {
-      // Usa o serviço real de chat com arquivos
-      const response = await chatService.processUserMessage('Analisar documentos anexados', files);
+      // Concierge analisa arquivos e roteia
+      const conciergeResponse = await analyzeConciergeFiles(files);
       
       const analysisMessage: ChatMessage = {
         id: Date.now().toString(),
         type: 'assistant',
-        content: response.content,
+        content: conciergeResponse.content,
         timestamp: new Date().toISOString(),
-        analysis: response.analysis,
-        suggestions: response.suggestions
+        suggestions: conciergeResponse.suggestions
       };
 
       setMessages(prev => [
@@ -199,6 +318,21 @@ export const ChatInterface: React.FC = () => {
         ),
         analysisMessage
       ]);
+      
+      // Rotear para agente especializado
+      if (conciergeResponse.recommendedAgent) {
+        setTimeout(() => {
+          navigate('/live-workflow', {
+            state: {
+              selectedAgent: conciergeResponse.recommendedAgent,
+              initialFiles: files,
+              initialQuery: `Documentos analisados pelo Concierge: ${files.map(f => f.name).join(', ')}`,
+              conciergeAnalysis: conciergeResponse.analysis
+            }
+          });
+        }, 2000);
+      }
+      
     } catch (error) {
       toast({
         title: 'Erro',
@@ -208,6 +342,39 @@ export const ChatInterface: React.FC = () => {
     } finally {
       setIsProcessing(false);
     }
+  };
+
+  // Análise de arquivos pelo Concierge
+  const analyzeConciergeFiles = async (files: File[]) => {
+    await new Promise(resolve => setTimeout(resolve, 1800));
+    
+    const fileNames = files.map(f => f.name.toLowerCase()).join(' ');
+    
+    if (fileNames.includes('sinistro') || fileNames.includes('boletim') || fileNames.includes('ocorrencia')) {
+      return {
+        content: '📋 **Concierge Analisou os Documentos**\n\nIdentifiquei documentos de sinistro nos arquivos enviados. Ativando **Processador de Sinistros** para:\n\n• Extração de dados via OCR\n• Análise de consistência\n• Verificação anti-fraude\n• Cálculo de indenização\n\n*Transferindo para análise especializada...*',
+        recommendedAgent: 'claims-processor',
+        analysis: 'Documentos de sinistro detectados',
+        suggestions: ['Aguardar processamento completo']
+      };
+    }
+    
+    if (fileNames.includes('apolice') || fileNames.includes('policy') || fileNames.includes('contrato')) {
+      return {
+        content: '📑 **Concierge Analisou os Documentos**\n\nDocumentos de apólice identificados. Ativando **Analisador de Apólices** para:\n\n• Verificação de coberturas\n• Análise de cláusulas\n• Validação de dados\n• Comparação regulatória\n\n*Iniciando análise detalhada...*',
+        recommendedAgent: 'policy-analyzer',
+        analysis: 'Documentos de apólice detectados',
+        suggestions: ['Aguardar análise de cobertura']
+      };
+    }
+    
+    // Análise geral
+    return {
+      content: '🔍 **Concierge Analisou os Documentos**\n\nDocumentos variados identificados. Utilizando **Processador de Sinistros** para análise multifuncional:\n\n• Classificação automática\n• Extração de dados\n• Análise contextual\n• Recomendações inteligentes\n\n*Processando com IA especializada...*',
+      recommendedAgent: 'claims-processor',
+      analysis: 'Documentos diversos para análise geral',
+      suggestions: ['Aguardar classificação automática']
+    };
   };
 
   const handleSuggestionClick = (suggestion: string) => {
@@ -367,13 +534,47 @@ export const ChatInterface: React.FC = () => {
         <div ref={messagesEndRef} />
       </ScrollArea>
 
-      <div className="p-4 border-t space-y-2">
+      <div className="p-4 border-t space-y-3">
+        {/* Seletor de Agente */}
+        <div className="space-y-2">
+          <label className="text-xs font-medium text-muted-foreground">
+            Agente Especializado (Opcional)
+          </label>
+          <Select value={selectedAgent} onValueChange={setSelectedAgent}>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="🤖 Deixar Concierge escolher automaticamente" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="">
+                <div className="flex items-center gap-2">
+                  <Brain className="h-4 w-4 text-purple-500" />
+                  <div>
+                    <div className="font-medium">Concierge (Automático)</div>
+                    <div className="text-xs text-muted-foreground">IA analisa e roteia automaticamente</div>
+                  </div>
+                </div>
+              </SelectItem>
+              {INSURANCE_AGENTS.map((agent) => (
+                <SelectItem key={agent.id} value={agent.id}>
+                  <div className="flex items-center gap-2">
+                    <Play className="h-4 w-4 text-blue-500" />
+                    <div>
+                      <div className="font-medium">{agent.name}</div>
+                      <div className="text-xs text-muted-foreground">{agent.description}</div>
+                    </div>
+                  </div>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
         <div className="flex gap-2">
           <div className="flex-1 relative">
             <Input
               value={inputMessage}
               onChange={(e) => setInputMessage(e.target.value)}
-              placeholder="Digite sua mensagem..."
+              placeholder={selectedAgent ? "Mensagem será processada pelo agente selecionado..." : "Digite sua mensagem para o Concierge analisar..."}
               onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
               disabled={isProcessing}
               className="pr-20"
@@ -407,6 +608,23 @@ export const ChatInterface: React.FC = () => {
             </div>
           </div>
         </div>
+        
+        {selectedAgent && (
+          <div className="text-xs text-muted-foreground flex items-center gap-2">
+            <Play className="h-3 w-3" />
+            <span>
+              Agente selecionado: <strong>{INSURANCE_AGENTS.find(a => a.id === selectedAgent)?.name}</strong>
+              - Abrirá Live Workflow diretamente
+            </span>
+          </div>
+        )}
+        
+        {!selectedAgent && (
+          <div className="text-xs text-muted-foreground flex items-center gap-2">
+            <Brain className="h-3 w-3" />
+            <span>Concierge ativo - Analisará sua solicitação e roteará para o agente mais adequado</span>
+          </div>
+        )}
       </div>
     </div>
   );
