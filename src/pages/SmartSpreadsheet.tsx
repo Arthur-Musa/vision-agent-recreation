@@ -1,14 +1,10 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { ArrowLeft, Download, Filter, Search, RefreshCw, Trash2, Eye } from 'lucide-react';
-import { localStorageService } from '@/services/localStorageService';
+import { SpreadsheetHeader } from '@/components/spreadsheet/SpreadsheetHeader';
+import { SpreadsheetFilters } from '@/components/spreadsheet/SpreadsheetFilters';
+import { CasesTable } from '@/components/spreadsheet/CasesTable';
+import { RealTimeInfo } from '@/components/spreadsheet/RealTimeInfo';
 
 const SmartSpreadsheet = () => {
-  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -202,53 +198,6 @@ const SmartSpreadsheet = () => {
     };
   }, []);
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'processing': return 'bg-blue-50 text-blue-600 border-blue-200';
-      case 'completed': return 'bg-green-50 text-green-600 border-green-200';
-      case 'flagged': return 'bg-red-50 text-red-600 border-red-200';
-      case 'pending': return 'bg-amber-50 text-amber-600 border-amber-200';
-      default: return 'bg-muted text-muted-foreground border-border';
-    }
-  };
-
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case 'processing': return 'Processando';
-      case 'completed': return 'Concluído';
-      case 'flagged': return 'Sinalizado';
-      case 'pending': return 'Pendente';
-      default: return status;
-    }
-  };
-
-  const getTypeIcon = (type: string) => {
-    switch (type) {
-      case 'APE': return '🩺';
-      case 'BAG': return '🧳';
-      case 'Auto': return '🚗';
-      case 'Residencial': return '🏠';
-      case 'Vida': return '❤️';
-      default: return '📄';
-    }
-  };
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL'
-    }).format(amount);
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleString('pt-BR', {
-      day: '2-digit',
-      month: '2-digit', 
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
-
   const filteredCases = cases.filter(case_ => {
     const matchesSearch = searchTerm === '' || 
       case_.insuredName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -285,11 +234,11 @@ const SmartSpreadsheet = () => {
         case_.id,
         case_.claimNumber,
         case_.type,
-        getStatusText(case_.status),
+        case_.status,
         case_.insuredName,
         case_.estimatedAmount,
         case_.agent,
-        formatDate(case_.processedAt)
+        new Date(case_.processedAt).toLocaleString('pt-BR')
       ].join(','))
     ].join('\n');
 
@@ -300,178 +249,31 @@ const SmartSpreadsheet = () => {
     link.click();
   };
 
+  const handleClearData = () => {
+    setCases([]);
+  };
+
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b border-border/40 bg-background sticky top-0 z-50">
-        <div className="container mx-auto px-6 py-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => navigate('/')}
-                className="text-muted-foreground hover:text-foreground"
-              >
-                <ArrowLeft className="h-4 w-4 mr-1" />
-                Voltar
-              </Button>
-              
-              <div className="border-l border-border/40 pl-3">
-                <h1 className="text-lg font-medium text-foreground">Todos os Casos</h1>
-                <p className="text-xs text-muted-foreground">
-                  {filteredCases.length} casos
-                </p>
-              </div>
-            </div>
-            
-            <div className="flex items-center gap-1">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleRefresh}
-                disabled={isRefreshing}
-                className="gap-1 text-muted-foreground hover:text-foreground"
-              >
-                <RefreshCw className={`h-3 w-3 ${isRefreshing ? 'animate-spin' : ''}`} />
-                Atualizar
-              </Button>
-              
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleExportCSV}
-                className="gap-1 text-muted-foreground hover:text-foreground"
-              >
-                <Download className="h-3 w-3" />
-                CSV
-              </Button>
+      <SpreadsheetHeader
+        casesCount={filteredCases.length}
+        isRefreshing={isRefreshing}
+        onRefresh={handleRefresh}
+        onExportCSV={handleExportCSV}
+        onClearData={handleClearData}
+      />
 
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => {
-                  if (confirm('Limpar todos os dados?')) {
-                    localStorageService.clearAllData();
-                    setCases([]);
-                  }
-                }}
-                className="gap-1 text-muted-foreground hover:text-destructive"
-              >
-                <Trash2 className="h-3 w-3" />
-                Limpar
-              </Button>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      {/* Main Content */}
       <main className="container mx-auto px-6 py-6">
-        {/* Filters */}
-        <div className="mb-4 p-3 border border-border/40 rounded-lg bg-muted/20">
-          <div className="flex flex-col sm:flex-row gap-3">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-3 w-3 text-muted-foreground" />
-              <Input
-                placeholder="Buscar..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-9 h-8 text-sm border-border/40 bg-background"
-              />
-            </div>
-            
-            <div className="flex gap-2">
-              <select 
-                value={filterStatus}
-                onChange={(e) => setFilterStatus(e.target.value)}
-                className="px-2 py-1 text-sm border border-border/40 rounded bg-background text-muted-foreground"
-              >
-                <option value="all">Todos</option>
-                <option value="completed">Concluído</option>
-                <option value="processing">Processando</option>
-                <option value="pending">Pendente</option>
-                <option value="flagged">Sinalizado</option>
-              </select>
-            </div>
-          </div>
-        </div>
+        <SpreadsheetFilters
+          searchTerm={searchTerm}
+          filterStatus={filterStatus}
+          onSearchChange={setSearchTerm}
+          onStatusChange={setFilterStatus}
+        />
 
-        {/* Cases Table */}
-        <div className="border border-border/40 rounded-lg bg-background">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="border-b border-border/40">
-                <tr className="text-xs text-muted-foreground uppercase tracking-wide">
-                  <th className="text-left px-3 py-2 font-medium">Tipo</th>
-                  <th className="text-left px-3 py-2 font-medium">Sinistro</th>
-                  <th className="text-left px-3 py-2 font-medium">Segurado</th>
-                  <th className="text-left px-3 py-2 font-medium">Status</th>
-                  <th className="text-left px-3 py-2 font-medium">Valor</th>
-                  <th className="text-left px-3 py-2 font-medium">Agente</th>
-                  <th className="text-left px-3 py-2 font-medium">Data</th>
-                  <th className="text-left px-3 py-2 font-medium w-12"></th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredCases.map((case_) => (
-                  <tr key={case_.id} className="border-b border-border/20 hover:bg-muted/30 transition-colors">
-                    <td className="px-3 py-2">
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm">{getTypeIcon(case_.type)}</span>
-                        <span className="text-xs font-medium text-muted-foreground">{case_.type}</span>
-                      </div>
-                    </td>
-                    <td className="px-3 py-2 font-mono text-xs text-muted-foreground">{case_.claimNumber}</td>
-                    <td className="px-3 py-2 text-sm">{case_.insuredName}</td>
-                    <td className="px-3 py-2">
-                      <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${getStatusColor(case_.status)}`}>
-                        {getStatusText(case_.status)}
-                      </span>
-                    </td>
-                    <td className="px-3 py-2 text-sm font-medium">{formatCurrency(case_.estimatedAmount)}</td>
-                    <td className="px-3 py-2 text-xs text-muted-foreground">{case_.agent}</td>
-                    <td className="px-3 py-2 text-xs text-muted-foreground">{formatDate(case_.processedAt)}</td>
-                    <td className="px-3 py-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => {
-                          if (case_.type === 'APE' || case_.type === 'BAG') {
-                            navigate('/ape-bag-analyst');
-                          } else if (case_.type === 'Auto') {
-                            navigate('/claims-dashboard');
-                          } else {
-                            navigate('/live', { state: { caseId: case_.id } });
-                          }
-                        }}
-                        className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
-                      >
-                        <Eye className="h-3 w-3" />
-                      </Button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            
-            {filteredCases.length === 0 && (
-              <div className="text-center py-8 text-muted-foreground text-sm">
-                <p>Nenhum caso encontrado</p>
-              </div>
-            )}
-          </div>
-        </div>
+        <CasesTable cases={filteredCases} />
 
-        {/* Real-time Info */}
-        <div className="mt-4 p-3 border border-border/40 rounded-lg bg-muted/10">
-          <div className="flex items-center gap-2">
-            <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></div>
-            <p className="text-xs text-muted-foreground">
-              Atualização automática ativa
-            </p>
-          </div>
-        </div>
+        <RealTimeInfo />
       </main>
     </div>
   );
