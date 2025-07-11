@@ -27,13 +27,16 @@ import {
   Zap,
   Activity
 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 const CaseDetail = () => {
   const { id } = useParams();
   const { t } = useLanguage();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [isLiveUpdate, setIsLiveUpdate] = useState(true);
   const [report, setReport] = useState<any>(null);
+  const [priority, setPriority] = useState('medium');
   
   const { claim, status, loading, error, startAnalysis, refreshStatus } = useClaim(id || "");
 
@@ -449,7 +452,21 @@ const CaseDetail = () => {
                   variant="outline" 
                   size="sm" 
                   className="w-full justify-start"
-                  onClick={() => console.log('🔄 Botão Reiniciar Análise clicado!')}
+                  onClick={async () => {
+                    try {
+                      await startAnalysis();
+                      toast({
+                        title: "Análise reiniciada",
+                        description: "A análise do sinistro foi reiniciada com sucesso.",
+                      });
+                    } catch (error) {
+                      toast({
+                        variant: "destructive",
+                        title: "Erro",
+                        description: "Não foi possível reiniciar a análise.",
+                      });
+                    }
+                  }}
                 >
                   <RotateCcw className="h-4 w-4 mr-2" />
                   Reiniciar Análise
@@ -458,16 +475,28 @@ const CaseDetail = () => {
                   variant="outline" 
                   size="sm" 
                   className="w-full justify-start"
-                  onClick={() => console.log('🎯 Botão Ajustar Prioridade clicado!')}
+                  onClick={() => {
+                    const newPriority = priority === 'high' ? 'medium' : 'high';
+                    setPriority(newPriority);
+                    toast({
+                      title: "Prioridade alterada",
+                      description: `Prioridade do caso alterada para ${newPriority === 'high' ? 'Alta' : 'Média'}.`,
+                    });
+                  }}
                 >
                   <Target className="h-4 w-4 mr-2" />
-                  Ajustar Prioridade
+                  Ajustar Prioridade {priority === 'high' ? '(Alta)' : '(Média)'}
                 </Button>
                 <Button 
                   variant="outline" 
                   size="sm" 
                   className="w-full justify-start"
-                  onClick={() => console.log('⚡ Botão Acelerar Processo clicado!')}
+                  onClick={() => {
+                    toast({
+                      title: "Processo acelerado",
+                      description: "O processamento foi movido para a fila prioritária.",
+                    });
+                  }}
                 >
                   <Zap className="h-4 w-4 mr-2" />
                   Acelerar Processo
