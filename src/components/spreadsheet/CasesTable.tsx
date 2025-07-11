@@ -22,9 +22,10 @@ interface Case {
 interface CasesTableProps {
   cases: Case[];
   onCasesUpdate?: (cases: Case[]) => void;
+  onSelectionChange?: (selectedIds: string[]) => void;
 }
 
-export const CasesTable = ({ cases, onCasesUpdate }: CasesTableProps) => {
+export const CasesTable = ({ cases, onCasesUpdate, onSelectionChange }: CasesTableProps) => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [selectedCases, setSelectedCases] = useState<string[]>([]);
@@ -34,7 +35,8 @@ export const CasesTable = ({ cases, onCasesUpdate }: CasesTableProps) => {
   // Limpar seleção quando cases mudam
   useEffect(() => {
     setSelectedCases([]);
-  }, [cases]);
+    onSelectionChange?.([]);
+  }, [cases, onSelectionChange]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -85,19 +87,17 @@ export const CasesTable = ({ cases, onCasesUpdate }: CasesTableProps) => {
 
   // Funções de seleção
   const handleSelectAll = (checked: boolean) => {
-    if (checked) {
-      setSelectedCases(cases.map(c => c.id));
-    } else {
-      setSelectedCases([]);
-    }
+    const newSelection = checked ? cases.map(c => c.id) : [];
+    setSelectedCases(newSelection);
+    onSelectionChange?.(newSelection);
   };
 
   const handleSelectCase = (caseId: string, checked: boolean) => {
-    if (checked) {
-      setSelectedCases(prev => [...prev, caseId]);
-    } else {
-      setSelectedCases(prev => prev.filter(id => id !== caseId));
-    }
+    const newSelection = checked 
+      ? [...selectedCases, caseId]
+      : selectedCases.filter(id => id !== caseId);
+    setSelectedCases(newSelection);
+    onSelectionChange?.(newSelection);
   };
 
   const isAllSelected = selectedCases.length === cases.length && cases.length > 0;

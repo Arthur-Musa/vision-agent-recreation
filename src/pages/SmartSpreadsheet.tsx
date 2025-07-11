@@ -3,18 +3,22 @@ import { SpreadsheetHeader } from '@/components/spreadsheet/SpreadsheetHeader';
 import { SpreadsheetFilters } from '@/components/spreadsheet/SpreadsheetFilters';
 import { CasesTable } from '@/components/spreadsheet/CasesTable';
 import { RealTimeInfo } from '@/components/spreadsheet/RealTimeInfo';
+import { WorkflowPanel } from '@/components/spreadsheet/WorkflowPanel';
 import { spreadsheetAutomation, SpreadsheetAutomation } from '@/services/spreadsheetAutomation';
 import { Button } from '@/components/ui/button';
 import { Play, Pause, Zap } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useNavigate } from 'react-router-dom';
 
 const SmartSpreadsheet = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [cases, setCases] = useState<any[]>([]);
+  const [selectedCases, setSelectedCases] = useState<any[]>([]);
   const [automationActive, setAutomationActive] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   // Load cases from localStorage on component mount
   useEffect(() => {
@@ -263,6 +267,76 @@ const SmartSpreadsheet = () => {
     setCases(updatedCases);
   };
 
+  const handleCasesSelection = (selectedIds: string[]) => {
+    const selected = cases.filter(c => selectedIds.includes(c.id));
+    setSelectedCases(selected);
+  };
+
+  const handleStartWorkflow = async (caseIds: string[]) => {
+    console.log('🚀 Iniciando fluxo de trabalho para casos:', caseIds);
+    
+    try {
+      // Simular processamento do workflow
+      toast({
+        title: "Fluxo de trabalho iniciado",
+        description: `Processando ${caseIds.length} caso(s) automaticamente.`,
+      });
+
+      // Marcar casos como processando
+      const updatedCases = cases.map(case_ => {
+        if (caseIds.includes(case_.id)) {
+          return { ...case_, status: 'processing', lastUpdate: new Date().toISOString() };
+        }
+        return case_;
+      });
+
+      setCases(updatedCases);
+      localStorage.setItem('olga_spreadsheet_cases', JSON.stringify(updatedCases));
+
+      // Simular processamento automático
+      await new Promise(resolve => setTimeout(resolve, 2000));
+
+      // Finalizar processamento
+      const finalCases = updatedCases.map(case_ => {
+        if (caseIds.includes(case_.id)) {
+          return { 
+            ...case_, 
+            status: Math.random() > 0.8 ? 'flagged' : 'completed',
+            agent: 'AI Processor',
+            lastUpdate: new Date().toISOString()
+          };
+        }
+        return case_;
+      });
+
+      setCases(finalCases);
+      localStorage.setItem('olga_spreadsheet_cases', JSON.stringify(finalCases));
+      setSelectedCases([]);
+
+      toast({
+        title: "Fluxo concluído",
+        description: `${caseIds.length} caso(s) processado(s) com sucesso.`,
+      });
+
+    } catch (error) {
+      toast({
+        title: "Erro no fluxo",
+        description: "Erro ao processar fluxo de trabalho. Tente novamente.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleViewCase = (case_: any) => {
+    if (case_.type === 'APE' || case_.type === 'BAG') {
+      navigate('/ape-bag-analyst');
+    } else if (case_.type === 'Auto') {
+      navigate('/claims-dashboard');
+    } else {
+      navigate('/live', { state: { caseId: case_.id } });
+    }
+  };
+
   const toggleAutomation = () => {
     if (automationActive) {
       spreadsheetAutomation.stopAutomation();
@@ -376,7 +450,20 @@ const SmartSpreadsheet = () => {
           onStatusChange={setFilterStatus}
         />
 
-        <CasesTable cases={filteredCases} onCasesUpdate={handleCasesUpdate} />
+        <CasesTable 
+          cases={filteredCases} 
+          onCasesUpdate={handleCasesUpdate}
+          onSelectionChange={handleCasesSelection}
+        />
+
+        {/* Painel de Fluxo de Trabalho */}
+        <div className="mt-6">
+          <WorkflowPanel
+            selectedCases={selectedCases}
+            onStartWorkflow={handleStartWorkflow}
+            onViewCase={handleViewCase}
+          />
+        </div>
 
         <RealTimeInfo />
       </main>
