@@ -145,10 +145,12 @@ const DataPipeline = () => {
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'completed':
+      case 'ready':
         return <CheckCircle className="h-4 w-4 text-emerald-600" />;
       case 'processing':
         return <Clock className="h-4 w-4 text-blue-600" />;
+      case 'training':
+        return <Brain className="h-4 w-4 text-purple-600" />;
       case 'failed':
         return <AlertCircle className="h-4 w-4 text-red-600" />;
       default:
@@ -158,10 +160,12 @@ const DataPipeline = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'completed':
+      case 'ready':
         return 'bg-emerald-50 text-emerald-700 border-emerald-200';
       case 'processing':
         return 'bg-blue-50 text-blue-700 border-blue-200';
+      case 'training':
+        return 'bg-purple-50 text-purple-700 border-purple-200';
       case 'failed':
         return 'bg-red-50 text-red-700 border-red-200';
       default:
@@ -171,12 +175,14 @@ const DataPipeline = () => {
 
   const getTypeIcon = (type: string) => {
     switch (type) {
-      case 'claim':
+      case 'Claims':
         return <FileText className="h-4 w-4" />;
-      case 'document':
+      case 'ACORD Forms':
         return <FileText className="h-4 w-4" />;
-      case 'image':
-        return <Camera className="h-4 w-4" />;
+      case 'Fraud Detection':
+        return <AlertCircle className="h-4 w-4" />;
+      case 'Renewals':
+        return <Target className="h-4 w-4" />;
       default:
         return <Database className="h-4 w-4" />;
     }
