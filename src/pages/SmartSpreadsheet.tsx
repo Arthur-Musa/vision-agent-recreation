@@ -3,12 +3,18 @@ import { SpreadsheetHeader } from '@/components/spreadsheet/SpreadsheetHeader';
 import { SpreadsheetFilters } from '@/components/spreadsheet/SpreadsheetFilters';
 import { CasesTable } from '@/components/spreadsheet/CasesTable';
 import { RealTimeInfo } from '@/components/spreadsheet/RealTimeInfo';
+import { spreadsheetAutomation, SpreadsheetAutomation } from '@/services/spreadsheetAutomation';
+import { Button } from '@/components/ui/button';
+import { Play, Pause, Zap } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 const SmartSpreadsheet = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [cases, setCases] = useState<any[]>([]);
+  const [automationActive, setAutomationActive] = useState(false);
+  const { toast } = useToast();
 
   // Load cases from localStorage on component mount
   useEffect(() => {
@@ -257,6 +263,49 @@ const SmartSpreadsheet = () => {
     setCases(updatedCases);
   };
 
+  const toggleAutomation = () => {
+    if (automationActive) {
+      spreadsheetAutomation.stopAutomation();
+      setAutomationActive(false);
+      toast({
+        title: "Automação pausada",
+        description: "O processamento automatizado foi pausado.",
+      });
+    } else {
+      spreadsheetAutomation.startAutomation();
+      setAutomationActive(true);
+      toast({
+        title: "Automação ativa",
+        description: "Novas linhas serão processadas automaticamente.",
+      });
+    }
+  };
+
+  const simulateWebhookData = async () => {
+    const webhookData = {
+      claimNumber: `AUTO-${Date.now()}`,
+      type: 'Auto',
+      insuredName: `Cliente Webhook ${Math.floor(Math.random() * 1000)}`,
+      amount: Math.floor(Math.random() * 50000) + 5000
+    };
+
+    const result = await (SpreadsheetAutomation as any).processWebhookData(webhookData);
+    
+    if (result.success) {
+      toast({
+        title: "Dados recebidos",
+        description: `Novo caso ${webhookData.claimNumber} adicionado via webhook.`,
+      });
+      // Força refresh para mostrar novo caso
+      setTimeout(() => {
+        const savedCases = localStorage.getItem('olga_spreadsheet_cases');
+        if (savedCases) {
+          setCases(JSON.parse(savedCases));
+        }
+      }, 500);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <SpreadsheetHeader
@@ -268,6 +317,58 @@ const SmartSpreadsheet = () => {
       />
 
       <main className="container mx-auto px-6 py-6">
+        {/* Painel de Controle da Automação */}
+        <div className="mb-6 p-4 border border-border/40 rounded-lg bg-muted/10">
+          <div className="flex items-center justify-between mb-3">
+            <div>
+              <h3 className="text-sm font-medium text-foreground">Automação Inteligente</h3>
+              <p className="text-xs text-muted-foreground">
+                {automationActive 
+                  ? "Processamento automático ativo - novas linhas serão analisadas pelo Concierge"
+                  : "Automação pausada - ative para processamento automático"
+                }
+              </p>
+            </div>
+            
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={simulateWebhookData}
+                className="gap-1 text-muted-foreground hover:text-foreground"
+              >
+                <Zap className="h-3 w-3" />
+                Simular Webhook
+              </Button>
+              
+              <Button
+                variant={automationActive ? "destructive" : "default"}
+                size="sm"
+                onClick={toggleAutomation}
+                className="gap-1"
+              >
+                {automationActive ? (
+                  <>
+                    <Pause className="h-3 w-3" />
+                    Pausar Automação
+                  </>
+                ) : (
+                  <>
+                    <Play className="h-3 w-3" />
+                    Ativar Automação
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+          
+          {automationActive && (
+            <div className="flex items-center gap-2 text-xs text-green-600">
+              <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></div>
+              Sistema ativo - monitorando novas entradas
+            </div>
+          )}
+        </div>
         <SpreadsheetFilters
           searchTerm={searchTerm}
           filterStatus={filterStatus}
