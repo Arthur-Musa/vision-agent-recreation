@@ -69,7 +69,7 @@ export function AppSidebar() {
       : "hover:bg-sidebar-accent/50 text-sidebar-foreground";
 
   return (
-    <Sidebar className={collapsed ? "w-14" : "w-64"} collapsible="icon">
+    <Sidebar className={collapsed ? "w-14" : "w-64"} collapsible="icon" variant="inset">
       <SidebarContent className="bg-sidebar">
         {/* Main Navigation */}
         <SidebarGroup>
