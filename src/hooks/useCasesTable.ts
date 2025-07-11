@@ -24,11 +24,11 @@ export const useCasesTable = ({ cases, onCasesUpdate, onSelectionChange }: UseCa
   const [isProcessingBatch, setIsProcessingBatch] = useState(false);
   const [editingCell, setEditingCell] = useState<{id: string, field: string} | null>(null);
 
-  // Limpar seleção quando cases mudam
+  // Limpar seleção apenas quando a referência dos cases muda (novos dados carregados)
   useEffect(() => {
     setSelectedCases([]);
     onSelectionChange?.([]);
-  }, [cases, onSelectionChange]);
+  }, [cases.length]); // Só reseta quando o número de cases muda
 
   const handleSelectAll = (checked: boolean) => {
     const newSelection = checked ? cases.map(c => c.id) : [];
