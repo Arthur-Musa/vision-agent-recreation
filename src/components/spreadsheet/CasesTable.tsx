@@ -39,13 +39,7 @@ export const CasesTable = ({ cases, onCasesUpdate, onSelectionChange }: CasesTab
   } = useCasesTable({ cases, onCasesUpdate, onSelectionChange });
 
   const handleViewCase = (case_: Case) => {
-    if (case_.type === 'APE' || case_.type === 'BAG') {
-      navigate('/ape-bag-analyst');
-    } else if (case_.type === 'Auto') {
-      navigate('/claims-dashboard');
-    } else {
-      navigate('/live', { state: { caseId: case_.id } });
-    }
+    navigate(`/case/${case_.id}`);
   };
 
   return (
