@@ -1,46 +1,44 @@
 import { useState, useEffect } from 'react';
-import { ConversationalChat } from '@/components/chat/ConversationalChat';
-import { LiveAnalysisPanel } from '@/components/live-analysis/LiveAnalysisPanel';
-import { Button } from '@/components/ui/button';
-import { ArrowLeft, Maximize2, Minimize2 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { openaiService } from '@/services/openaiService';
-import { claimsApi } from '@/services/claimsApi';
-import { useCreateClaim } from '@/hooks/useClaims';
+import { AgentDropdown } from '@/components/agents/AgentDropdown';
+import { 
+  ArrowLeft, 
+  Send, 
+  Play, 
+  Pause, 
+  SkipForward, 
+  RotateCcw,
+  MessageSquare,
+  Settings,
+  Zap,
+  Upload,
+  FileText,
+  Users,
+  Bot,
+  BarChart3,
+  CheckCircle,
+  Clock,
+  AlertCircle
+} from 'lucide-react';
 
 interface Message {
   id: string;
-  type: 'user' | 'assistant' | 'system';
+  type: 'user' | 'system' | 'processing' | 'error';
   content: string;
   timestamp: string;
-  agent?: string;
-  citations?: Array<{
-    id: string;
-    document: string;
-    page: number;
-    text: string;
-    confidence: number;
-    coordinates: [number, number, number, number];
-  }>;
-  files?: File[];
-  status?: 'sending' | 'sent' | 'processing' | 'completed';
 }
 
-interface AnalysisStep {
-  id: string;
-  timestamp: string;
-  agent: string;
-  step: string;
-  content: string;
-  status: 'processing' | 'completed' | 'error';
-  confidence?: number;
-  sources?: Array<{
-    document: string;
-    page: number;
-    coordinates: [number, number, number, number];
-    text: string;
-  }>;
+interface PipelineStep {
+  id: number;
+  name: string;
+  status: 'completed' | 'processing' | 'pending' | 'error';
+  description: string;
+  timestamp?: string;
 }
 
 const LiveWorkflow = () => {
@@ -49,34 +47,30 @@ const LiveWorkflow = () => {
   const { toast } = useToast();
   
   const [messages, setMessages] = useState<Message[]>([]);
-  const [analysisSteps, setAnalysisSteps] = useState<AnalysisStep[]>([]);
+  const [currentMessage, setCurrentMessage] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
-  const [currentTask, setCurrentTask] = useState<string>('');
-  const [isAnalysisMininized, setIsAnalysisMinimized] = useState(false);
+  const [currentStep, setCurrentStep] = useState(0);
+  const [steps, setSteps] = useState<PipelineStep[]>([]);
+  const [currentAgent, setCurrentAgent] = useState<string>('concierge');
+  const [agentHistory, setAgentHistory] = useState<string[]>(['concierge']);
+  const [showAgentSelector, setShowAgentSelector] = useState(false);
 
-  // Process initial query from navigation state
+  // Handle initial query from navigation state
   useEffect(() => {
     const state = location.state as { 
       initialQuery?: string;
+      files?: any[];
       selectedAgent?: string;
-      initialFiles?: File[];
-      conciergeAnalysis?: string;
+      agentName?: string;
     };
     
-    if (state?.initialQuery) {
-      // Auto-send the initial query
-      handleMessageSent(state.initialQuery, state.initialFiles);
+    if (state?.selectedAgent) {
+      setCurrentAgent(state.selectedAgent);
+      setAgentHistory([state.selectedAgent]);
       
-      // Se há análise do concierge, adicionar mensagem inicial
-      if (state.conciergeAnalysis) {
-        setMessages(prev => [{
-          id: 'concierge-routing',
-          type: 'system',
-          content: `🎯 **Roteamento Concierge:** ${state.conciergeAnalysis}\n**Agente Ativado:** ${state.selectedAgent}`,
-          timestamp: new Date().toISOString(),
-          agent: 'Concierge System',
-          status: 'completed'
-        }, ...prev]);
+      if (state.initialQuery) {
+        addSystemMessage(`🤖 Agente ${state.agentName || state.selectedAgent} ativado`);
+        handleDirectAgentMessage(state.initialQuery, state.selectedAgent);
       }
       
       // Clear the state to prevent re-sending
@@ -84,372 +78,338 @@ const LiveWorkflow = () => {
     }
   }, [location.state]);
 
-  // Simula steps de análise em tempo real
-  const simulateAnalysisSteps = async (userMessage: string, files?: File[]) => {
-    const steps: AnalysisStep[] = [];
-    
-    // Step 1: Concierge Analysis
-    const conciergeStep: AnalysisStep = {
-      id: `step-${Date.now()}-1`,
-      timestamp: new Date().toISOString(),
-      agent: 'Concierge',
-      step: 'Análise de Entrada',
-      content: 'Analisando a solicitação e determinando o melhor agente para processar...',
-      status: 'processing'
+  const addSystemMessage = (content: string) => {
+    const message: Message = {
+      id: `msg-${Date.now()}`,
+      type: 'system',
+      content,
+      timestamp: new Date().toLocaleTimeString('pt-BR', { 
+        hour: '2-digit', 
+        minute: '2-digit' 
+      })
     };
-    
-    steps.push(conciergeStep);
-    setAnalysisSteps([...steps]);
-    
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    conciergeStep.status = 'completed';
-    conciergeStep.content = 'Roteando para o agente especializado em sinistros baseado no contexto da mensagem.';
-    conciergeStep.confidence = 0.95;
-    
-    // Step 2: Document Analysis (se houver arquivos)
-    if (files && files.length > 0) {
-      const docStep: AnalysisStep = {
-        id: `step-${Date.now()}-2`,
-        timestamp: new Date().toISOString(),
-        agent: 'Claims Processor',
-        step: 'Análise de Documentos',
-        content: `Processando ${files.length} documento(s) anexado(s) com OCR e extração de dados...`,
-        status: 'processing',
-        sources: files.map((file, idx) => ({
-          document: file.name,
-          page: 1,
-          coordinates: [100, 200, 400, 250] as [number, number, number, number],
-          text: `Documento ${file.name} carregado para análise detalhada`
-        }))
-      };
-      
-      steps.push(docStep);
-      setAnalysisSteps([...steps]);
-      
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      docStep.status = 'completed';
-      docStep.content = 'Dados extraídos com sucesso. Identificadas informações relevantes sobre o sinistro.';
-      docStep.confidence = 0.92;
-    }
-    
-    // Step 3: Data Extraction
-    const extractionStep: AnalysisStep = {
-      id: `step-${Date.now()}-3`,
-      timestamp: new Date().toISOString(),
-      agent: 'Claims Processor',
-      step: 'Extração de Dados',
-      content: 'Extraindo informações estruturadas: número do sinistro, data, valor, segurado...',
-      status: 'processing'
-    };
-    
-    steps.push(extractionStep);
-    setAnalysisSteps([...steps]);
-    
-    await new Promise(resolve => setTimeout(resolve, 1800));
-    
-    extractionStep.status = 'completed';
-    extractionStep.content = 'Dados extraídos: Sinistro SIN-123456, Valor R$ 15.750,00, Segurado: João Silva';
-    extractionStep.confidence = 0.89;
-    
-    // Step 4: Fraud Check
-    const fraudStep: AnalysisStep = {
-      id: `step-${Date.now()}-4`,
-      timestamp: new Date().toISOString(),
-      agent: 'Fraud Detective',
-      step: 'Verificação de Fraude',
-      content: 'Analisando padrões suspeitos, histórico do segurado e indicadores de risco...',
-      status: 'processing'
-    };
-    
-    steps.push(fraudStep);
-    setAnalysisSteps([...steps]);
-    
-    await new Promise(resolve => setTimeout(resolve, 2200));
-    
-    fraudStep.status = 'completed';
-    fraudStep.content = 'Nenhum indicador de fraude detectado. Score de risco: BAIXO';
-    fraudStep.confidence = 0.94;
-    
-    // Step 5: Final Analysis
-    const finalStep: AnalysisStep = {
-      id: `step-${Date.now()}-5`,
-      timestamp: new Date().toISOString(),
-      agent: 'Claims Processor',
-      step: 'Análise Final e Recomendações',
-      content: 'Compilando resultados e gerando recomendações para próximos passos...',
-      status: 'processing'
-    };
-    
-    steps.push(finalStep);
-    setAnalysisSteps([...steps]);
-    
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    finalStep.status = 'completed';
-    finalStep.content = 'Análise concluída. Sinistro aprovado para processamento automático.';
-    finalStep.confidence = 0.91;
-    
-    setAnalysisSteps([...steps]);
-    return steps;
+    setMessages(prev => [...prev, message]);
   };
 
-  const handleMessageSent = async (message: string, files?: File[]) => {
-    // Add user message
+  const handleDirectAgentMessage = async (query: string, agentId: string) => {
+    setIsProcessing(true);
+    addSystemMessage(`📝 Processando: "${query}"`);
+    
+    // Simulate agent processing
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    
+    addSystemMessage(`✅ Processamento concluído pelo agente ${agentId}`);
+    setIsProcessing(false);
+  };
+
+  const handleMessageSent = async () => {
+    if (!currentMessage.trim() || isProcessing) return;
+    
     const userMessage: Message = {
       id: `msg-${Date.now()}`,
       type: 'user',
-      content: message,
-      timestamp: new Date().toISOString(),
-      files: files,
-      status: 'sent'
+      content: currentMessage,
+      timestamp: new Date().toLocaleTimeString('pt-BR', { 
+        hour: '2-digit', 
+        minute: '2-digit' 
+      })
     };
     
     setMessages(prev => [...prev, userMessage]);
+    setCurrentMessage('');
     setIsProcessing(true);
-    setCurrentTask(`Criando sinistro: ${message.length > 50 ? message.slice(0, 50) + '...' : message}`);
     
-    try {
-      // 1. Criar sinistro na API REAL
-      const claimData = {
-        tipo_sinistro: detectClaimType(message),
-        descricao: message,
-        valor_estimado: extractAmount(message),
-        documentos: files?.map(f => f.name) || []
-      };
-      
-      const claim = await claimsApi.createClaim(claimData);
-      
-      // 2. Upload de arquivos se houver
-      if (files && files.length > 0) {
-        for (const file of files) {
-          await claimsApi.uploadDocument(claim.id, file);
-        }
-      }
-      
-      // 3. Iniciar análise REAL
-      setCurrentTask('Iniciando análise do sinistro...');
-      await claimsApi.startAnalysis(claim.id);
-      
-      // 4. Simular live analysis steps (visual)
-      const steps = await simulateAnalysisSteps(message, files);
-      
-      // 5. Buscar resultado da análise REAL
-      setCurrentTask('Buscando resultado da análise...');
-      await new Promise(resolve => setTimeout(resolve, 2000)); // Wait for analysis
-      
-      const report = await claimsApi.getClaimReport(claim.id);
-      
-      // 6. Resposta com dados REAIS da API
-      const assistantMessage: Message = {
-        id: `msg-${Date.now()}`,
-        type: 'assistant',
-        content: `✅ **Sinistro ${claim.numero_sinistro} analisado com sucesso!**
-
-**Resumo da Análise:**
-${report.analysis_summary}
-
-**Achados Principais:**
-${report.findings.map(f => `• ${f}`).join('\n')}
-
-**Recomendação:** ${report.recommendation}
-
-**Confiança:** ${(report.confidence * 100).toFixed(1)}%
-**Documentos analisados:** ${report.documents_analyzed}
-**Tempo de processamento:** ${report.processing_time}ms
-
-📊 **Dados salvos na planilha automaticamente**`,
-        timestamp: new Date().toISOString(),
-        agent: 'Claims API Real',
-        citations: files?.map((file, idx) => ({
-          id: `citation-${idx}`,
-          document: file.name,
-          page: 1,
-          text: `Documento ${file.name} processado pela API`,
-          confidence: report.confidence,
-          coordinates: [0, 0, 100, 100] as [number, number, number, number]
-        })) || [],
-        status: 'completed'
-      };
-      
-      setMessages(prev => [...prev, assistantMessage]);
-      
-      // 7. Salvar dados na planilha (simulado)
-      await saveToSpreadsheet({
-        numero_sinistro: claim.numero_sinistro,
-        tipo_sinistro: claimData.tipo_sinistro,
-        descricao: claimData.descricao,
-        valor_estimado: claimData.valor_estimado,
-        confidence: report.confidence,
-        recommendation: report.recommendation,
-        status: 'Analisado',
-        data_analise: new Date().toISOString(),
-        documentos: files?.map(f => f.name).join(', ') || ''
-      });
-      
-      toast({
-        title: '✅ Análise Real Concluída',
-        description: `Sinistro ${claim.numero_sinistro} processado e salvo na planilha.`
-      });
-      
-    } catch (error) {
-      console.error('Erro na API de sinistros:', error);
-      
-      const errorMessage: Message = {
-        id: `msg-${Date.now()}`,
-        type: 'assistant',
-        content: `❌ **Erro na API de Sinistros**
-
-${error instanceof Error ? error.message : 'Erro desconhecido'}
-
-💡 **Possíveis soluções:**
-• Verificar se a API está online: https://sinistros-ia-sistema-production.up.railway.app
-• Configurar CORS no backend
-• Verificar conectividade de rede
-
-🔄 **Fallback:** Usando OpenAI como backup...`,
-        timestamp: new Date().toISOString(),
-        agent: 'Sistema',
-        status: 'completed'
-      };
-      
-      setMessages(prev => [...prev, errorMessage]);
-      
-      // Fallback para OpenAI se a API falhar
-      try {
-        const agents = openaiService.getInsuranceAgents();
-        const response = await openaiService.processWithAgent(
-          agents.claimsProcessor,
-          message,
-          files ? `Documentos anexados: ${files.map(f => f.name).join(', ')}` : undefined
-        );
-        
-        const fallbackMessage: Message = {
-          id: `msg-${Date.now()}`,
-          type: 'assistant',
-          content: `🔄 **Fallback OpenAI:**\n\n${response.content}`,
-          timestamp: new Date().toISOString(),
-          agent: 'OpenAI Fallback',
-          status: 'completed'
-        };
-        
-        setMessages(prev => [...prev, fallbackMessage]);
-      } catch (fallbackError) {
-        console.error('Fallback também falhou:', fallbackError);
-      }
-      
-      toast({
-        title: '❌ Erro na API Real',
-        description: 'Usando OpenAI como fallback. Verifique a API de sinistros.',
-        variant: 'destructive'
-      });
-    } finally {
-      setIsProcessing(false);
-      setCurrentTask('');
-    }
+    // Simulate processing
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    
+    const systemResponse: Message = {
+      id: `msg-${Date.now()}`,
+      type: 'system',
+      content: `Resposta do agente ${currentAgent}: Análise concluída com sucesso.`,
+      timestamp: new Date().toLocaleTimeString('pt-BR', { 
+        hour: '2-digit', 
+        minute: '2-digit' 
+      })
+    };
+    
+    setMessages(prev => [...prev, systemResponse]);
+    setIsProcessing(false);
   };
 
-  // Helper functions
-  const detectClaimType = (message: string): string => {
-    const lower = message.toLowerCase();
-    if (lower.includes('auto') || lower.includes('carro') || lower.includes('colisão')) return 'Automotivo';
-    if (lower.includes('casa') || lower.includes('residencial') || lower.includes('incêndio')) return 'Residencial';
-    if (lower.includes('vida') || lower.includes('morte') || lower.includes('doença')) return 'Vida';
-    return 'Geral';
+  const handleAgentChange = (agentId: string, agent: any) => {
+    setCurrentAgent(agentId);
+    setAgentHistory(prev => [...prev, agentId]);
+    addSystemMessage(`🔄 Agente alterado para: ${agent?.name || agentId}`);
+    setShowAgentSelector(false);
   };
 
-  const extractAmount = (message: string): number | undefined => {
-    const regex = /R\$\s?(\d{1,3}(?:\.\d{3})*(?:,\d{2})?)/;
-    const match = message.match(regex);
-    if (match) {
-      return parseFloat(match[1].replace(/\./g, '').replace(',', '.'));
-    }
-    return undefined;
-  };
-
-  // Função para salvar dados na planilha
-  const saveToSpreadsheet = async (data: Record<string, any>) => {
-    try {
-      console.log('💾 Salvando na planilha:', data);
-      
-      // Simular salvamento (em produção seria uma API real)
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      // Em produção, aqui seria uma chamada para Google Sheets API ou similar
-      // await googleSheetsAPI.appendRow('Sinistros', data);
-      
-      console.log('✅ Dados salvos na planilha com sucesso');
-      return true;
-    } catch (error) {
-      console.error('❌ Erro ao salvar na planilha:', error);
-      return false;
-    }
-  };
-
-  const handleCitationClick = (citation: any) => {
-    toast({
-      title: 'Citação selecionada',
-      description: `Documento: ${citation.document}, Página: ${citation.page}`,
-    });
+  const getAgentDisplayName = (agentId: string) => {
+    const agentNames: Record<string, string> = {
+      'aura': 'Aura',
+      'fraud-detection': 'Fraud Detector',
+      'claims-processor': 'Claims Processor',
+      'concierge': 'Concierge'
+    };
+    return agentNames[agentId] || agentId;
   };
 
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => navigate('/')}
-              >
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Voltar
-              </Button>
-              
-              <div>
-                <h1 className="text-xl font-semibold">Olga Live Workflow</h1>
-                <p className="text-sm text-muted-foreground">
-                  Chat inteligente com análise ao vivo • Estilo V7 Labs
-                </p>
-              </div>
-            </div>
-            
+      <header className="border-b border-border bg-background sticky top-0 z-50">
+        <div className="flex items-center justify-between px-6 py-4">
+          <div className="flex items-center gap-4">
             <Button
-              variant="outline"
+              variant="ghost"
               size="sm"
-              onClick={() => setIsAnalysisMinimized(!isAnalysisMininized)}
-              className="lg:hidden"
+              onClick={() => navigate('/')}
+              className="gap-2"
             >
-              {isAnalysisMininized ? <Maximize2 className="h-4 w-4" /> : <Minimize2 className="h-4 w-4" />}
+              <ArrowLeft className="h-4 w-4" />
+              Voltar
+            </Button>
+            
+            <div className="h-6 w-px bg-border" />
+            
+            <div>
+              <h1 className="text-lg font-semibold text-foreground">Live Analysis</h1>
+              <p className="text-sm text-muted-foreground">
+                Agente ativo: {getAgentDisplayName(currentAgent)}
+              </p>
+            </div>
+          </div>
+          
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" className="gap-2">
+              <Settings className="h-4 w-4" />
+              Configurações
             </Button>
           </div>
         </div>
       </header>
 
-      {/* Main Layout - V7 Style */}
+      {/* Main Content - Two Column Layout */}
       <div className="flex h-[calc(100vh-73px)]">
-        {/* Left Panel - Chat */}
-        <div className={`${isAnalysisMininized ? 'w-full' : 'w-full lg:w-1/2'} border-r`}>
-          <ConversationalChat
-            messages={messages}
-            onMessageSent={handleMessageSent}
-            onCitationClick={handleCitationClick}
-            isProcessing={isProcessing}
-          />
+        {/* Left Column - Main Content (8/12) */}
+        <div className="flex-1 bg-background border-r border-border">
+          <div className="p-6 h-full">
+            {/* Executive Summary */}
+            <Card className="mb-6">
+              <CardHeader>
+                <CardTitle className="text-lg">Executive Summary</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="grid grid-cols-3 gap-4">
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-primary">23</div>
+                      <div className="text-sm text-muted-foreground">Cases Processed</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-green-600">95%</div>
+                      <div className="text-sm text-muted-foreground">Accuracy Rate</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-blue-600">2.3s</div>
+                      <div className="text-sm text-muted-foreground">Avg Response</div>
+                    </div>
+                  </div>
+                  
+                  <div className="border-t pt-4">
+                    <p className="text-sm text-muted-foreground">
+                      O agente <strong>{getAgentDisplayName(currentAgent)}</strong> está processando 
+                      informações em tempo real. Todas as análises são salvas automaticamente.
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Interaction Log */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Interaction Log</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3 max-h-64 overflow-y-auto">
+                  {messages.length === 0 ? (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <MessageSquare className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                      <p>Nenhuma interação ainda</p>
+                      <p className="text-xs">Digite uma mensagem abaixo para começar</p>
+                    </div>
+                  ) : (
+                    messages.map((message) => (
+                      <div key={message.id} className="flex gap-3">
+                        <div className={`w-2 h-2 rounded-full mt-2 shrink-0 ${
+                          message.type === 'user' ? 'bg-blue-500' : 
+                          message.type === 'system' ? 'bg-green-500' : 'bg-yellow-500'
+                        }`} />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="text-xs font-medium">
+                              {message.type === 'user' ? 'Usuário' : 'Sistema'}
+                            </span>
+                            <span className="text-xs text-muted-foreground">
+                              {message.timestamp}
+                            </span>
+                          </div>
+                          <p className="text-sm break-words">{message.content}</p>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </div>
 
-        {/* Right Panel - Live Analysis */}
-        <div className={`${isAnalysisMininized ? 'hidden' : 'hidden lg:block lg:w-1/2'} bg-muted/20`}>
-          <LiveAnalysisPanel
-            isActive={analysisSteps.length > 0 || isProcessing}
-            currentTask={currentTask}
-            steps={analysisSteps}
-            onCitationClick={handleCitationClick}
-          />
+        {/* Right Column - Sidebar (4/12) */}
+        <div className="w-80 bg-muted/30 border-l border-border">
+          <div className="p-6 space-y-6">
+            {/* Agent Overview */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Agent Overview</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-2 h-2 rounded-full bg-green-500" />
+                  <div>
+                    <div className="font-medium text-sm">{getAgentDisplayName(currentAgent)}</div>
+                    <div className="text-xs text-muted-foreground">Ativo</div>
+                  </div>
+                </div>
+                
+                <div className="text-xs text-muted-foreground space-y-1">
+                  <div>Uptime: 99.9%</div>
+                  <div>Last Response: 0.8s</div>
+                  <div>Total Queries: {messages.filter(m => m.type === 'user').length}</div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Processing Status */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Processing Status</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    {isProcessing ? (
+                      <>
+                        <Clock className="h-4 w-4 text-yellow-500 animate-spin" />
+                        <span className="text-sm">Processando...</span>
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle className="h-4 w-4 text-green-500" />
+                        <span className="text-sm">Pronto</span>
+                      </>
+                    )}
+                  </div>
+                  
+                  <div className="w-full bg-muted rounded-full h-2">
+                    <div 
+                      className={`h-2 rounded-full transition-all duration-300 ${
+                        isProcessing ? 'bg-yellow-500 animate-pulse' : 'bg-green-500'
+                      }`}
+                      style={{ width: isProcessing ? '60%' : '100%' }}
+                    />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Quick Actions */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Quick Actions</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <Button variant="outline" size="sm" className="w-full justify-start gap-2">
+                  <FileText className="h-4 w-4" />
+                  Export Report
+                </Button>
+                <Button variant="outline" size="sm" className="w-full justify-start gap-2">
+                  <BarChart3 className="h-4 w-4" />
+                  View Analytics
+                </Button>
+                <Button variant="outline" size="sm" className="w-full justify-start gap-2">
+                  <Upload className="h-4 w-4" />
+                  Upload Files
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+
+      {/* Bottom Bar */}
+      <div className="border-t border-border bg-background p-4">
+        <div className="flex items-center gap-4">
+          {/* Change Agent Button */}
+          <div className="relative">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowAgentSelector(!showAgentSelector)}
+              className="gap-2"
+            >
+              <Bot className="h-4 w-4" />
+              Trocar Agente
+            </Button>
+            
+            {showAgentSelector && (
+              <div className="absolute bottom-full left-0 mb-2 w-64">
+                <Card className="shadow-lg">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm">Selecionar Agente</CardTitle>
+                  </CardHeader>
+                  <CardContent className="pb-3">
+                    <AgentDropdown
+                      value={currentAgent}
+                      onValueChange={handleAgentChange}
+                      placeholder="Selecione um agente"
+                    />
+                  </CardContent>
+                </Card>
+              </div>
+            )}
+          </div>
+
+          {/* Message Input */}
+          <div className="flex-1 flex gap-2">
+            <Input
+              value={currentMessage}
+              onChange={(e) => setCurrentMessage(e.target.value)}
+              placeholder="Digite sua mensagem..."
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  handleMessageSent();
+                }
+              }}
+              disabled={isProcessing}
+              className="flex-1"
+            />
+            <Button
+              onClick={handleMessageSent}
+              disabled={!currentMessage.trim() || isProcessing}
+              size="sm"
+              className="gap-2"
+            >
+              <Send className="h-4 w-4" />
+            </Button>
+          </div>
+
+          {/* Call Concierge Button */}
+          <Button variant="outline" size="sm" className="gap-2">
+            <MessageSquare className="h-4 w-4" />
+            Chamar Concierge
+          </Button>
         </div>
       </div>
     </div>
