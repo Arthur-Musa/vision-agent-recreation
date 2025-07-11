@@ -165,19 +165,31 @@ const AgentCards = () => {
       </div>
 
       {/* CTA Section */}
-      <div className="text-center mt-12">
+      <div className="text-center mt-12 space-y-4">
         <p className="text-body-sm text-muted-foreground mb-4">
           Precisa de algo específico?
         </p>
-        <button 
-          onClick={() => navigate('/agent-builder')}
-          className="inline-flex items-center gap-2 text-body-sm font-medium text-primary hover:text-primary/80 transition-colors"
-        >
-          Criar agente personalizado
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
-        </button>
+        <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
+          <button 
+            onClick={() => navigate('/agent-builder')}
+            className="inline-flex items-center gap-2 text-body-sm font-medium text-primary hover:text-primary/80 transition-colors"
+          >
+            Criar agente personalizado
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+          </button>
+          <span className="text-muted-foreground/50">•</span>
+          <button 
+            onClick={() => navigate('/openai-test')}
+            className="inline-flex items-center gap-2 text-body-sm font-medium text-primary hover:text-primary/80 transition-colors"
+          >
+            Testar APIs OpenAI
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+          </button>
+        </div>
       </div>
     </div>
   );

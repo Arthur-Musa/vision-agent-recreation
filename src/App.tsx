@@ -34,6 +34,7 @@ import UnderwritingIntake from "./pages/UnderwritingIntake";
 import Integrations from "./pages/Integrations";
 import ApeBagAnalyst from "./pages/ApeBagAnalyst";
 import { Chat } from "./pages/Chat";
+import OpenAITestCenter from "./pages/OpenAITestCenter";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -49,6 +50,7 @@ const App = () => (
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/chat" element={<Chat />} />
+              <Route path="/openai-test" element={<OpenAITestCenter />} />
               
               <Route path="/upload" element={<Upload />} />
               <Route path="/journey" element={<UserJourney />} />
