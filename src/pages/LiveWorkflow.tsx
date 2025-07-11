@@ -6,6 +6,8 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { AgentDropdown } from '@/components/agents/AgentDropdown';
+import { conciergeOrchestrator } from '@/services/conciergeOrchestrator';
+import { workflowEngine } from '@/services/workflowEngine';
 import { 
   ArrowLeft, 
   Send, 
@@ -95,10 +97,20 @@ const LiveWorkflow = () => {
     setIsProcessing(true);
     addSystemMessage(`📝 Processando: "${query}"`);
     
-    // Simulate agent processing
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    try {
+      // Use real concierge orchestrator
+      const response = await conciergeOrchestrator.processQuery(query);
+      
+      addSystemMessage(`✅ Processamento concluído pelo agente ${agentId}`);
+      addSystemMessage(`📊 Resultado: ${response.message}`);
+      
+      if (response.nextSteps.length > 0) {
+        addSystemMessage(`🎯 Próximos passos: ${response.nextSteps.join(', ')}`);
+      }
+    } catch (error) {
+      addSystemMessage(`❌ Erro no processamento: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
+    }
     
-    addSystemMessage(`✅ Processamento concluído pelo agente ${agentId}`);
     setIsProcessing(false);
   };
 
@@ -116,23 +128,52 @@ const LiveWorkflow = () => {
     };
     
     setMessages(prev => [...prev, userMessage]);
+    const messageToProcess = currentMessage;
     setCurrentMessage('');
     setIsProcessing(true);
     
-    // Simulate processing
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    try {
+      // Use real concierge orchestrator for message processing
+      const response = await conciergeOrchestrator.processQuery(messageToProcess);
+      
+      const systemResponse: Message = {
+        id: `msg-${Date.now()}`,
+        type: 'system',
+        content: response.message,
+        timestamp: new Date().toLocaleTimeString('pt-BR', { 
+          hour: '2-digit', 
+          minute: '2-digit' 
+        })
+      };
+      
+      setMessages(prev => [...prev, systemResponse]);
+      
+      // Add next steps if available
+      if (response.nextSteps.length > 0) {
+        const nextStepsMessage: Message = {
+          id: `msg-${Date.now() + 1}`,
+          type: 'system',
+          content: `🎯 Próximos passos: ${response.nextSteps.join(', ')}`,
+          timestamp: new Date().toLocaleTimeString('pt-BR', { 
+            hour: '2-digit', 
+            minute: '2-digit' 
+          })
+        };
+        setMessages(prev => [...prev, nextStepsMessage]);
+      }
+    } catch (error) {
+      const errorMessage: Message = {
+        id: `msg-${Date.now()}`,
+        type: 'error',
+        content: `❌ Erro no processamento: ${error instanceof Error ? error.message : 'Erro desconhecido'}`,
+        timestamp: new Date().toLocaleTimeString('pt-BR', { 
+          hour: '2-digit', 
+          minute: '2-digit' 
+        })
+      };
+      setMessages(prev => [...prev, errorMessage]);
+    }
     
-    const systemResponse: Message = {
-      id: `msg-${Date.now()}`,
-      type: 'system',
-      content: `Resposta do agente ${currentAgent}: Análise concluída com sucesso.`,
-      timestamp: new Date().toLocaleTimeString('pt-BR', { 
-        hour: '2-digit', 
-        minute: '2-digit' 
-      })
-    };
-    
-    setMessages(prev => [...prev, systemResponse]);
     setIsProcessing(false);
   };
 
