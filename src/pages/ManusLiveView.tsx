@@ -335,294 +335,209 @@ const ManusLiveView = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
-        <div className="container mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => navigate('/')}
-                className="gap-2"
-              >
-                <ArrowLeft className="h-4 w-4" />
-                Voltar
-              </Button>
-              
-              <div>
-                <h1 className="text-2xl font-semibold">
-                  Comprehensive Analysis Report: {currentAgent}
-                </h1>
-                <p className="text-sm text-muted-foreground">
-                  Análise inteligente de documentos • Powered by AI
-                </p>
-              </div>
+    <div className="min-h-screen bg-white">
+      {/* Header simples */}
+      <header className="border-b bg-white px-8 py-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate('/')}
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Voltar
+            </Button>
+            <div className="text-sm text-gray-600">
+              Olga | Powered by the Olga Engine
             </div>
-            
-            <div className="flex items-center gap-3">
-              <Badge variant="secondary" className="gap-2 px-3 py-1">
-                <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                Status: Online
-              </Badge>
-              
-              <Button 
-                variant="ghost" 
-                size="sm"
-                onClick={() => navigate('/settings')}
-              >
-                <Settings className="h-4 w-4" />
-              </Button>
-            </div>
+          </div>
+          
+          <div className="flex items-center gap-4 text-sm text-gray-600">
+            <span>New</span>
+            <span>Chat Data</span>
+            <span>Download</span>
+            <span>Share</span>
+            <span>Processing #1</span>
           </div>
         </div>
       </header>
 
-      {/* Main Content - Two Column Layout */}
-      <div className="container mx-auto px-6 py-6">
-        <div className="grid grid-cols-12 gap-8 min-h-[calc(100vh-200px)]">
-          
-          {/* Left Column - Main Content */}
-          <div className="col-span-8 space-y-6">
+      {/* Conteúdo principal */}
+      <div className="flex">
+        {/* Área principal do documento */}
+        <div className="flex-1 px-8 py-8 max-w-4xl">
+          <div className="space-y-8">
+            
+            {/* Título principal */}
+            <div>
+              <h1 className="text-3xl font-semibold text-gray-900 mb-2">
+                Comprehensive Due Diligence Report: {currentAgent === 'aura' ? 'Aura Analysis' : 
+                currentAgent === 'fraud-detection' ? 'Fraud Detection Analysis' : 
+                currentAgent === 'claims-processor' ? 'Claims Processing Report' : 'Agent Analysis'}
+              </h1>
+              <div className="text-sm text-gray-500 mt-4">
+                <div>Agent Overview</div>
+              </div>
+            </div>
+
             {/* Executive Summary */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-xl">Executive Summary</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  {currentAgent} é um agente de IA especializado em análise de documentos e processamento inteligente. 
-                  O sistema utiliza técnicas avançadas de machine learning e processamento de linguagem natural para 
-                  extrair insights valiosos, classificar documentos e fornecer recomendações precisas.
-                </p>
-                
-                {/* Current Analysis Steps */}
-                {steps.length > 0 && (
-                  <div className="space-y-3">
-                    <h3 className="font-semibold text-base">1. Progresso da Análise</h3>
-                    <div className="space-y-2">
-                      {steps.map((step, index) => (
-                        <div key={step.id} className="flex items-center gap-3 text-sm">
-                          <div className={`w-1.5 h-1.5 rounded-full ${
-                            step.status === 'completed' ? 'bg-green-500' :
-                            step.status === 'processing' ? 'bg-blue-500' :
-                            step.status === 'error' ? 'bg-red-500' :
-                            'bg-gray-300'
-                          }`}></div>
-                          <span className={step.status === 'completed' ? 'line-through text-muted-foreground' : ''}>
-                            {step.name}: {step.description}
-                          </span>
-                          {step.status === 'processing' && (
-                            <span className="text-blue-600 text-xs">Em andamento...</span>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                
-                {/* Performance Metrics */}
+            <div>
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">Executive Summary</h2>
+              <p className="text-gray-700 leading-relaxed mb-6">
+                {currentAgent === 'aura' ? 
+                  'Aura é um agente de IA especializado em análise jurídica e processamento de contratos. O sistema utiliza técnicas avançadas de machine learning para revisar documentos legais, extrair cláusulas importantes e identificar potenciais riscos. Com base na análise realizada, apresentamos as principais descobertas e recomendações.' :
+                  currentAgent === 'fraud-detection' ?
+                  'O sistema de detecção de fraudes utiliza algoritmos avançados de IA para identificar padrões suspeitos em sinistros e documentação. Através da análise de múltiplos fatores e indicadores, o agente consegue determinar a probabilidade de fraude com alta precisão.' :
+                  currentAgent === 'claims-processor' ?
+                  'O processador de sinistros automatiza a análise e classificação de solicitações de indenização. Utilizando OCR e processamento de linguagem natural, o sistema extrai informações relevantes e fornece recomendações para aprovação ou investigação adicional.' :
+                  'Este agente oferece análise abrangente de documentos e processamento inteligente de dados. O sistema foi projetado para extrair insights valiosos e fornecer recomendações precisas baseadas em machine learning.'
+                }
+              </p>
+            </div>
+
+            {/* 1. Performance Analysis */}
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">1. Performance Analysis</h3>
+              <div className="space-y-2 text-gray-700">
+                <div className="flex">
+                  <span className="mr-2">•</span>
+                  <span><strong>Accuracy Rate:</strong> 95.7% em análises de documentos (base: 1,000+ documentos processados)</span>
+                </div>
+                <div className="flex">
+                  <span className="mr-2">•</span>
+                  <span><strong>Processing Time:</strong> Média de 2.1 segundos por página, 45% mais rápido que baseline</span>
+                </div>
+                <div className="flex">
+                  <span className="mr-2">•</span>
+                  <span><strong>Confidence Score:</strong> 89.2% média em extrações de dados estruturados</span>
+                </div>
+                <div className="flex">
+                  <span className="mr-2">•</span>
+                  <span><strong>Error Rate:</strong> Apenas 2.3% de falsos positivos em análises automatizadas</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Log de atividades se houver */}
+            {messages.length > 0 && (
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">2. Activity Log</h3>
                 <div className="space-y-3">
-                  <h3 className="font-semibold text-base">2. Performance Metrics</h3>
-                  <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <span className="font-medium">• Accuracy Rate:</span> 95.7% em análises de documentos (1,000+ análises)
+                  {messages.slice(-3).map((message, index) => (
+                    <div key={message.id} className="text-sm text-gray-700">
+                      <span className="mr-2">•</span>
+                      <span>{new Date(message.timestamp).toLocaleTimeString('pt-BR')}: {message.content}</span>
                     </div>
-                    <div>
-                      <span className="font-medium">• Processing Speed:</span> Média de 3.2s por documento
-                    </div>
-                    <div>
-                      <span className="font-medium">• Confidence Score:</span> 89% média geral em extrações
-                    </div>
-                    <div>
-                      <span className="font-medium">• Success Rate:</span> 97.8% de casos processados com sucesso
-                    </div>
-                  </div>
+                  ))}
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            )}
 
-            {/* Chat Messages */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-xl">Interaction Log</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3 max-h-96 overflow-y-auto">
-                  {messages.length === 0 ? (
-                    <div className="text-center py-8 text-muted-foreground">
-                      <MessageSquare className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                      <p className="text-sm">Nenhuma interação registrada ainda</p>
+            {/* Processing Steps se houver */}
+            {steps.length > 0 && (
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">3. Current Processing Status</h3>
+                <div className="space-y-2">
+                  {steps.map((step, index) => (
+                    <div key={step.id} className="flex items-center text-sm text-gray-700">
+                      <span className="mr-2">•</span>
+                      <span className={step.status === 'completed' ? 'line-through text-gray-500' : ''}>
+                        {step.name}: {step.description}
+                      </span>
+                      {step.status === 'processing' && (
+                        <span className="ml-2 text-blue-600">[Em andamento]</span>
+                      )}
+                      {step.status === 'completed' && (
+                        <span className="ml-2 text-green-600">[Concluído]</span>
+                      )}
                     </div>
-                  ) : (
-                    messages.map((message) => (
-                      <div key={message.id} className="border-l-2 border-muted pl-4 py-2">
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                            {message.type === 'user' ? 'Usuário' : 'Sistema'}
-                          </span>
-                          <span className="text-xs text-muted-foreground">
-                            {new Date(message.timestamp).toLocaleTimeString('pt-BR')}
-                          </span>
-                        </div>
-                        <p className="text-sm">{message.content}</p>
-                      </div>
-                    ))
-                  )}
+                  ))}
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            )}
           </div>
+        </div>
 
-          {/* Right Column - Sidebar */}
-          <div className="col-span-4 space-y-4">
+        {/* Sidebar direita */}
+        <div className="w-80 border-l bg-gray-50 p-6">
+          <div className="space-y-6">
             
             {/* Agent Overview */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base flex items-center gap-2">
-                  <Bot className="h-4 w-4" />
-                  Agent Overview
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4 text-sm">
-                <div>
-                  <h4 className="font-medium mb-2">Especialização</h4>
-                  <p className="text-muted-foreground text-xs">
-                    {currentAgent === 'aura' ? 'Análise jurídica de contratos e documentos legais' :
-                     currentAgent === 'fraud-detection' ? 'Detecção de fraudes em sinistros e documentação' :
-                     currentAgent === 'claims-processor' ? 'Processamento automatizado de sinistros' :
-                     'Orquestração e direcionamento de demandas'}
-                  </p>
-                </div>
-                
-                <div>
-                  <h4 className="font-medium mb-2">Capacidades</h4>
-                  <div className="space-y-1 text-xs text-muted-foreground">
-                    <div>• OCR e extração de texto</div>
-                    <div>• Análise semântica avançada</div>
-                    <div>• Classificação automatizada</div>
-                    <div>• Geração de relatórios</div>
-                  </div>
-                </div>
+            <div>
+              <h4 className="font-semibold text-gray-900 mb-3">Agent Overview</h4>
+              <div className="text-sm text-gray-700 space-y-2">
+                <div><strong>Current Agent:</strong> {currentAgent}</div>
+                <div><strong>Status:</strong> {isProcessing ? 'Processing' : 'Ready'}</div>
+                <div><strong>Last Update:</strong> {new Date().toLocaleTimeString('pt-BR')}</div>
+              </div>
+            </div>
 
-                {showAgentSelector && (
-                  <div>
-                    <h4 className="font-medium mb-2">Trocar Agente</h4>
-                    <AgentDropdown 
-                      value={currentAgent}
-                      onValueChange={(agentId) => {
-                        setCurrentAgent(agentId);
-                        setAgentHistory(prev => [...prev, agentId]);
-                        setShowAgentSelector(false);
-                        addSystemMessage(`🔄 Conectado ao agente: ${agentId}`);
-                      }}
-                      placeholder="Selecionar agente..."
-                    />
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+            {/* Legal Trends */}
+            <div>
+              <h4 className="font-semibold text-gray-900 mb-3">Legal Trends Affecting AI Powered CRM</h4>
+              <div className="text-xs text-gray-600 leading-relaxed">
+                • Data privacy regulations (GDPR and LGPD) continue to shape how companies collect and utilize AI
+                • Automated decision-making regulations and transparency requirements
+                • The legitimizing focus not only affects product design and data governance across companies
+              </div>
+            </div>
 
-            {/* Processing Status */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">Processing Status</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {isProcessing ? (
-                  <div className="flex items-center gap-2 text-sm">
-                    <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
-                    <span>Processando análise...</span>
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
-                    <span>Aguardando comando</span>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Quick Actions */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">Quick Actions</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="w-full justify-start gap-2"
-                  onClick={() => {
-                    addSystemMessage('🔄 Reiniciando agente...');
-                  }}
-                >
-                  <RotateCcw className="h-3 w-3" />
-                  Reiniciar Agente
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="w-full justify-start gap-2"
-                  onClick={() => navigate('/upload')}
-                >
-                  <Upload className="h-3 w-3" />
-                  Upload Documento
-                </Button>
-              </CardContent>
-            </Card>
+            {/* General Information */}
+            <div>
+              <h4 className="font-semibold text-gray-900 mb-3">General Information</h4>
+              <div className="text-xs text-gray-600 space-y-1">
+                <div><strong>Market Position:</strong> Leading AI analysis platform</div>
+                <div><strong>Technology:</strong> Advanced ML and NLP algorithms</div>
+                <div><strong>Barriers to Entry:</strong> High technical complexity and data requirements</div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Bottom Bar */}
-      <div className="fixed bottom-0 left-0 right-0 bg-background border-t p-4">
-        <div className="container mx-auto">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={() => setShowAgentSelector(!showAgentSelector)}
-                className="gap-2"
-              >
-                <Users className="h-4 w-4" />
-                Trocar Agente
-              </Button>
-              
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={() => {
-                  setCurrentAgent('concierge');
-                  addSystemMessage('🎯 Concierge ativado - Como posso ajudar?');
-                }}
-                className="gap-2"
-              >
-                <MessageSquare className="h-4 w-4" />
-                Chamar Concierge
-              </Button>
-            </div>
+      {/* Barra inferior */}
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t p-4">
+        <div className="flex items-center justify-between max-w-6xl mx-auto">
+          <div className="flex items-center gap-4">
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => setShowAgentSelector(!showAgentSelector)}
+            >
+              Trocar Agente
+            </Button>
             
-            <div className="flex items-center gap-2 flex-1 max-w-md">
-              <Input
-                placeholder="Digite sua mensagem ou comando..."
-                value={currentMessage}
-                onChange={(e) => setCurrentMessage(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && handleSendMessage(currentMessage)}
-                disabled={isProcessing}
-                className="flex-1"
-              />
-              <Button 
-                onClick={() => handleSendMessage(currentMessage)}
-                disabled={isProcessing || !currentMessage.trim()}
-                size="sm"
-              >
-                <Send className="h-4 w-4" />
-              </Button>
-            </div>
+            {showAgentSelector && (
+              <div className="w-48">
+                <AgentDropdown 
+                  value={currentAgent}
+                  onValueChange={(agentId) => {
+                    setCurrentAgent(agentId);
+                    setShowAgentSelector(false);
+                    addSystemMessage(`Agente trocado para: ${agentId}`);
+                  }}
+                  placeholder="Selecionar agente..."
+                />
+              </div>
+            )}
+          </div>
+          
+          <div className="flex items-center gap-2 flex-1 max-w-md">
+            <Input
+              placeholder="Digite uma mensagem..."
+              value={currentMessage}
+              onChange={(e) => setCurrentMessage(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && handleSendMessage(currentMessage)}
+              disabled={isProcessing}
+            />
+            <Button 
+              onClick={() => handleSendMessage(currentMessage)}
+              disabled={isProcessing || !currentMessage.trim()}
+              size="sm"
+            >
+              <Send className="h-4 w-4" />
+            </Button>
           </div>
         </div>
       </div>
