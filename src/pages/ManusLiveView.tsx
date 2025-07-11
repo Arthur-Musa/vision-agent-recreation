@@ -20,7 +20,8 @@ import {
   Upload,
   FileText,
   Users,
-  Bot
+  Bot,
+  BarChart3
 } from 'lucide-react';
 
 interface Message {
@@ -337,58 +338,48 @@ const ManusLiveView = () => {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4">
+        <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <Button
-                variant="outline"
+                variant="ghost"
                 size="sm"
                 onClick={() => navigate('/')}
+                className="gap-2"
               >
-                <ArrowLeft className="h-4 w-4 mr-2" />
+                <ArrowLeft className="h-4 w-4" />
                 Voltar
               </Button>
               
               <div>
-                <h1 className="text-xl font-semibold flex items-center gap-2">
-                  <Zap className="h-5 w-5" />
+                <h1 className="text-2xl font-semibold flex items-center gap-2">
+                  <Zap className="h-6 w-6 text-primary" />
                   Manus Live View
                 </h1>
                 <p className="text-sm text-muted-foreground">
-                  Interação em tempo real com agentes de IA
+                  Análise inteligente de documentos com IA
                 </p>
               </div>
             </div>
             
-            <div className="flex items-center gap-2">
-              <Badge variant="outline" className="gap-1">
-                <Bot className="h-3 w-3" />
-                Agente: {currentAgent}
+            <div className="flex items-center gap-3">
+              <Badge variant="secondary" className="gap-2 px-3 py-1">
+                <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                {currentAgent}
               </Badge>
               
               <Button 
                 variant="outline" 
                 size="sm"
                 onClick={() => setShowAgentSelector(!showAgentSelector)}
+                className="gap-2"
               >
-                <Users className="h-4 w-4 mr-1" />
+                <Users className="h-4 w-4" />
                 Trocar Agente
               </Button>
               
               <Button 
-                variant="outline" 
-                size="sm"
-                onClick={() => {
-                  setCurrentAgent('concierge');
-                  addSystemMessage('🎯 Concierge ativado - Como posso ajudar?');
-                }}
-              >
-                <MessageSquare className="h-4 w-4 mr-1" />
-                Chamar Concierge
-              </Button>
-              
-              <Button 
-                variant="outline" 
+                variant="ghost" 
                 size="sm"
                 onClick={() => navigate('/settings')}
               >
@@ -399,128 +390,210 @@ const ManusLiveView = () => {
         </div>
       </header>
 
-      {/* Main Layout - 50/50 Split */}
-      <div className="flex h-[calc(100vh-73px)]">
-        {/* Left Panel - Chat */}
-        <div className="w-1/2 border-r flex flex-col">
-          <div className="p-4 border-b">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-lg font-semibold flex items-center gap-2">
-                  <MessageSquare className="h-5 w-5" />
-                  Chat com {currentAgent}
-                </h2>
-                <p className="text-sm text-muted-foreground">
-                  Interaja diretamente com o agente ou envie arquivos
-                </p>
-              </div>
-              
-              {showAgentSelector && (
-                <div className="w-64">
-                  <AgentDropdown 
-                    value={currentAgent}
-                    onValueChange={(agentId) => {
-                      setCurrentAgent(agentId);
-                      setAgentHistory(prev => [...prev, agentId]);
-                      setShowAgentSelector(false);
-                      addSystemMessage(`🔄 Trocando para agente: ${agentId}`);
-                    }}
-                    placeholder="Selecionar agente..."
-                  />
-                </div>
-              )}
-            </div>
-          </div>
+      {/* Main Content */}
+      <div className="container mx-auto px-6 py-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-[calc(100vh-140px)]">
           
-          <div className="flex-1 overflow-y-auto p-4">
-            <div className="space-y-3">
-              {messages.map((message) => (
-                <div 
-                  key={message.id}
-                  className={`p-3 rounded-lg max-w-[80%] ${
-                    message.type === 'user' 
-                      ? getMessageColor(message.type) 
-                      : `border ${getMessageColor(message.type)}`
-                  }`}
-                >
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-sm font-medium capitalize">{message.type}</span>
-                    <span className="text-xs text-muted-foreground">
-                      {new Date(message.timestamp).toLocaleTimeString('pt-BR')}
-                    </span>
+          {/* Left Panel - Chat Interface */}
+          <Card className="flex flex-col">
+            <CardHeader className="border-b">
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="flex items-center gap-2 text-lg">
+                    <MessageSquare className="h-5 w-5" />
+                    Conversa com {currentAgent}
+                  </CardTitle>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Envie comandos ou faça upload de documentos para análise
+                  </p>
+                </div>
+                
+                {showAgentSelector && (
+                  <div className="w-64">
+                    <AgentDropdown 
+                      value={currentAgent}
+                      onValueChange={(agentId) => {
+                        setCurrentAgent(agentId);
+                        setAgentHistory(prev => [...prev, agentId]);
+                        setShowAgentSelector(false);
+                        addSystemMessage(`🔄 Conectado ao agente: ${agentId}`);
+                      }}
+                      placeholder="Selecionar agente..."
+                    />
                   </div>
-                  <p className="text-sm">{message.content}</p>
-                </div>
-              ))}
-              
-              {isProcessing && (
-                <div className="p-3 rounded-lg border bg-muted text-muted-foreground">
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 bg-primary rounded-full animate-pulse"></div>
-                    <span className="text-sm">Pipeline executando...</span>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-          
-          <div className="p-4 border-t">
-            <div className="flex items-center gap-2">
-              <Input
-                placeholder="Digite sua mensagem ou comando..."
-                value={currentMessage}
-                onChange={(e) => setCurrentMessage(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && handleSendMessage(currentMessage)}
-                disabled={isProcessing}
-              />
-              <Button 
-                onClick={() => handleSendMessage(currentMessage)}
-                disabled={isProcessing || !currentMessage.trim()}
-              >
-                <Send className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-        </div>
-
-        {/* Right Panel - Pipeline Steps */}
-        <div className="w-1/2 bg-muted/20">
-          <div className="p-4 border-b">
-            <h2 className="text-lg font-semibold">Pipeline Status</h2>
-            <p className="text-sm text-muted-foreground">
-              Acompanhe o progresso em tempo real
-            </p>
-          </div>
-          
-          <div className="p-4 space-y-4">
-            {steps.length === 0 ? (
-              <div className="text-center py-12 text-muted-foreground">
-                <MessageSquare className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p>Envie uma mensagem para iniciar um pipeline</p>
+                )}
               </div>
-            ) : (
-              steps.map((step) => (
-                <Card key={step.id} className={step.id === currentStep ? 'ring-2 ring-primary' : ''}>
-                  <CardHeader className="pb-3">
-                    <div className="flex items-center justify-between">
-                      <CardTitle className="text-base">{step.name}</CardTitle>
-                      <Badge className={getStepColor(step.status)}>
-                        {step.status}
-                      </Badge>
+            </CardHeader>
+            
+            <CardContent className="flex-1 p-0">
+              <div className="flex flex-col h-full">
+                {/* Messages Area */}
+                <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                  {messages.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center h-full text-center space-y-4">
+                      <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
+                        <Bot className="h-8 w-8 text-primary" />
+                      </div>
+                      <div>
+                        <h3 className="font-medium text-lg">Bem-vindo ao Manus Live</h3>
+                        <p className="text-muted-foreground text-sm mt-1">
+                          Envie uma mensagem ou faça upload de documentos para começar
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                        <Upload className="h-3 w-3" />
+                        Arraste arquivos aqui ou use o campo de mensagem
+                      </div>
                     </div>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-sm text-muted-foreground mb-2">{step.description}</p>
-                    {step.timestamp && (
-                      <p className="text-xs text-muted-foreground">
-                        {new Date(step.timestamp).toLocaleTimeString('pt-BR')}
+                  ) : (
+                    <>
+                      {messages.map((message) => (
+                        <div 
+                          key={message.id}
+                          className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
+                        >
+                          <div 
+                            className={`max-w-[80%] p-4 rounded-lg ${getMessageColor(message.type)} ${
+                              message.type !== 'user' ? 'border shadow-sm' : ''
+                            }`}
+                          >
+                            <div className="flex items-center justify-between mb-2">
+                              <span className="text-xs font-medium uppercase tracking-wide opacity-70">
+                                {message.type === 'user' ? 'Você' : 'Agente'}
+                              </span>
+                              <span className="text-xs opacity-60">
+                                {new Date(message.timestamp).toLocaleTimeString('pt-BR')}
+                              </span>
+                            </div>
+                            <p className="text-sm leading-relaxed">{message.content}</p>
+                          </div>
+                        </div>
+                      ))}
+                      
+                      {isProcessing && (
+                        <div className="flex justify-start">
+                          <div className="max-w-[80%] p-4 rounded-lg border bg-muted/50">
+                            <div className="flex items-center gap-2">
+                              <div className="w-2 h-2 bg-primary rounded-full animate-pulse"></div>
+                              <span className="text-sm">Processando...</span>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
+                
+                {/* Input Area */}
+                <div className="border-t p-4">
+                  <div className="flex items-center gap-2">
+                    <Input
+                      placeholder="Digite sua mensagem ou comando..."
+                      value={currentMessage}
+                      onChange={(e) => setCurrentMessage(e.target.value)}
+                      onKeyPress={(e) => e.key === 'Enter' && handleSendMessage(currentMessage)}
+                      disabled={isProcessing}
+                      className="flex-1"
+                    />
+                    <Button 
+                      onClick={() => handleSendMessage(currentMessage)}
+                      disabled={isProcessing || !currentMessage.trim()}
+                      size="sm"
+                    >
+                      <Send className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Right Panel - Analysis Results */}
+          <Card className="flex flex-col">
+            <CardHeader className="border-b">
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <FileText className="h-5 w-5" />
+                Resultados da Análise
+              </CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Acompanhe o progresso e visualize os resultados
+              </p>
+            </CardHeader>
+            
+            <CardContent className="flex-1 p-0">
+              <div className="h-full overflow-y-auto">
+                {steps.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center h-full text-center space-y-4 p-6">
+                    <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center">
+                      <BarChart3 className="h-8 w-8 text-muted-foreground" />
+                    </div>
+                    <div>
+                      <h3 className="font-medium">Aguardando Análise</h3>
+                      <p className="text-muted-foreground text-sm mt-1">
+                        Os resultados aparecerão aqui quando o processamento iniciar
                       </p>
-                    )}
-                  </CardContent>
-                </Card>
-              ))
-            )}
-          </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="p-4 space-y-3">
+                    {steps.map((step, index) => (
+                      <div 
+                        key={step.id} 
+                        className={`relative p-4 rounded-lg border transition-all duration-200 ${
+                          step.id === currentStep ? 'ring-2 ring-primary border-primary/50 bg-primary/5' : 
+                          step.status === 'completed' ? 'bg-green-50 border-green-200' :
+                          step.status === 'error' ? 'bg-destructive/10 border-destructive/20' :
+                          'bg-muted/30'
+                        }`}
+                      >
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-2">
+                              <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
+                                step.status === 'completed' ? 'bg-green-100 text-green-800' :
+                                step.status === 'processing' ? 'bg-primary text-primary-foreground' :
+                                step.status === 'error' ? 'bg-destructive text-destructive-foreground' :
+                                'bg-muted text-muted-foreground'
+                              }`}>
+                                {index + 1}
+                              </div>
+                              <h4 className="font-medium text-sm">{step.name}</h4>
+                            </div>
+                            <p className="text-xs text-muted-foreground mb-2">{step.description}</p>
+                            {step.timestamp && (
+                              <p className="text-xs text-muted-foreground">
+                                {new Date(step.timestamp).toLocaleTimeString('pt-BR')}
+                              </p>
+                            )}
+                          </div>
+                          <Badge 
+                            variant={
+                              step.status === 'completed' ? 'default' :
+                              step.status === 'processing' ? 'secondary' :
+                              step.status === 'error' ? 'destructive' :
+                              'outline'
+                            }
+                            className="text-xs"
+                          >
+                            {step.status === 'completed' ? 'Concluído' :
+                             step.status === 'processing' ? 'Processando' :
+                             step.status === 'error' ? 'Erro' :
+                             'Pendente'}
+                          </Badge>
+                        </div>
+                        
+                        {step.status === 'processing' && (
+                          <div className="mt-3 w-full bg-muted rounded-full h-1.5">
+                            <div className="bg-primary h-1.5 rounded-full animate-pulse" style={{width: '60%'}}></div>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>
