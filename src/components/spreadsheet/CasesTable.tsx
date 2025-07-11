@@ -93,9 +93,11 @@ export const CasesTable = ({ cases, onCasesUpdate, onSelectionChange }: CasesTab
   };
 
   const handleSelectCase = (caseId: string, checked: boolean) => {
+    console.log('📌 Selecionando caso:', { caseId, checked, currentSelection: selectedCases });
     const newSelection = checked 
       ? [...selectedCases, caseId]
       : selectedCases.filter(id => id !== caseId);
+    console.log('📌 Nova seleção:', newSelection);
     setSelectedCases(newSelection);
     onSelectionChange?.(newSelection);
   };
@@ -315,17 +317,21 @@ export const CasesTable = ({ cases, onCasesUpdate, onSelectionChange }: CasesTab
             </thead>
             <tbody>
               {cases.map((case_) => (
-                <tr 
+                  <tr 
                   key={case_.id} 
                   className={`border-b border-border/20 hover:bg-muted/30 transition-colors ${
-                    selectedCases.includes(case_.id) ? 'bg-primary/5' : ''
+                    selectedCases.includes(case_.id) ? 'bg-primary/10 border-primary/30' : ''
                   }`}
                 >
                   <td className="px-3 py-2">
                     <Checkbox
                       checked={selectedCases.includes(case_.id)}
-                      onCheckedChange={(checked) => handleSelectCase(case_.id, checked as boolean)}
+                      onCheckedChange={(checked) => {
+                        console.log('🔄 Checkbox mudou:', { caseId: case_.id, checked });
+                        handleSelectCase(case_.id, checked as boolean);
+                      }}
                       aria-label={`Selecionar caso ${case_.claimNumber}`}
+                      className="data-[state=checked]:bg-primary data-[state=checked]:border-primary"
                     />
                   </td>
                   <td className="px-3 py-2">
