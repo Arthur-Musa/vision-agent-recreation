@@ -10,21 +10,21 @@ const Header = () => {
 
   return (
     <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
-      <div className="container mx-auto px-4 py-4">
+      <div className="container mx-auto spacing-md">
         <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center gap-3">
             <div className="w-7 h-7 bg-foreground rounded-full flex items-center justify-center">
               <div className="w-3 h-3 bg-background rounded-full"></div>
             </div>
-            <h1 className="text-2xl olga-logo text-foreground">Olga</h1>
+            <h1 className="text-heading-2 olga-logo text-foreground">Olga</h1>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             {hasRole('admin') && (
-              <Button 
+               <Button 
                 variant="outline" 
                 size="sm"
                 onClick={() => navigate('/settings')}
-                className="gap-2"
+                className="gap-2 text-body-sm"
               >
                 <Settings className="h-4 w-4" />
                 Configurações

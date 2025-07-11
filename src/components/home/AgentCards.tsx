@@ -76,10 +76,10 @@ const AgentCards = () => {
 
   const getStatusColor = (status?: string) => {
     switch (status) {
-      case 'active': return 'bg-green-100 text-green-700 border-green-200';
-      case 'processing': return 'bg-blue-100 text-blue-700 border-blue-200';
-      case 'empty': return 'bg-gray-100 text-gray-700 border-gray-200';
-      default: return 'bg-gray-100 text-gray-700 border-gray-200';
+      case 'active': return 'badge-status-active';
+      case 'processing': return 'badge-status-processing';
+      case 'empty': 
+      default: return 'badge-status-inactive';
     }
   };
 
@@ -93,7 +93,7 @@ const AgentCards = () => {
           return (
             <Card 
               key={agent.id}
-              className="cursor-pointer hover:shadow-[var(--shadow-card-hover)] transition-all duration-200 border border-border/50"
+              className="card-interactive"
               onClick={() => navigate(agent.route, { 
                 state: { 
                   selectedAgent: agent.id,
@@ -102,7 +102,7 @@ const AgentCards = () => {
                 } 
               })}
             >
-              <CardContent className="p-4">
+              <CardContent className="spacing-md">
                 <div className="flex items-start gap-3">
                   <div 
                     className={`w-10 h-10 rounded-full ${colors.gradient} flex items-center justify-center border border-border/20 shadow-sm flex-shrink-0`}
@@ -110,16 +110,16 @@ const AgentCards = () => {
                   >
                     <Bot className="h-5 w-5" strokeWidth={1.5} />
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h3 className="font-medium text-sm truncate">{agent.name}</h3>
+                  <div className="flex-1 min-w-0 spacing-stack-xs">
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-body font-medium truncate">{agent.name}</h3>
                       {agent.status && (
-                        <Badge variant="outline" className={`text-xs ${getStatusColor(agent.status)}`}>
+                        <Badge variant="outline" className={`text-caption ${getStatusColor(agent.status)}`}>
                           {agent.status}
                         </Badge>
                       )}
                     </div>
-                    <p className="text-xs text-muted-foreground leading-relaxed">
+                    <p className="text-body-sm text-muted-foreground">
                       {agent.description}
                     </p>
                   </div>

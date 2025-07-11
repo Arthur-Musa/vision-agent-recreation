@@ -135,21 +135,52 @@
   body {
     @apply bg-background text-foreground font-sans antialiased;
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    line-height: 1.5;
   }
 
   h1, h2, h3, h4, h5, h6 {
-    @apply font-semibold tracking-tight;
+    @apply font-medium tracking-tight;
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    line-height: 1.25;
   }
+
+  h1 { @apply text-4xl; }
+  h2 { @apply text-3xl; }
+  h3 { @apply text-xl; }
+  h4 { @apply text-lg; }
+  h5 { @apply text-base; }
+  h6 { @apply text-sm; }
 
   .olga-logo {
     font-family: 'Playfair Display', serif;
     font-weight: 400;
     letter-spacing: -0.02em;
   }
+
+  .text-heading-1 { @apply text-4xl font-medium tracking-tight; }
+  .text-heading-2 { @apply text-3xl font-medium tracking-tight; }
+  .text-heading-3 { @apply text-xl font-medium tracking-tight; }
+  .text-body-lg { @apply text-lg leading-relaxed; }
+  .text-body { @apply text-base leading-normal; }
+  .text-body-sm { @apply text-sm leading-relaxed; }
+  .text-caption { @apply text-xs text-muted-foreground; }
 }
 
 @layer components {
+  /* Consistent spacing system */
+  .spacing-xs { @apply p-2; }
+  .spacing-sm { @apply p-3; }
+  .spacing-md { @apply p-4; }
+  .spacing-lg { @apply p-6; }
+  .spacing-xl { @apply p-8; }
+
+  .spacing-stack-xs > * + * { @apply mt-2; }
+  .spacing-stack-sm > * + * { @apply mt-3; }
+  .spacing-stack-md > * + * { @apply mt-4; }
+  .spacing-stack-lg > * + * { @apply mt-6; }
+  .spacing-stack-xl > * + * { @apply mt-8; }
+
+  /* Gradient utilities */
   .gradient-claims {
     background: var(--gradient-claims);
   }
@@ -174,15 +205,32 @@
     background: var(--gradient-hero);
   }
 
-  .agent-card {
-    @apply bg-card border border-border rounded-lg p-6 shadow-[var(--shadow-card)] transition-all duration-200 hover:shadow-[var(--shadow-card-hover)];
+  /* Consistent component styles */
+  .card-elevated {
+    @apply bg-card border border-border rounded-lg shadow-[var(--shadow-card)] transition-all duration-200 hover:shadow-[var(--shadow-card-hover)];
   }
 
-  .conversation-message {
-    @apply bg-muted/30 border border-border/50 rounded-lg p-4 text-sm;
+  .card-interactive {
+    @apply card-elevated cursor-pointer hover:bg-card/80;
   }
 
-  .minimal-button {
-    @apply bg-transparent border border-border rounded-lg px-4 py-2 text-sm transition-colors hover:bg-muted/50;
+  .badge-status-active {
+    @apply bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-300 dark:border-green-800;
+  }
+
+  .badge-status-processing {
+    @apply bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-800;
+  }
+
+  .badge-status-inactive {
+    @apply bg-muted text-muted-foreground border-border;
+  }
+
+  .input-clean {
+    @apply border-0 bg-background/50 backdrop-blur-sm focus-visible:ring-0 focus-visible:ring-offset-0;
+  }
+
+  .button-ghost-clean {
+    @apply bg-transparent border-0 hover:bg-muted/50 text-muted-foreground hover:text-foreground;
   }
 }

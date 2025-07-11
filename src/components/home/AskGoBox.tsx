@@ -105,19 +105,19 @@ const AskGoBox = ({
   };
   return <>
       {/* Greeting */}
-      <div className="text-center mb-8">
-        <h1 className="text-4xl font-light mb-2 text-foreground">
+      <div className="text-center spacing-stack-md mb-8">
+        <h1 className="text-heading-1">
           {getTimeGreeting()}, {userName}
         </h1>
-        <p className="text-xl text-muted-foreground font-light">
+        <p className="text-body-lg text-muted-foreground">
           O que você gostaria de fazer hoje?
         </p>
       </div>
 
       {/* Ask Go Box */}
       <div className="max-w-4xl mx-auto mb-12">
-        <Card className="gradient-hero border border-border/50 hover:shadow-[var(--shadow-card-hover)] transition-all duration-200">
-          <CardContent className="p-6">
+        <Card className="gradient-hero card-elevated">
+          <CardContent className="spacing-lg">
             {/* File Upload Area */}
             <div {...getRootProps()} className={`border-2 border-dashed rounded-lg p-4 mb-4 transition-colors ${isDragActive ? 'border-primary bg-primary/5' : 'border-border/50 bg-background/30'} ${uploadedFiles.length > 0 ? 'pb-2' : ''}`}>
               <input {...getInputProps()} />
@@ -143,7 +143,7 @@ const AskGoBox = ({
 
             <div className="flex items-center gap-4 mb-4">
               <div className="flex-1">
-                <Input role="search" placeholder="Ask Go..." value={askGoQuery} onChange={e => setAskGoQuery(e.target.value)} onKeyDown={handleKeyDown} className="border-0 bg-background/50 backdrop-blur-sm text-lg placeholder:text-muted-foreground focus-visible:ring-0 h-12" />
+                <Input role="search" placeholder="Ask Go..." value={askGoQuery} onChange={e => setAskGoQuery(e.target.value)} onKeyDown={handleKeyDown} className="input-clean text-body-lg placeholder:text-muted-foreground h-12" />
               </div>
               <Button onClick={handleAskGo} size="lg" className="px-8">
                 →
@@ -151,32 +151,32 @@ const AskGoBox = ({
             </div>
             
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <Button variant="ghost" size="sm" onClick={() => navigate('/live')} className="gap-2">
+              <div className="flex items-center gap-3">
+                <Button variant="ghost" size="sm" onClick={() => navigate('/live')} className="button-ghost-clean gap-2 text-body-sm">
                   <Plus className="h-4 w-4" />
                   Novo Job
                 </Button>
-                <Button variant="ghost" size="sm" onClick={() => navigate('/agent-builder')} className="gap-2">
+                <Button variant="ghost" size="sm" onClick={() => navigate('/agent-builder')} className="button-ghost-clean gap-2 text-body-sm">
                   <Plus className="h-4 w-4" />
                   Criar Agente
                 </Button>
-                <Button variant="ghost" size="sm" onClick={() => navigate('/cases')} className="gap-2">
+                <Button variant="ghost" size="sm" onClick={() => navigate('/cases')} className="button-ghost-clean gap-2 text-body-sm">
                   <Globe className="h-4 w-4" />
                   Cases
                 </Button>
                 
                 {/* Concierge with Agent Dropdown */}
                 <div className="relative">
-                  <Button variant="ghost" size="sm" onClick={() => setShowAgentDropdown(!showAgentDropdown)} className="gap-2">
+                  <Button variant="ghost" size="sm" onClick={() => setShowAgentDropdown(!showAgentDropdown)} className="button-ghost-clean gap-2 text-body-sm">
                     <MessageCircle className="h-4 w-4" />
                     Concierge
                     <ChevronDown className="h-3 w-3" />
                   </Button>
                   
                   {showAgentDropdown && <div className="absolute top-full left-0 mt-2 z-50 bg-popover border rounded-lg shadow-lg min-w-80">
-                      <div className="p-3 border-b">
-                        <h3 className="font-medium text-sm mb-1">Selecione um Agente</h3>
-                        <p className="text-xs text-muted-foreground">Escolha o agente especializado para seu caso</p>
+                      <div className="spacing-sm border-b">
+                        <h3 className="text-body font-medium">Selecione um Agente</h3>
+                        <p className="text-caption">Escolha o agente especializado para seu caso</p>
                       </div>
                       <div className="p-2">
                         <AgentDropdown value={selectedAgent} onValueChange={(agentId, agent) => {

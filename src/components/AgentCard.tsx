@@ -15,9 +15,9 @@ export const AgentCard = ({ agent, onSelect }: AgentCardProps) => {
   const { t } = useLanguage();
 
   const complexityColors = {
-    low: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300",
-    medium: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300",
-    high: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300"
+    low: "badge-status-active",
+    medium: "bg-yellow-50 text-yellow-700 border-yellow-200 dark:bg-yellow-900/20 dark:text-yellow-300 dark:border-yellow-800",
+    high: "bg-red-50 text-red-700 border-red-200 dark:bg-red-900/20 dark:text-red-300 dark:border-red-800"
   };
 
   const complexityLabels = {
@@ -28,11 +28,11 @@ export const AgentCard = ({ agent, onSelect }: AgentCardProps) => {
 
   return (
     <Card 
-      className="group cursor-pointer hover:shadow-lg transition-all duration-300 border border-border/50 bg-card hover:bg-card/80"
+      className="card-interactive"
       onClick={() => onSelect(agent)}
     >
-      <CardContent className="p-6">
-        <div className="flex flex-col items-center text-center space-y-4">
+      <CardContent className="spacing-lg">
+        <div className="flex flex-col items-center text-center spacing-stack-md">
           {/* Minimalist gradient icon inspired by V7Labs */}
           <div className={cn(
             "w-12 h-12 rounded-full flex items-center justify-center",
@@ -44,22 +44,22 @@ export const AgentCard = ({ agent, onSelect }: AgentCardProps) => {
           </div>
 
           {/* Agent name */}
-          <div>
-            <h3 className="font-medium text-base mb-2">{t(agent.name)}</h3>
-            <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">
+          <div className="text-center spacing-stack-xs">
+            <h3 className="text-heading-3">{t(agent.name)}</h3>
+            <p className="text-body-sm text-muted-foreground line-clamp-2">
               {t(agent.description)}
             </p>
           </div>
 
           {/* Meta info - simplified */}
-          <div className="flex items-center gap-3 text-xs text-muted-foreground">
+          <div className="flex items-center gap-3 text-caption">
             <div className="flex items-center gap-1">
               <Clock className="h-3 w-3" />
               <span>{agent.estimatedTime}</span>
             </div>
             <Badge 
               variant="outline" 
-              className="text-xs border-current/20"
+              className={`text-caption ${complexityColors[agent.complexityLevel]}`}
             >
               {t(complexityLabels[agent.complexityLevel])}
             </Badge>
