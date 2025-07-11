@@ -68,10 +68,21 @@ const OpenAITestCenter = () => {
       return;
     }
 
+    if (!apiKey) {
+      toast.error('Configure a API Key da OpenAI primeiro');
+      return;
+    }
+
     setIsLoading(true);
     try {
+      console.log('Iniciando teste do assistant:', selectedAgent);
+      console.log('Mensagem:', assistantMessage);
+      console.log('Documento:', documentText);
+      
       const agents = openaiService.getInsuranceAgents();
       const agentConfig = agents[selectedAgent];
+      
+      console.log('Configuração do agente:', agentConfig);
       
       const result = await openaiService.processWithAgent(
         agentConfig,
@@ -79,12 +90,13 @@ const OpenAITestCenter = () => {
         documentText || undefined
       );
       
+      console.log('Resultado do assistant:', result);
       setResponse(JSON.stringify(result, null, 2));
       toast.success('Assistant executado com sucesso!');
     } catch (error) {
-      console.error('Erro no assistant:', error);
+      console.error('Erro detalhado no assistant:', error);
       setResponse(`Erro: ${error.message}`);
-      toast.error('Erro ao executar assistant');
+      toast.error(`Erro ao executar assistant: ${error.message}`);
     } finally {
       setIsLoading(false);
     }
