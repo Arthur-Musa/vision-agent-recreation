@@ -25,10 +25,10 @@ import {
 interface DatasetItem {
   id: string;
   name: string;
-  type: 'claim' | 'document' | 'image' | 'report';
-  status: 'processing' | 'completed' | 'failed' | 'pending';
+  type: 'Claims' | 'ACORD Forms' | 'Fraud Detection' | 'Renewals';
+  status: 'processing' | 'ready' | 'training' | 'failed';
   progress: number;
-  source: string;
+  source: 'Webhook' | 'Direct Upload' | 'Bulk Import CLI' | 'API';
   annotations: number;
   createdAt: string;
 }
@@ -36,7 +36,8 @@ interface DatasetItem {
 interface AnnotationClass {
   id: string;
   name: string;
-  type: 'fraud' | 'damage' | 'coverage' | 'priority';
+  type: 'FieldExtraction' | 'FraudIndicators' | 'RenewalDiff';
+  subclass: string;
   color: string;
   confidence: number;
   count: number;
@@ -49,68 +50,82 @@ const DataPipeline = () => {
   const [datasets, setDatasets] = useState<DatasetItem[]>([
     {
       id: '1',
-      name: 'Sinistros Q1 2024',
-      type: 'claim',
-      status: 'completed',
+      name: 'ClaimsDocuments',
+      type: 'Claims',
+      status: 'ready',
       progress: 100,
-      source: 'API Seguradora A',
+      source: 'Webhook',
       annotations: 1250,
       createdAt: '2024-01-15'
     },
     {
       id: '2',
-      name: 'Documentos Médicos',
-      type: 'document',
+      name: 'PolicyForms',
+      type: 'ACORD Forms',
       status: 'processing',
       progress: 65,
-      source: 'Upload Manual',
+      source: 'Direct Upload',
       annotations: 340,
       createdAt: '2024-01-20'
     },
     {
       id: '3',
-      name: 'Fotos Veículos',
-      type: 'image',
-      status: 'pending',
-      progress: 0,
-      source: 'Mobile App',
-      annotations: 0,
+      name: 'FraudCases',
+      type: 'Fraud Detection',
+      status: 'training',
+      progress: 45,
+      source: 'Bulk Import CLI',
+      annotations: 156,
       createdAt: '2024-01-22'
+    },
+    {
+      id: '4',
+      name: 'RenewalForms',
+      type: 'Renewals',
+      status: 'failed',
+      progress: 0,
+      source: 'API',
+      annotations: 0,
+      createdAt: '2024-01-25'
     }
   ]);
 
   const [annotationClasses] = useState<AnnotationClass[]>([
     {
       id: '1',
-      name: 'Fraude Suspeita',
-      type: 'fraud',
+      name: 'Policy Number',
+      type: 'FieldExtraction',
+      subclass: 'policy_number',
+      color: 'blue',
+      confidence: 95,
+      count: 1250
+    },
+    {
+      id: '2',
+      name: 'Duplicate Claim',
+      type: 'FraudIndicators',
+      subclass: 'duplicate_claim',
       color: 'red',
       confidence: 87,
       count: 45
     },
     {
-      id: '2',
-      name: 'Dano Total',
-      type: 'damage',
-      color: 'orange',
-      confidence: 92,
-      count: 123
-    },
-    {
       id: '3',
-      name: 'Cobertura Válida',
-      type: 'coverage',
+      name: 'Coverage Increase',
+      type: 'RenewalDiff',
+      subclass: 'coverage_increase',
       color: 'green',
-      confidence: 95,
-      count: 890
+      confidence: 92,
+      count: 234
     },
     {
       id: '4',
-      name: 'Alta Prioridade',
-      type: 'priority',
+      name: 'Estimated Amount',
+      type: 'FieldExtraction',
+      subclass: 'estimated_amount',
       color: 'purple',
-      confidence: 78,
-      count: 67
+      confidence: 89,
+      count: 890
     }
   ]);
 
@@ -332,49 +347,108 @@ const DataPipeline = () => {
         <TabsContent value="workflow" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Workflow Configurável</CardTitle>
+              <CardTitle>Workflow V7 Labs - Insurance Annotation Pipeline</CardTitle>
               <CardDescription>
-                Fluxo personalizado por seguradora com etapas de revisão
+                7 estágios sequenciais: Annotate → Review → Model → Webhook → Logic → Archive → Sampling
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                <div className="grid gap-4 md:grid-cols-3">
-                  <Card className="p-4">
+              <div className="space-y-6">
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                  <Card className="p-4 border-l-4 border-l-blue-500">
                     <div className="flex items-center space-x-2 mb-2">
-                      <Upload className="h-5 w-5 text-blue-600" />
-                      <h4 className="font-semibold">1. Importação</h4>
+                      <Target className="h-5 w-5 text-blue-600" />
+                      <h4 className="font-semibold">1. Annotate</h4>
                     </div>
+                    <p className="text-xs text-muted-foreground mb-1">Analista Jr.</p>
                     <p className="text-sm text-muted-foreground">
-                      Múltiplas fontes de dados
+                      Label de campos obrigatórios (policy_number, date, amount)
                     </p>
                   </Card>
                   
-                  <Card className="p-4">
+                  <Card className="p-4 border-l-4 border-l-green-500">
+                    <div className="flex items-center space-x-2 mb-2">
+                      <CheckCircle className="h-5 w-5 text-green-600" />
+                      <h4 className="font-semibold">2. Review</h4>
+                    </div>
+                    <p className="text-xs text-muted-foreground mb-1">Analista Sr.</p>
+                    <p className="text-sm text-muted-foreground">
+                      Verificação de qualidade e correção de rótulos
+                    </p>
+                  </Card>
+                  
+                  <Card className="p-4 border-l-4 border-l-purple-500">
                     <div className="flex items-center space-x-2 mb-2">
                       <Brain className="h-5 w-5 text-purple-600" />
-                      <h4 className="font-semibold">2. Processamento IA</h4>
+                      <h4 className="font-semibold">3. Model</h4>
                     </div>
+                    <p className="text-xs text-muted-foreground mb-1">Data Scientist</p>
                     <p className="text-sm text-muted-foreground">
-                      APE+BAG e modelos externos
+                      Treinamento OCR+NER pipeline
                     </p>
                   </Card>
                   
-                  <Card className="p-4">
+                  <Card className="p-4 border-l-4 border-l-orange-500">
                     <div className="flex items-center space-x-2 mb-2">
-                      <Users className="h-5 w-5 text-emerald-600" />
-                      <h4 className="font-semibold">3. Revisão Humana</h4>
+                      <Workflow className="h-5 w-5 text-orange-600" />
+                      <h4 className="font-semibold">4. Webhook</h4>
                     </div>
+                    <p className="text-xs text-muted-foreground mb-1">Infra/DevOps</p>
                     <p className="text-sm text-muted-foreground">
-                      Validação por analistas
+                      POST em /v1/trainings/new
+                    </p>
+                  </Card>
+                </div>
+
+                <div className="grid gap-4 md:grid-cols-3">
+                  <Card className="p-4 border-l-4 border-l-red-500">
+                    <div className="flex items-center space-x-2 mb-2">
+                      <Settings className="h-5 w-5 text-red-600" />
+                      <h4 className="font-semibold">5. Logic</h4>
+                    </div>
+                    <p className="text-xs text-muted-foreground mb-1">Eng. de Dados</p>
+                    <p className="text-sm text-muted-foreground">
+                      Validar regras: estimated_amount ≤ LMI, incident_date ≥ policy_start
+                    </p>
+                  </Card>
+                  
+                  <Card className="p-4 border-l-4 border-l-gray-500">
+                    <div className="flex items-center space-x-2 mb-2">
+                      <Database className="h-5 w-5 text-gray-600" />
+                      <h4 className="font-semibold">6. Archive</h4>
+                    </div>
+                    <p className="text-xs text-muted-foreground mb-1">Sistema</p>
+                    <p className="text-sm text-muted-foreground">
+                      Armazenar datasets para auditoria
+                    </p>
+                  </Card>
+                  
+                  <Card className="p-4 border-l-4 border-l-cyan-500">
+                    <div className="flex items-center space-x-2 mb-2">
+                      <BarChart3 className="h-5 w-5 text-cyan-600" />
+                      <h4 className="font-semibold">7. Sampling</h4>
+                    </div>
+                    <p className="text-xs text-muted-foreground mb-1">QA</p>
+                    <p className="text-sm text-muted-foreground">
+                      5-10% checagem manual periódica
                     </p>
                   </Card>
                 </div>
                 
-                <Button className="w-full">
-                  <Workflow className="mr-2 h-4 w-4" />
-                  Configurar Workflow Personalizado
-                </Button>
+                <div className="space-y-2">
+                  <Button className="w-full">
+                    <Workflow className="mr-2 h-4 w-4" />
+                    Configurar Pipeline V7 Completo
+                  </Button>
+                  <Button variant="outline" className="w-full">
+                    <FileText className="mr-2 h-4 w-4" />
+                    Definir Annotation Guidelines
+                  </Button>
+                  <Button variant="outline" className="w-full">
+                    <Brain className="mr-2 h-4 w-4" />
+                    Train a Model (Split 70/15/15)
+                  </Button>
+                </div>
               </div>
             </CardContent>
           </Card>
