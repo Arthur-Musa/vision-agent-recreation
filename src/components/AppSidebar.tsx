@@ -39,6 +39,7 @@ const toolsItems = [
   { title: "Knowledge Hub", url: "/knowledge", icon: BookOpen },
   { title: "Invite users", url: "/invite", icon: Users },
   { title: "Search agents", url: "/ai-agents", icon: Search },
+  { title: "Settings", url: "/settings", icon: Settings },
 ];
 
 const recentCases = [
