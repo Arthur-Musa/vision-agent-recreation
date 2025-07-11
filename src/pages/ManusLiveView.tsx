@@ -5,7 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { openaiService } from '@/services/openaiService';
+import { conciergeOrchestrator } from '@/services/conciergeOrchestrator';
+import { AgentDropdown } from '@/components/agents/AgentDropdown';
 import { 
   ArrowLeft, 
   Send, 
@@ -15,7 +16,11 @@ import {
   RotateCcw,
   MessageSquare,
   Settings,
-  Zap
+  Zap,
+  Upload,
+  FileText,
+  Users,
+  Bot
 } from 'lucide-react';
 
 interface Message {
@@ -33,7 +38,7 @@ interface PipelineStep {
   timestamp?: string;
 }
 
-const OlgaLiveView = () => {
+const ManusLiveView = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
@@ -43,39 +48,129 @@ const OlgaLiveView = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const [steps, setSteps] = useState<PipelineStep[]>([]);
+  const [currentAgent, setCurrentAgent] = useState<string>('concierge');
+  const [agentHistory, setAgentHistory] = useState<string[]>(['concierge']);
+  const [showAgentSelector, setShowAgentSelector] = useState(false);
 
-  // Handle initial query from navigation state
+  // Handle initial query from navigation state - CONCIERGE ORCHESTRATOR FLOW
   useEffect(() => {
     const state = location.state as { 
       initialQuery?: string;
       files?: any[];
       selectedAgent?: string;
+      triggeredBy?: 'ask-go' | 'concierge';
     };
     
     if (state?.initialQuery || state?.files?.length) {
-      let initialMessage = '';
-      
-      if (state.files?.length) {
-        const fileList = state.files.map(f => f.name).join(', ');
-        initialMessage += `📎 Arquivos anexados: ${fileList}\n\n`;
-      }
-      
-      if (state.initialQuery) {
-        initialMessage += state.initialQuery;
-      }
-      
-      if (state.selectedAgent && state.selectedAgent !== 'concierge') {
-        addSystemMessage(`🤖 Agente selecionado: ${state.selectedAgent}`);
-      }
-      
-      if (initialMessage.trim()) {
-        handleSendMessage(initialMessage);
+      if (state.triggeredBy === 'ask-go') {
+        // Fluxo Ask Go: Concierge orquestrador analisa e chama agentes necessários
+        startConciergeOrchestration(state.initialQuery || '', state.files || []);
+      } else if (state.triggeredBy === 'concierge' && state.selectedAgent) {
+        // Fluxo direto: analista selecionou agente específico
+        setCurrentAgent(state.selectedAgent);
+        setAgentHistory([state.selectedAgent]);
+        addSystemMessage(`🤖 Agente ${state.selectedAgent} ativado diretamente`);
+        if (state.initialQuery) {
+          handleDirectAgentMessage(state.initialQuery, state.selectedAgent);
+        }
       }
       
       // Clear the state to prevent re-sending
       navigate(location.pathname, { replace: true, state: {} });
     }
   }, [location.state]);
+
+  const startConciergeOrchestration = async (query: string, files: any[]) => {
+    addSystemMessage('🎯 Concierge ativado - Analisando sua demanda...');
+    setIsProcessing(true);
+    
+    try {
+      // Chamar o orquestrador
+      const response = await conciergeOrchestrator.processQuery(query, files);
+      
+      if (response.success) {
+        addSystemMessage(`✅ ${response.message}`);
+        
+        // Mostrar agente selecionado
+        const selectedAgent = response.context.suggestedAgent;
+        setCurrentAgent(selectedAgent);
+        setAgentHistory([selectedAgent]);
+        
+        addSystemMessage(`🤖 Agente ${selectedAgent} foi acionado para sua demanda`);
+        addSystemMessage(`📋 Próximos passos: ${response.nextSteps.join(', ')}`);
+        
+        // Simular início do processamento pelo agente
+        await simulateAgentProcessing(selectedAgent, query);
+      }
+    } catch (error) {
+      addSystemMessage('❌ Erro na análise do concierge. Tente novamente.');
+      console.error('Concierge error:', error);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const simulateAgentProcessing = async (agentId: string, query: string) => {
+    const steps: PipelineStep[] = [
+      {
+        id: 1,
+        name: 'Inicialização do Agente',
+        status: 'processing',
+        description: `Agente ${agentId} inicializando...`,
+        timestamp: new Date().toISOString()
+      },
+      {
+        id: 2,
+        name: 'Análise da Demanda',
+        status: 'pending',
+        description: 'Analisando contexto e requisitos'
+      },
+      {
+        id: 3,
+        name: 'Processamento',
+        status: 'pending',
+        description: 'Executando análise especializada'
+      },
+      {
+        id: 4,
+        name: 'Geração de Resposta',
+        status: 'pending',
+        description: 'Formulando resposta e recomendações'
+      }
+    ];
+
+    setSteps(steps);
+    
+    for (let i = 0; i < steps.length; i++) {
+      setCurrentStep(i + 1);
+      const updatedSteps = [...steps];
+      
+      if (i > 0) {
+        updatedSteps[i - 1].status = 'completed';
+        updatedSteps[i - 1].timestamp = new Date().toISOString();
+      }
+      
+      updatedSteps[i].status = 'processing';
+      updatedSteps[i].timestamp = new Date().toISOString();
+      setSteps([...updatedSteps]);
+      
+      await new Promise(resolve => setTimeout(resolve, 1500));
+    }
+    
+    // Finalizar
+    const finalSteps = [...steps];
+    finalSteps[finalSteps.length - 1].status = 'completed';
+    finalSteps[finalSteps.length - 1].timestamp = new Date().toISOString();
+    setSteps(finalSteps);
+    
+    addSystemMessage(`✅ Agente ${agentId} concluiu a análise da sua demanda.`);
+    addSystemMessage(`📊 Resultado: Análise completa disponível. O agente está pronto para interação.`);
+  };
+
+  const handleDirectAgentMessage = async (message: string, agentId: string) => {
+    addSystemMessage(`💬 Enviando mensagem para agente ${agentId}...`);
+    await simulateAgentProcessing(agentId, message);
+  };
 
   const handleSendMessage = async (message: string) => {
     if (!message.trim()) return;
@@ -89,161 +184,31 @@ const OlgaLiveView = () => {
 
     setMessages(prev => [...prev, userMessage]);
     setCurrentMessage('');
-    setIsProcessing(true);
-
-    // Get files from initial state
-    const state = location.state as { 
-      files?: any[];
-      selectedAgent?: string;
-    };
-
-    // Create real pipeline based on content and files
-    const newSteps: PipelineStep[] = [
-      {
-        id: 1,
-        name: 'Análise de Entrada',
-        status: 'processing',
-        description: 'Analisando solicitação e determinando pipeline apropriado...',
-        timestamp: new Date().toISOString()
-      },
-      {
-        id: 2,
-        name: 'Extração de Dados',
-        status: 'pending',
-        description: state?.files?.length ? 'Extrair informações dos documentos enviados' : 'Processar texto da solicitação'
-      },
-      {
-        id: 3,
-        name: 'Processamento de IA',
-        status: 'pending',
-        description: `Executar análise usando ${state?.selectedAgent || 'agente padrão'}`
-      },
-      {
-        id: 4,
-        name: 'Validação',
-        status: 'pending',
-        description: 'Validar resultados e aplicar regras de negócio'
-      },
-      {
-        id: 5,
-        name: 'Finalização',
-        status: 'pending',
-        description: 'Gerar resultado final e recomendações'
-      }
-    ];
-
-    setSteps(newSteps);
-    setCurrentStep(1);
-
-    // Process with real AI service
-    await processWithAI(newSteps, message, state?.files || [], state?.selectedAgent);
-  };
-
-  const processWithAI = async (
-    initialSteps: PipelineStep[], 
-    message: string, 
-    files: any[], 
-    selectedAgent?: string
-  ) => {
-    const updatedSteps = [...initialSteps];
     
-    try {
-      // Step 1: Analysis
-      addSystemMessage('Iniciando análise da solicitação...');
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      updatedSteps[0].status = 'completed';
-      updatedSteps[0].timestamp = new Date().toISOString();
-      updatedSteps[1].status = 'processing';
-      updatedSteps[1].timestamp = new Date().toISOString();
-      setSteps([...updatedSteps]);
-      setCurrentStep(2);
-      
-      // Step 2: Data extraction
-      addSystemMessage(files.length > 0 ? 
-        `Processando ${files.length} arquivo(s) enviado(s)...` : 
-        'Extraindo dados da solicitação...'
-      );
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      updatedSteps[1].status = 'completed';
-      updatedSteps[2].status = 'processing';
-      updatedSteps[2].timestamp = new Date().toISOString();
-      setSteps([...updatedSteps]);
-      setCurrentStep(3);
-      
-      // Step 3: AI Processing
-      addSystemMessage(`Executando análise com ${selectedAgent || 'agente padrão'}...`);
-      
-      // Call OpenAI service with appropriate agent
-      const agents = openaiService.getInsuranceAgents();
-      const agentKey = selectedAgent === 'fraud-detector' ? 'fraudDetector' : 
-                      selectedAgent === 'customer-service' ? 'customerService' : 'claimsProcessor';
-      const agentConfig = agents[agentKey];
-      
-      const aiResponse = await openaiService.processWithAgent(agentConfig, message);
-      
-      updatedSteps[2].status = 'completed';
-      updatedSteps[3].status = 'processing';
-      updatedSteps[3].timestamp = new Date().toISOString();
-      setSteps([...updatedSteps]);
-      setCurrentStep(4);
-      
-      // Step 4: Validation
-      addSystemMessage('Validando resultados...');
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      updatedSteps[3].status = 'completed';
-      updatedSteps[4].status = 'processing';
-      updatedSteps[4].timestamp = new Date().toISOString();
-      setSteps([...updatedSteps]);
-      setCurrentStep(5);
-      
-      // Step 5: Finalization
-      addSystemMessage('Finalizando análise...');
-      await new Promise(resolve => setTimeout(resolve, 800));
-      
-      updatedSteps[4].status = 'completed';
-      updatedSteps[4].timestamp = new Date().toISOString();
-      setSteps([...updatedSteps]);
-      setCurrentStep(0);
-      setIsProcessing(false);
-      
-      // Add AI response to chat
-      const aiMessage: Message = {
-        id: `ai_${Date.now()}`,
+    // Simular resposta do agente atual
+    setTimeout(() => {
+      const agentResponse: Message = {
+        id: `agent_${Date.now()}`,
         type: 'system',
-        content: aiResponse.content || 'Análise concluída com sucesso!',
+        content: `Agente ${currentAgent}: ${generateAgentResponse(message)}`,
         timestamp: new Date().toISOString()
       };
-      setMessages(prev => [...prev, aiMessage]);
-      
-      toast({
-        title: "Processamento Concluído",
-        description: "Sua solicitação foi processada com sucesso.",
-      });
-      
-    } catch (error) {
-      console.error('Erro no processamento:', error);
-      
-      // Mark current step as error
-      updatedSteps[currentStep - 1] = {
-        ...updatedSteps[currentStep - 1],
-        status: 'error',
-        description: 'Erro durante o processamento'
-      };
-      setSteps([...updatedSteps]);
-      setIsProcessing(false);
-      
-      addSystemMessage('❌ Erro durante o processamento. Tente novamente.');
-      
-      toast({
-        title: "Erro no Processamento",
-        description: "Ocorreu um erro durante a análise. Tente novamente.",
-        variant: "destructive"
-      });
-    }
+      setMessages(prev => [...prev, agentResponse]);
+    }, 1000);
   };
+
+  const generateAgentResponse = (userMessage: string): string => {
+    const responses = {
+      'concierge': 'Analisando sua solicitação e direcionando para o agente mais adequado...',
+      'claims-processor': 'Processando informações do sinistro. Preciso de mais detalhes sobre o ocorrido.',
+      'fraud-detector': 'Verificando indicadores de fraude na documentação fornecida.',
+      'customer-service': 'Como posso ajudá-lo hoje? Estou aqui para resolver suas dúvidas.'
+    };
+    
+    return responses[currentAgent as keyof typeof responses] || 'Processando sua solicitação...';
+  };
+
+  // Function removed - using simplified simulation for demo purposes
 
   const simulateProcessing = async (initialSteps: PipelineStep[]) => {
     const updatedSteps = [...initialSteps];
@@ -387,38 +352,41 @@ const OlgaLiveView = () => {
               <div>
                 <h1 className="text-xl font-semibold flex items-center gap-2">
                   <Zap className="h-5 w-5" />
-                  Olga Live View
+                  Manus Live View
                 </h1>
                 <p className="text-sm text-muted-foreground">
-                  Chat interativo com pipeline em tempo real
+                  Interação em tempo real com agentes de IA
                 </p>
               </div>
             </div>
             
             <div className="flex items-center gap-2">
+              <Badge variant="outline" className="gap-1">
+                <Bot className="h-3 w-3" />
+                Agente: {currentAgent}
+              </Badge>
+              
               <Button 
                 variant="outline" 
                 size="sm"
-                onClick={() => handleControlAction('retry')}
-                disabled={!isProcessing}
+                onClick={() => setShowAgentSelector(!showAgentSelector)}
               >
-                <RotateCcw className="h-4 w-4" />
+                <Users className="h-4 w-4 mr-1" />
+                Trocar Agente
               </Button>
+              
               <Button 
                 variant="outline" 
                 size="sm"
-                onClick={() => handleControlAction('skip')}
-                disabled={!isProcessing}
+                onClick={() => {
+                  setCurrentAgent('concierge');
+                  addSystemMessage('🎯 Concierge ativado - Como posso ajudar?');
+                }}
               >
-                <SkipForward className="h-4 w-4" />
+                <MessageSquare className="h-4 w-4 mr-1" />
+                Chamar Concierge
               </Button>
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={() => handleControlAction(isProcessing ? 'pause' : 'play')}
-              >
-                {isProcessing ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-              </Button>
+              
               <Button 
                 variant="outline" 
                 size="sm"
@@ -436,13 +404,32 @@ const OlgaLiveView = () => {
         {/* Left Panel - Chat */}
         <div className="w-1/2 border-r flex flex-col">
           <div className="p-4 border-b">
-            <h2 className="text-lg font-semibold flex items-center gap-2">
-              <MessageSquare className="h-5 w-5" />
-              Chat Interface
-            </h2>
-            <p className="text-sm text-muted-foreground">
-              Use comandos como /retry, /skip, /switchModel
-            </p>
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-semibold flex items-center gap-2">
+                  <MessageSquare className="h-5 w-5" />
+                  Chat com {currentAgent}
+                </h2>
+                <p className="text-sm text-muted-foreground">
+                  Interaja diretamente com o agente ou envie arquivos
+                </p>
+              </div>
+              
+              {showAgentSelector && (
+                <div className="w-64">
+                  <AgentDropdown 
+                    value={currentAgent}
+                    onValueChange={(agentId) => {
+                      setCurrentAgent(agentId);
+                      setAgentHistory(prev => [...prev, agentId]);
+                      setShowAgentSelector(false);
+                      addSystemMessage(`🔄 Trocando para agente: ${agentId}`);
+                    }}
+                    placeholder="Selecionar agente..."
+                  />
+                </div>
+              )}
+            </div>
           </div>
           
           <div className="flex-1 overflow-y-auto p-4">
@@ -540,4 +527,4 @@ const OlgaLiveView = () => {
   );
 };
 
-export default OlgaLiveView;
+export default ManusLiveView;

@@ -63,7 +63,7 @@ const App = () => (
               <Route path="/cases" element={<Cases />} />
               <Route path="/case/:id" element={<CaseDetail />} />
               <Route path="/live" element={<LiveWorkflow />} />
-              <Route path="/manus-live" element={<ManusLiveView />} />
+              <Route path="/manus-live-view" element={<ManusLiveView />} />
               <Route path="/conversation-analysis" element={<ConversationAnalysis />} />
               <Route path="/coverage-analysis" element={<CoverageAnalysis />} />
               <Route path="/renewal" element={<RenewalAssistant />} />

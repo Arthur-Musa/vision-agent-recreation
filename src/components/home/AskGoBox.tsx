@@ -72,29 +72,34 @@ const AskGoBox = ({
       return;
     }
 
-    // Navigate to live chat with context
-    navigate('/live', {
+    // Navegação para Manus Live com agente específico selecionado
+    navigate('/manus-live-view', {
       state: {
         initialQuery: askGoQuery,
         files: uploadedFiles,
-        selectedAgent: selectedAgent || 'concierge'
+        selectedAgent: selectedAgent,
+        triggeredBy: 'concierge'
       }
     });
   };
+  
   const handleAskGo = () => {
-    if (!askGoQuery.trim()) {
+    if (!askGoQuery.trim() && uploadedFiles.length === 0) {
       toast({
-        title: "Digite sua solicitação",
-        description: "Descreva o que você precisa para começar.",
+        title: "Adicione conteúdo",
+        description: "Digite uma pergunta ou faça upload de arquivos para começar.",
         variant: "destructive"
       });
       return;
     }
 
-    // Redireciona para Live View com a query
-    navigate('/live', {
+    // Aciona o concierge orquestrador que analisará e chamará os agentes necessários
+    navigate('/manus-live-view', {
       state: {
-        initialQuery: askGoQuery
+        initialQuery: askGoQuery,
+        files: uploadedFiles,
+        selectedAgent: null, // Deixa o concierge escolher
+        triggeredBy: 'ask-go'
       }
     });
   };
@@ -146,13 +151,13 @@ const AskGoBox = ({
                 <Input role="search" placeholder="Ask Go..." value={askGoQuery} onChange={e => setAskGoQuery(e.target.value)} onKeyDown={handleKeyDown} className="input-clean text-body-lg placeholder:text-muted-foreground h-12" />
               </div>
               <Button onClick={handleAskGo} size="lg" className="px-8">
-                →
+                Seguir
               </Button>
             </div>
             
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <Button variant="ghost" size="sm" onClick={() => navigate('/live')} className="button-ghost-clean gap-2 text-body-sm">
+                <Button variant="ghost" size="sm" onClick={() => navigate('/manus-live-view')} className="button-ghost-clean gap-2 text-body-sm">
                   <Plus className="h-4 w-4" />
                   Novo Job
                 </Button>
