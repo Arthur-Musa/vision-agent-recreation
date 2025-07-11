@@ -6,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Eye, Check, X, RotateCcw, UserCheck } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
+import { AgentTaskAssigner } from './AgentTaskAssigner';
 
 interface Case {
   id: string;
@@ -272,6 +273,17 @@ export const CasesTable = ({ cases, onCasesUpdate }: CasesTableProps) => {
                 <UserCheck className="h-3 w-3 mr-1" />
                 Reatribuir
               </Button>
+              <AgentTaskAssigner
+                selectedCases={cases.filter(c => selectedCases.includes(c.id))}
+                onAssignmentComplete={() => {
+                  setSelectedCases([]);
+                  // Trigger data refresh
+                  const savedCases = localStorage.getItem('olga_spreadsheet_cases');
+                  if (savedCases && onCasesUpdate) {
+                    onCasesUpdate(JSON.parse(savedCases));
+                  }
+                }}
+              />
             </div>
           </div>
         </div>
