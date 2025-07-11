@@ -34,6 +34,7 @@ import UnderwritingIntake from "./pages/UnderwritingIntake";
 import Integrations from "./pages/Integrations";
 import ApeBagAnalyst from "./pages/ApeBagAnalyst";
 import DataPipeline from "./pages/DataPipeline";
+import KnowledgeHub from "./pages/KnowledgeHub";
 import { Chat } from "./pages/Chat";
 import OpenAITestCenter from "./pages/OpenAITestCenter";
 import NotFound from "./pages/NotFound";
@@ -82,6 +83,7 @@ const App = () => (
               } />
               <Route path="/ape-bag-analyst" element={<ApeBagAnalyst />} />
               <Route path="/data-pipeline" element={<DataPipeline />} />
+              <Route path="/knowledge" element={<KnowledgeHub />} />
               <Route path="/connectors" element={
                 <ProtectedRoute requireRole="admin">
                   <ConnectorsConfig />
