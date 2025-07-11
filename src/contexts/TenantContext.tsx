@@ -28,7 +28,7 @@ const mockTenants: Record<string, Tenant> = {
     primaryColor: '220 90% 50%', // Blue
     secondaryColor: '220 30% 96%',
     accentColor: '45 93% 58%', // Orange
-    fontFamily: 'Inter',
+    fontFamily: 'Inter', // Mantém tipografia Olga
     settings: {
       allowRegistration: true,
       requireApproval: false,
@@ -49,7 +49,7 @@ const mockTenants: Record<string, Tenant> = {
     primaryColor: '142 76% 36%', // Green
     secondaryColor: '142 30% 96%',
     accentColor: '271 91% 65%', // Purple
-    fontFamily: 'Roboto',
+    fontFamily: 'Inter', // Mantém tipografia Olga
     settings: {
       allowRegistration: false,
       requireApproval: true,
@@ -119,14 +119,7 @@ export const TenantProvider: React.FC<TenantProviderProps> = ({ children }) => {
     // Atualiza título e favicon
     document.title = `${tenant.branding.companyName} - Plataforma de Seguros`;
     
-    // Atualiza fonte se necessário
-    if (tenant.fontFamily && tenant.fontFamily !== 'Inter') {
-      const link = document.createElement('link');
-      link.href = `https://fonts.googleapis.com/css2?family=${tenant.fontFamily.replace(' ', '+')}:wght@300;400;500;600;700&display=swap`;
-      link.rel = 'stylesheet';
-      document.head.appendChild(link);
-      root.style.setProperty('--font-family', tenant.fontFamily);
-    }
+    // Mantém tipografia padrão Olga (Inter) - não customizável
   };
 
   // Login específico do tenant

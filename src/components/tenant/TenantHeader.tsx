@@ -26,7 +26,7 @@ export const TenantHeader: React.FC = () => {
           </div>
           <div>
             <h1 className="font-semibold text-lg">{tenant.branding.companyName}</h1>
-            <p className="text-xs text-muted-foreground">Plataforma Olga</p>
+            <p className="text-xs text-muted-foreground">Powered by Olga</p>
           </div>
         </div>
 
