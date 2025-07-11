@@ -49,7 +49,7 @@ const recentCases = [
 ];
 
 const agentItems = [
-  { title: "Aura", url: "/live", icon: Bot, color: "text-purple-600", agentId: "aura" },
+  { title: "Aura", url: "/manus-live", icon: Bot, color: "text-purple-600", agentId: "aura" },
   { title: "Fraud Detector", url: "/live", icon: Shield, color: "text-blue-600", agentId: "fraud-detection" },
   { title: "Claims Processor", url: "/live", icon: FileText, color: "text-green-600", agentId: "claims-processor" },
 ];

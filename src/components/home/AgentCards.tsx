@@ -22,7 +22,7 @@ const AgentCards = () => {
       name: 'Aura',
       description: 'Análise inteligente de documentos e contratos',
       category: 'legal',
-      route: '/live',
+      route: '/manus-live',
       status: 'active'
     },
     {
