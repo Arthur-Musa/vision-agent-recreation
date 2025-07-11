@@ -49,6 +49,7 @@ const App = () => (
             <Route path="/upload" element={<Upload />} />
             <Route path="/journey" element={<UserJourney />} />
             <Route path="/claims" element={<ClaimsDashboard />} />
+            <Route path="/claims-dashboard" element={<ClaimsDashboard />} />
             <Route path="/claims/:id" element={<ClaimDetail />} />
             <Route path="/claims-processing" element={<AutomatedClaimsProcessing />} />
             <Route path="/claims-metrics" element={<ClaimsMetricsDashboard />} />
