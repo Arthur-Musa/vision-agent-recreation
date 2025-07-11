@@ -237,7 +237,7 @@ const DataPipeline = () => {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
-                  {datasets.filter(d => d.status === 'processing').length}
+                  {datasets.filter(d => d.status === 'processing' || d.status === 'training').length}
                 </div>
                 <p className="text-xs text-muted-foreground">65% progresso médio</p>
               </CardContent>
