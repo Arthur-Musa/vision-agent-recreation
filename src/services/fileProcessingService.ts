@@ -1,3 +1,6 @@
+import { ocrService } from './ocrService';
+import { visionAnalyzer } from './visionAnalyzer';
+
 interface ExtractedFileData {
   fileName: string;
   fileType: string;
@@ -5,6 +8,8 @@ interface ExtractedFileData {
   textContent?: string;
   metadata: Record<string, any>;
   extractedFields: Record<string, any>;
+  ocrConfidence?: number;
+  visionAnalysis?: any;
 }
 
 class FileProcessingService {
@@ -85,23 +90,97 @@ class FileProcessingService {
   private async processImageFile(file: File, baseData: ExtractedFileData): Promise<ExtractedFileData> {
     baseData.metadata.isImage = true;
     
-    // Create image to get dimensions
-    return new Promise((resolve) => {
+    try {
+      console.log(`Starting real image processing for: ${file.name}`);
+      
+      // Get image dimensions first
+      const img = await this.getImageDimensions(file);
+      baseData.metadata.width = img.width;
+      baseData.metadata.height = img.height;
+      
+      // Process with both OCR and Vision in parallel for better accuracy
+      const [ocrResult, visionResult] = await Promise.allSettled([
+        ocrService.extractText(file).catch(error => {
+          console.warn('OCR failed, will rely on Vision:', error);
+          return null;
+        }),
+        visionAnalyzer.analyzeDocument(file).catch(error => {
+          console.warn('Vision analysis failed, will rely on OCR:', error);
+          return null;
+        })
+      ]);
+
+      // Process OCR results
+      let ocrData: Record<string, any> = {};
+      if (ocrResult.status === 'fulfilled' && ocrResult.value) {
+        baseData.textContent = ocrResult.value.text;
+        baseData.ocrConfidence = ocrResult.value.confidence;
+        
+        // Extract insurance fields from OCR text
+        ocrData = ocrService.extractInsuranceDataFromOCR(ocrResult.value.text);
+        console.log(`OCR extracted text with ${ocrResult.value.confidence}% confidence`);
+      }
+
+      // Process Vision results  
+      let visionData: Record<string, any> = {};
+      if (visionResult.status === 'fulfilled' && visionResult.value) {
+        baseData.visionAnalysis = visionResult.value;
+        visionData = visionResult.value.extractedData || {};
+        console.log(`Vision analysis completed with ${visionResult.value.confidence}% confidence`);
+      }
+
+      // Combine results for maximum accuracy
+      if (visionResult.status === 'fulfilled' && visionResult.value && ocrResult.status === 'fulfilled' && ocrResult.value) {
+        baseData.extractedFields = visionAnalyzer.combineAnalysisResults(ocrData, visionResult.value);
+        baseData.metadata.processingMethod = 'OCR + Vision (combined)';
+      } else if (visionResult.status === 'fulfilled' && visionResult.value) {
+        baseData.extractedFields = visionData;
+        baseData.metadata.processingMethod = 'Vision only';
+      } else if (ocrResult.status === 'fulfilled' && ocrResult.value) {
+        baseData.extractedFields = ocrData;
+        baseData.metadata.processingMethod = 'OCR only';
+      } else {
+        // Fallback to filename extraction
+        baseData.extractedFields = this.extractFromFilename(file.name);
+        baseData.metadata.processingMethod = 'Filename only (fallback)';
+        baseData.metadata.processingError = 'Both OCR and Vision failed';
+      }
+
+      // Add basic image metadata
+      baseData.extractedFields = {
+        ...baseData.extractedFields,
+        imageType: file.type,
+        resolution: `${img.width}x${img.height}`,
+        fileSize: file.size,
+        processedAt: new Date().toISOString()
+      };
+
+      console.log(`Image processing completed using: ${baseData.metadata.processingMethod}`);
+      return baseData;
+
+    } catch (error) {
+      console.error('Image processing failed:', error);
+      baseData.metadata.error = error instanceof Error ? error.message : 'Image processing failed';
+      baseData.extractedFields = {
+        imageType: file.type,
+        requiresManualReview: true,
+        processingError: true,
+        ...this.extractFromFilename(file.name)
+      };
+      return baseData;
+    }
+  }
+
+  private async getImageDimensions(file: File): Promise<{ width: number; height: number }> {
+    return new Promise((resolve, reject) => {
       const img = new Image();
       img.onload = () => {
-        baseData.metadata.width = img.width;
-        baseData.metadata.height = img.height;
-        baseData.extractedFields = {
-          imageType: file.type,
-          resolution: `${img.width}x${img.height}`,
-          requiresOCR: true,
-          ...this.extractFromFilename(file.name)
-        };
-        resolve(baseData);
+        resolve({ width: img.width, height: img.height });
+        URL.revokeObjectURL(img.src);
       };
       img.onerror = () => {
-        baseData.metadata.error = 'Could not load image';
-        resolve(baseData);
+        URL.revokeObjectURL(img.src);
+        reject(new Error('Could not load image'));
       };
       img.src = URL.createObjectURL(file);
     });

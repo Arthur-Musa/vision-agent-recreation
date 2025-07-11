@@ -259,6 +259,48 @@ class OpenAIService {
     }
   }
 
+  async analyzeImageWithVision(
+    base64Image: string,
+    prompt: string,
+    options: {
+      model?: string;
+      maxTokens?: number;
+    } = {}
+  ): Promise<string> {
+    try {
+      const client = this.getClientUnsafe();
+      
+      const completion = await client.chat.completions.create({
+        model: options.model || 'gpt-4o',
+        messages: [
+          {
+            role: 'user',
+            content: [
+              {
+                type: 'text',
+                text: prompt
+              },
+              {
+                type: 'image_url',
+                image_url: {
+                  url: `data:image/jpeg;base64,${base64Image}`,
+                  detail: 'high'
+                }
+              }
+            ]
+          }
+        ],
+        max_tokens: options.maxTokens || 2000,
+        temperature: 0.1
+      });
+
+      return completion.choices[0]?.message?.content || 'Análise não disponível';
+    } catch (error) {
+      console.error('Erro na análise de visão:', error);
+      return 'Erro: Serviço de visão temporariamente indisponível';
+    }
+  }
+
   // Agentes pré-configurados para seguros brasileiros
   getInsuranceAgents(): Record<string, OpenAIAgentConfig> {
     // Primeiro, verifica se há assistants configurados
