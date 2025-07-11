@@ -400,7 +400,11 @@ const CaseDetail = () => {
                       </div>
                       <div className="flex items-center gap-2">
                         {getStatusIcon(doc.status)}
-                        <Button variant="ghost" size="sm">
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => console.log(`👁️ Botão Visualizar documento clicado! Documento: ${doc.name}`)}
+                        >
                           <Eye className="h-4 w-4" />
                         </Button>
                       </div>
