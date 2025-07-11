@@ -1,6 +1,4 @@
 import { useNavigate } from "react-router-dom";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Bot } from "lucide-react";
 
 interface Agent {
@@ -76,24 +74,32 @@ const AgentCards = () => {
 
   const getStatusColor = (status?: string) => {
     switch (status) {
-      case 'active': return 'badge-status-active';
-      case 'processing': return 'badge-status-processing';
+      case 'active': return 'bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-300';
+      case 'processing': return 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-300';
       case 'empty': 
-      default: return 'badge-status-inactive';
+      default: return 'bg-muted text-muted-foreground border-border';
     }
   };
 
 
   return (
-    <div className="max-w-4xl mx-auto mb-12">
-      {/* Agents Row */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+    <div className="max-w-6xl mx-auto mb-16">
+      {/* Section Header */}
+      <div className="text-center spacing-stack-lg mb-12">
+        <h2 className="text-heading-2">Agentes Inteligentes</h2>
+        <p className="text-body text-muted-foreground max-w-2xl mx-auto">
+          Escolha o agente especializado para automatizar seus processos de seguros com precisão e eficiência
+        </p>
+      </div>
+
+      {/* Premium Agent Cards Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {agents.map((agent) => {
           const colors = getCategoryColors(agent.category);
           return (
-            <Card 
+            <div
               key={agent.id}
-              className="card-interactive"
+              className="group relative bg-card border border-border/50 rounded-2xl p-8 cursor-pointer transition-all duration-300 hover:border-border hover:shadow-xl hover:shadow-black/5 hover:-translate-y-1"
               onClick={() => navigate(agent.route, { 
                 state: { 
                   selectedAgent: agent.id,
@@ -102,32 +108,76 @@ const AgentCards = () => {
                 } 
               })}
             >
-              <CardContent className="spacing-md">
-                <div className="flex items-start gap-3">
-                  <div 
-                    className={`w-10 h-10 rounded-full ${colors.gradient} flex items-center justify-center border border-border/20 shadow-sm flex-shrink-0`}
-                    style={{ color: colors.accent }}
-                  >
-                    <Bot className="h-5 w-5" strokeWidth={1.5} />
-                  </div>
-                  <div className="flex-1 min-w-0 spacing-stack-xs">
-                    <div className="flex items-center gap-2">
-                      <h3 className="text-body font-medium truncate">{agent.name}</h3>
-                      {agent.status && (
-                        <Badge variant="outline" className={`text-caption ${getStatusColor(agent.status)}`}>
-                          {agent.status}
-                        </Badge>
-                      )}
-                    </div>
-                    <p className="text-body-sm text-muted-foreground">
-                      {agent.description}
-                    </p>
+              {/* Status Badge */}
+              {agent.status && (
+                <div className="absolute top-6 right-6">
+                  <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${getStatusColor(agent.status)}`}>
+                    <div className="w-1.5 h-1.5 rounded-full bg-current"></div>
+                    {agent.status}
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+              )}
+
+              {/* Agent Icon with Gradient */}
+              <div className="relative mb-6">
+                <div 
+                  className={`w-16 h-16 rounded-2xl ${colors.gradient} flex items-center justify-center shadow-lg group-hover:shadow-xl transition-shadow duration-300`}
+                  style={{ color: colors.accent }}
+                >
+                  <Bot className="h-8 w-8" strokeWidth={1.5} />
+                </div>
+                
+                {/* Glow effect on hover */}
+                <div 
+                  className={`absolute inset-0 w-16 h-16 rounded-2xl ${colors.gradient} opacity-0 group-hover:opacity-20 blur-xl transition-opacity duration-300`}
+                ></div>
+              </div>
+
+              {/* Content */}
+              <div className="spacing-stack-sm">
+                <h3 className="text-heading-3 font-semibold group-hover:text-primary transition-colors">
+                  {agent.name}
+                </h3>
+                
+                <p className="text-body-sm text-muted-foreground leading-relaxed">
+                  {agent.description}
+                </p>
+              </div>
+
+              {/* Action Arrow */}
+              <div className="mt-6 flex items-center justify-between">
+                <div className={`text-xs font-medium tracking-wide uppercase`} style={{ color: colors.accent }}>
+                  {agent.category}
+                </div>
+                
+                <div className="w-8 h-8 rounded-full bg-muted/50 flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground transition-all duration-300">
+                  <svg className="w-4 h-4 transition-transform group-hover:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </div>
+              </div>
+
+              {/* Hover Border Gradient */}
+              <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+            </div>
           );
         })}
+      </div>
+
+      {/* CTA Section */}
+      <div className="text-center mt-12">
+        <p className="text-body-sm text-muted-foreground mb-4">
+          Precisa de algo específico?
+        </p>
+        <button 
+          onClick={() => navigate('/agent-builder')}
+          className="inline-flex items-center gap-2 text-body-sm font-medium text-primary hover:text-primary/80 transition-colors"
+        >
+          Criar agente personalizado
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+          </svg>
+        </button>
       </div>
     </div>
   );
