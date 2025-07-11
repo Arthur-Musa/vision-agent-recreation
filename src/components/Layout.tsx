@@ -1,5 +1,6 @@
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
+import { Footer } from "@/components/Footer";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -29,6 +30,9 @@ export function Layout({ children }: LayoutProps) {
           <main className="flex-1">
             {children}
           </main>
+
+          {/* Footer */}
+          <Footer />
         </div>
       </div>
     </SidebarProvider>
