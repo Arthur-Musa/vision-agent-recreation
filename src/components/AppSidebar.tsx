@@ -35,13 +35,13 @@ const navigationItems = [
 ];
 
 const toolsItems = [
+  { title: "Smart Spreadsheet", url: "/spreadsheets", icon: BarChart3 },
   { title: "Knowledge Hub", url: "/knowledge", icon: BookOpen },
   { title: "Invite users", url: "/invite", icon: Users },
   { title: "Search agents", url: "/ai-agents", icon: Search },
 ];
 
 const recentCases = [
-  { title: "Claims Analytics Dashboard", url: "/spreadsheets", icon: BarChart3 },
   { title: "Fraud Detection Analysis", url: "/live", icon: Shield, agentId: "fraud-detection" },
   { title: "APE + BAG Analysis", url: "/live", icon: FileText, agentId: "claims-processor" },
   { title: "Underwriting Review", url: "/live", icon: Briefcase, agentId: "aura" },
