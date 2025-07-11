@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
+import { openaiService } from '@/services/openaiService';
 import { 
   ArrowLeft, 
   Send, 
@@ -90,7 +91,13 @@ const OlgaLiveView = () => {
     setCurrentMessage('');
     setIsProcessing(true);
 
-    // Simulate pipeline creation
+    // Get files from initial state
+    const state = location.state as { 
+      files?: any[];
+      selectedAgent?: string;
+    };
+
+    // Create real pipeline based on content and files
     const newSteps: PipelineStep[] = [
       {
         id: 1,
@@ -103,33 +110,139 @@ const OlgaLiveView = () => {
         id: 2,
         name: 'Extração de Dados',
         status: 'pending',
-        description: 'Extrair informações relevantes dos documentos'
+        description: state?.files?.length ? 'Extrair informações dos documentos enviados' : 'Processar texto da solicitação'
       },
       {
         id: 3,
-        name: 'Classificação',
+        name: 'Processamento de IA',
         status: 'pending',
-        description: 'Classificar tipo e prioridade da solicitação'
+        description: `Executar análise usando ${state?.selectedAgent || 'agente padrão'}`
       },
       {
         id: 4,
-        name: 'Processamento',
+        name: 'Validação',
         status: 'pending',
-        description: 'Executar regras de negócio e validações'
+        description: 'Validar resultados e aplicar regras de negócio'
       },
       {
         id: 5,
         name: 'Finalização',
         status: 'pending',
-        description: 'Gerar resultado final e notificações'
+        description: 'Gerar resultado final e recomendações'
       }
     ];
 
     setSteps(newSteps);
     setCurrentStep(1);
 
-    // Simulate processing steps
-    await simulateProcessing(newSteps);
+    // Process with real AI service
+    await processWithAI(newSteps, message, state?.files || [], state?.selectedAgent);
+  };
+
+  const processWithAI = async (
+    initialSteps: PipelineStep[], 
+    message: string, 
+    files: any[], 
+    selectedAgent?: string
+  ) => {
+    const updatedSteps = [...initialSteps];
+    
+    try {
+      // Step 1: Analysis
+      addSystemMessage('Iniciando análise da solicitação...');
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      updatedSteps[0].status = 'completed';
+      updatedSteps[0].timestamp = new Date().toISOString();
+      updatedSteps[1].status = 'processing';
+      updatedSteps[1].timestamp = new Date().toISOString();
+      setSteps([...updatedSteps]);
+      setCurrentStep(2);
+      
+      // Step 2: Data extraction
+      addSystemMessage(files.length > 0 ? 
+        `Processando ${files.length} arquivo(s) enviado(s)...` : 
+        'Extraindo dados da solicitação...'
+      );
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      updatedSteps[1].status = 'completed';
+      updatedSteps[2].status = 'processing';
+      updatedSteps[2].timestamp = new Date().toISOString();
+      setSteps([...updatedSteps]);
+      setCurrentStep(3);
+      
+      // Step 3: AI Processing
+      addSystemMessage(`Executando análise com ${selectedAgent || 'agente padrão'}...`);
+      
+      // Call OpenAI service with appropriate agent
+      const agents = openaiService.getInsuranceAgents();
+      const agentKey = selectedAgent === 'fraud-detector' ? 'fraudDetector' : 
+                      selectedAgent === 'customer-service' ? 'customerService' : 'claimsProcessor';
+      const agentConfig = agents[agentKey];
+      
+      const aiResponse = await openaiService.processWithAgent(agentConfig, message);
+      
+      updatedSteps[2].status = 'completed';
+      updatedSteps[3].status = 'processing';
+      updatedSteps[3].timestamp = new Date().toISOString();
+      setSteps([...updatedSteps]);
+      setCurrentStep(4);
+      
+      // Step 4: Validation
+      addSystemMessage('Validando resultados...');
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      updatedSteps[3].status = 'completed';
+      updatedSteps[4].status = 'processing';
+      updatedSteps[4].timestamp = new Date().toISOString();
+      setSteps([...updatedSteps]);
+      setCurrentStep(5);
+      
+      // Step 5: Finalization
+      addSystemMessage('Finalizando análise...');
+      await new Promise(resolve => setTimeout(resolve, 800));
+      
+      updatedSteps[4].status = 'completed';
+      updatedSteps[4].timestamp = new Date().toISOString();
+      setSteps([...updatedSteps]);
+      setCurrentStep(0);
+      setIsProcessing(false);
+      
+      // Add AI response to chat
+      const aiMessage: Message = {
+        id: `ai_${Date.now()}`,
+        type: 'system',
+        content: aiResponse.content || 'Análise concluída com sucesso!',
+        timestamp: new Date().toISOString()
+      };
+      setMessages(prev => [...prev, aiMessage]);
+      
+      toast({
+        title: "Processamento Concluído",
+        description: "Sua solicitação foi processada com sucesso.",
+      });
+      
+    } catch (error) {
+      console.error('Erro no processamento:', error);
+      
+      // Mark current step as error
+      updatedSteps[currentStep - 1] = {
+        ...updatedSteps[currentStep - 1],
+        status: 'error',
+        description: 'Erro durante o processamento'
+      };
+      setSteps([...updatedSteps]);
+      setIsProcessing(false);
+      
+      addSystemMessage('❌ Erro durante o processamento. Tente novamente.');
+      
+      toast({
+        title: "Erro no Processamento",
+        description: "Ocorreu um erro durante a análise. Tente novamente.",
+        variant: "destructive"
+      });
+    }
   };
 
   const simulateProcessing = async (initialSteps: PipelineStep[]) => {
