@@ -1,10 +1,10 @@
 import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
 import './index.css'
-import { AuthProvider } from './contexts/AuthContext'
+import { TenantProvider } from './contexts/TenantContext'
 
 createRoot(document.getElementById("root")!).render(
-  <AuthProvider>
+  <TenantProvider>
     <App />
-  </AuthProvider>
+  </TenantProvider>
 );
