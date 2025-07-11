@@ -92,14 +92,14 @@ const AgentCards = () => {
         </p>
       </div>
 
-      {/* Premium Agent Cards Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      {/* Compact Agent Cards Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {agents.map((agent) => {
           const colors = getCategoryColors(agent.category);
           return (
             <div
               key={agent.id}
-              className="group relative bg-card border border-border/50 rounded-2xl p-8 cursor-pointer transition-all duration-300 hover:border-border hover:shadow-xl hover:shadow-black/5 hover:-translate-y-1"
+              className="group relative bg-card border border-border/50 rounded-xl p-6 cursor-pointer transition-all duration-300 hover:border-border hover:shadow-lg hover:shadow-black/5 hover:-translate-y-1"
               onClick={() => navigate(agent.route, { 
                 state: { 
                   selectedAgent: agent.id,
@@ -110,26 +110,26 @@ const AgentCards = () => {
             >
               {/* Status Badge */}
               {agent.status && (
-                <div className="absolute top-6 right-6">
-                  <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${getStatusColor(agent.status)}`}>
-                    <div className="w-1.5 h-1.5 rounded-full bg-current"></div>
+                <div className="absolute top-4 right-4">
+                  <div className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${getStatusColor(agent.status)}`}>
+                    <div className="w-1 h-1 rounded-full bg-current"></div>
                     {agent.status}
                   </div>
                 </div>
               )}
 
               {/* Agent Icon with Gradient */}
-              <div className="relative mb-6">
+              <div className="relative mb-4">
                 <div 
-                  className={`w-16 h-16 rounded-2xl ${colors.gradient} flex items-center justify-center shadow-lg group-hover:shadow-xl transition-shadow duration-300`}
+                  className={`w-12 h-12 rounded-xl ${colors.gradient} flex items-center justify-center shadow-md group-hover:shadow-lg transition-shadow duration-300`}
                   style={{ color: colors.accent }}
                 >
-                  <Bot className="h-8 w-8" strokeWidth={1.5} />
+                  <Bot className="h-6 w-6" strokeWidth={1.5} />
                 </div>
                 
                 {/* Glow effect on hover */}
                 <div 
-                  className={`absolute inset-0 w-16 h-16 rounded-2xl ${colors.gradient} opacity-0 group-hover:opacity-20 blur-xl transition-opacity duration-300`}
+                  className={`absolute inset-0 w-12 h-12 rounded-xl ${colors.gradient} opacity-0 group-hover:opacity-20 blur-lg transition-opacity duration-300`}
                 ></div>
               </div>
 
@@ -145,20 +145,20 @@ const AgentCards = () => {
               </div>
 
               {/* Action Arrow */}
-              <div className="mt-6 flex items-center justify-between">
+              <div className="mt-4 flex items-center justify-between">
                 <div className={`text-xs font-medium tracking-wide uppercase`} style={{ color: colors.accent }}>
                   {agent.category}
                 </div>
                 
-                <div className="w-8 h-8 rounded-full bg-muted/50 flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground transition-all duration-300">
-                  <svg className="w-4 h-4 transition-transform group-hover:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <div className="w-6 h-6 rounded-full bg-muted/50 flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground transition-all duration-300">
+                  <svg className="w-3 h-3 transition-transform group-hover:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                   </svg>
                 </div>
               </div>
 
               {/* Hover Border Gradient */}
-              <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+              <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
             </div>
           );
         })}
