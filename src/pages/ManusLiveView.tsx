@@ -315,21 +315,21 @@ const ManusLiveView = () => {
 
   const getStepColor = (status: string) => {
     switch (status) {
-      case 'completed': return 'bg-green-100 text-green-800';
-      case 'processing': return 'bg-blue-100 text-blue-800';
-      case 'pending': return 'bg-gray-100 text-gray-800';
-      case 'error': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'completed': return 'bg-green-50 text-green-800 border-green-200';
+      case 'processing': return 'bg-blue-50 text-blue-800 border-blue-200';
+      case 'pending': return 'bg-muted text-muted-foreground';
+      case 'error': return 'bg-destructive/10 text-destructive border-destructive/20';
+      default: return 'bg-muted text-muted-foreground';
     }
   };
 
   const getMessageColor = (type: string) => {
     switch (type) {
       case 'user': return 'bg-primary text-primary-foreground ml-auto';
-      case 'system': return 'bg-blue-50 border-blue-200';
-      case 'processing': return 'bg-yellow-50 border-yellow-200';
-      case 'error': return 'bg-red-50 border-red-200';
-      default: return 'bg-gray-50 border-gray-200';
+      case 'system': return 'bg-muted text-muted-foreground';
+      case 'processing': return 'bg-yellow-50 text-yellow-800 border-yellow-200';
+      case 'error': return 'bg-destructive/10 text-destructive border-destructive/20';
+      default: return 'bg-muted text-muted-foreground';
     }
   };
 
@@ -454,9 +454,9 @@ const ManusLiveView = () => {
               ))}
               
               {isProcessing && (
-                <div className="p-3 rounded-lg border bg-blue-50 border-blue-200">
+                <div className="p-3 rounded-lg border bg-muted text-muted-foreground">
                   <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                    <div className="w-2 h-2 bg-primary rounded-full animate-pulse"></div>
                     <span className="text-sm">Pipeline executando...</span>
                   </div>
                 </div>
