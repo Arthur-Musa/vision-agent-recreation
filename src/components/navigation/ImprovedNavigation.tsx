@@ -15,7 +15,8 @@ import {
   Menu,
   X,
   ChevronRight,
-  Sparkles
+  Sparkles,
+  Database
 } from 'lucide-react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 
@@ -90,6 +91,16 @@ const navigationItems: NavigationItem[] = [
     description: 'Verificar adequação',
     icon: <Settings className="h-5 w-5" />,
     route: '/coverage-analysis',
+    category: 'analysis'
+  },
+  {
+    id: 'data-pipeline',
+    title: 'Pipeline de Dados',
+    description: 'Dataset e workflow V7 Labs',
+    icon: <Database className="h-5 w-5" />,
+    route: '/data-pipeline',
+    badge: 'V7 Style',
+    isNew: true,
     category: 'analysis'
   },
   
