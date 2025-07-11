@@ -53,7 +53,7 @@ export const CasesTableRow = ({
         <Checkbox
           checked={isSelected}
           onCheckedChange={(checked) => {
-            console.log('🔄 Checkbox mudou:', { caseId: case_.id, checked });
+            console.log('🔄 Checkbox Row: Mudou para caso:', { caseId: case_.id, checked });
             onSelectCase(case_.id, checked as boolean);
           }}
           aria-label={`Selecionar caso ${case_.claimNumber}`}

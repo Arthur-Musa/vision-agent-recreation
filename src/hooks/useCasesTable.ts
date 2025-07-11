@@ -37,11 +37,11 @@ export const useCasesTable = ({ cases, onCasesUpdate, onSelectionChange }: UseCa
   };
 
   const handleSelectCase = (caseId: string, checked: boolean) => {
-    console.log('📌 Selecionando caso:', { caseId, checked, currentSelection: selectedCases });
+    console.log('📌 Hook: Selecionando caso:', { caseId, checked, currentSelection: selectedCases });
     const newSelection = checked 
       ? [...selectedCases, caseId]
       : selectedCases.filter(id => id !== caseId);
-    console.log('📌 Nova seleção:', newSelection);
+    console.log('📌 Hook: Nova seleção:', newSelection);
     setSelectedCases(newSelection);
     onSelectionChange?.(newSelection);
   };

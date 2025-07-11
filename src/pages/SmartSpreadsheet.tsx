@@ -338,6 +338,7 @@ const SmartSpreadsheet = () => {
   };
 
   const toggleAutomation = () => {
+    console.log('🤖 Botão automação clicado! Estado atual:', automationActive);
     if (automationActive) {
       spreadsheetAutomation.stopAutomation();
       setAutomationActive(false);
@@ -356,6 +357,7 @@ const SmartSpreadsheet = () => {
   };
 
   const simulateWebhookData = async () => {
+    console.log('📡 Botão webhook clicado!');
     const webhookData = {
       claimNumber: `AUTO-${Date.now()}`,
       type: 'Auto',
