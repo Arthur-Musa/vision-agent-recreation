@@ -53,6 +53,14 @@ export interface Citation {
   };
 }
 
+export interface ProcessingStep {
+  id: string;
+  name: string;
+  status: 'pending' | 'processing' | 'completed' | 'failed';
+  details?: string;
+  confidence?: number;
+}
+
 export interface DocumentUpload {
   id: string;
   name: string;
@@ -62,6 +70,11 @@ export interface DocumentUpload {
   file?: File; // Para referência do arquivo original
   preview?: string; // Para preview de imagens
   uploadedAt: Date;
+  // New fields for real processing
+  extractedText?: string;
+  extractedData?: Record<string, any>;
+  processingMethod?: 'ocr' | 'vision' | 'hybrid';
+  confidence?: number;
 }
 
 export interface Case {

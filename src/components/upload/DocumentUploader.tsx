@@ -3,7 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { useLanguage } from "@/hooks/useLanguage";
-import { DocumentUpload } from "@/types/agents";
+import { DocumentUpload, ProcessingStep } from "@/types/agents";
 import { claimsApi } from "@/services/claimsApi";
 import { useToast } from "@/hooks/use-toast";
 import { config } from "@/config/environment";
@@ -87,11 +87,11 @@ export const DocumentUploader = ({ onFilesAdded, claimId }: DocumentUploaderProp
       }
 
       // Initialize processing steps for this file
-      const steps = [
-        { id: 'upload', name: 'Upload do arquivo', status: 'processing' as const, details: 'Enviando arquivo...' },
-        { id: 'ocr', name: 'Extração de texto (OCR)', status: 'pending' as const },
-        { id: 'vision', name: 'Análise inteligente (Vision)', status: 'pending' as const },
-        { id: 'extraction', name: 'Extração de dados', status: 'pending' as const }
+      const steps: ProcessingStep[] = [
+        { id: 'upload', name: 'Upload do arquivo', status: 'processing', details: 'Enviando arquivo...' },
+        { id: 'ocr', name: 'Extração de texto (OCR)', status: 'pending' },
+        { id: 'vision', name: 'Análise inteligente (Vision)', status: 'pending' },
+        { id: 'extraction', name: 'Extração de dados', status: 'pending' }
       ];
 
       newProcessingFiles.set(fileId, {
