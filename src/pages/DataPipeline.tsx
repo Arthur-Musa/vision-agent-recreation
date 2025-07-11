@@ -131,26 +131,26 @@ const DataPipeline = () => {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'completed':
-        return <CheckCircle className="h-4 w-4 text-green-500" />;
+        return <CheckCircle className="h-4 w-4 text-emerald-600" />;
       case 'processing':
-        return <Clock className="h-4 w-4 text-blue-500" />;
+        return <Clock className="h-4 w-4 text-blue-600" />;
       case 'failed':
-        return <AlertCircle className="h-4 w-4 text-red-500" />;
+        return <AlertCircle className="h-4 w-4 text-red-600" />;
       default:
-        return <Clock className="h-4 w-4 text-gray-500" />;
+        return <Clock className="h-4 w-4 text-muted-foreground" />;
     }
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'completed':
-        return 'bg-green-100 text-green-800 border-green-200';
+        return 'bg-emerald-50 text-emerald-700 border-emerald-200';
       case 'processing':
-        return 'bg-blue-100 text-blue-800 border-blue-200';
+        return 'bg-blue-50 text-blue-700 border-blue-200';
       case 'failed':
-        return 'bg-red-100 text-red-800 border-red-200';
+        return 'bg-red-50 text-red-700 border-red-200';
       default:
-        return 'bg-gray-100 text-gray-800 border-gray-200';
+        return 'bg-muted text-muted-foreground border-border';
     }
   };
 
@@ -287,7 +287,12 @@ const DataPipeline = () => {
               <Card key={cls.id}>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">{cls.name}</CardTitle>
-                  <div className={`h-3 w-3 rounded-full bg-${cls.color}-500`} />
+                  <div className={`h-3 w-3 rounded-full ${
+                    cls.color === 'red' ? 'bg-red-500' :
+                    cls.color === 'orange' ? 'bg-orange-500' :
+                    cls.color === 'green' ? 'bg-emerald-500' :
+                    cls.color === 'purple' ? 'bg-purple-500' : 'bg-primary'
+                  }`} />
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">{cls.count}</div>
@@ -337,7 +342,7 @@ const DataPipeline = () => {
                 <div className="grid gap-4 md:grid-cols-3">
                   <Card className="p-4">
                     <div className="flex items-center space-x-2 mb-2">
-                      <Upload className="h-5 w-5 text-blue-500" />
+                      <Upload className="h-5 w-5 text-blue-600" />
                       <h4 className="font-semibold">1. Importação</h4>
                     </div>
                     <p className="text-sm text-muted-foreground">
@@ -347,7 +352,7 @@ const DataPipeline = () => {
                   
                   <Card className="p-4">
                     <div className="flex items-center space-x-2 mb-2">
-                      <Brain className="h-5 w-5 text-purple-500" />
+                      <Brain className="h-5 w-5 text-purple-600" />
                       <h4 className="font-semibold">2. Processamento IA</h4>
                     </div>
                     <p className="text-sm text-muted-foreground">
@@ -357,7 +362,7 @@ const DataPipeline = () => {
                   
                   <Card className="p-4">
                     <div className="flex items-center space-x-2 mb-2">
-                      <Users className="h-5 w-5 text-green-500" />
+                      <Users className="h-5 w-5 text-emerald-600" />
                       <h4 className="font-semibold">3. Revisão Humana</h4>
                     </div>
                     <p className="text-sm text-muted-foreground">
@@ -388,7 +393,7 @@ const DataPipeline = () => {
                 <div className="grid gap-4 md:grid-cols-2">
                   <Card className="p-4">
                     <div className="flex items-center space-x-2 mb-2">
-                      <Users className="h-5 w-5 text-blue-500" />
+                      <Users className="h-5 w-5 text-blue-600" />
                       <h4 className="font-semibold">Analistas Ativos</h4>
                     </div>
                     <div className="text-2xl font-bold">12</div>
@@ -397,7 +402,7 @@ const DataPipeline = () => {
                   
                   <Card className="p-4">
                     <div className="flex items-center space-x-2 mb-2">
-                      <BarChart3 className="h-5 w-5 text-green-500" />
+                      <BarChart3 className="h-5 w-5 text-emerald-600" />
                       <h4 className="font-semibold">Produtividade</h4>
                     </div>
                     <div className="text-2xl font-bold">87%</div>
