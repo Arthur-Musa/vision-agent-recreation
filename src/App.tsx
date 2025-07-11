@@ -6,7 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Layout } from "./components/Layout";
 import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 import Index from "./pages/Index";
-import Dashboard from "./pages/Dashboard";
+
 import Upload from "./pages/Upload";
 import UserJourney from "./pages/UserJourney";
 import ClaimsDashboard from "./pages/ClaimsDashboard";
@@ -49,7 +49,7 @@ const App = () => (
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/chat" element={<Chat />} />
-              <Route path="/dashboard" element={<Dashboard />} />
+              
               <Route path="/upload" element={<Upload />} />
               <Route path="/journey" element={<UserJourney />} />
               <Route path="/claims" element={<ClaimsDashboard />} />
