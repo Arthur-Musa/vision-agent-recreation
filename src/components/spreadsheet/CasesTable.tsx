@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Eye, Check, X, RotateCcw, UserCheck } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
@@ -27,6 +28,7 @@ export const CasesTable = ({ cases, onCasesUpdate }: CasesTableProps) => {
   const { toast } = useToast();
   const [selectedCases, setSelectedCases] = useState<string[]>([]);
   const [isProcessingBatch, setIsProcessingBatch] = useState(false);
+  const [editingCell, setEditingCell] = useState<{id: string, field: string} | null>(null);
 
   // Limpar seleção quando cases mudam
   useEffect(() => {
@@ -163,6 +165,34 @@ export const CasesTable = ({ cases, onCasesUpdate }: CasesTableProps) => {
     }
   };
 
+  // Edição inline
+  const handleCellEdit = async (caseId: string, field: string, value: string) => {
+    try {
+      const updatedCases = cases.map(case_ => 
+        case_.id === caseId ? { ...case_, [field]: value } : case_
+      );
+
+      // Salvar no localStorage
+      localStorage.setItem('olga_spreadsheet_cases', JSON.stringify(updatedCases));
+      
+      // Notificar parent component
+      onCasesUpdate?.(updatedCases);
+      
+      setEditingCell(null);
+      
+      toast({
+        title: "Campo atualizado",
+        description: `${field === 'status' ? 'Status' : 'Responsável'} alterado com sucesso.`,
+      });
+    } catch (error) {
+      toast({
+        title: "Erro",
+        description: "Erro ao atualizar campo. Tente novamente.",
+        variant: "destructive"
+      });
+    }
+  };
+
   const handleViewCase = (case_: Case) => {
     if (case_.type === 'APE' || case_.type === 'BAG') {
       navigate('/ape-bag-analyst');
@@ -172,6 +202,14 @@ export const CasesTable = ({ cases, onCasesUpdate }: CasesTableProps) => {
       navigate('/live', { state: { caseId: case_.id } });
     }
   };
+
+  const availableAgents = ['Claims Processor', 'Aura', 'Fraud Detector'];
+  const statusOptions = [
+    { value: 'pending', label: 'Pendente' },
+    { value: 'processing', label: 'Processando' },
+    { value: 'completed', label: 'Concluído' },
+    { value: 'flagged', label: 'Sinalizado' }
+  ];
 
   return (
     <div className="space-y-4">
@@ -287,12 +325,59 @@ export const CasesTable = ({ cases, onCasesUpdate }: CasesTableProps) => {
                   <td className="px-3 py-2 font-mono text-xs text-muted-foreground">{case_.claimNumber}</td>
                   <td className="px-3 py-2 text-sm">{case_.insuredName}</td>
                   <td className="px-3 py-2">
-                    <Badge variant="outline" className={`text-xs ${getStatusColor(case_.status)}`}>
-                      {getStatusText(case_.status)}
-                    </Badge>
+                    {editingCell?.id === case_.id && editingCell?.field === 'status' ? (
+                      <Select 
+                        value={case_.status} 
+                        onValueChange={(value) => handleCellEdit(case_.id, 'status', value)}
+                      >
+                        <SelectTrigger className="h-7 text-xs">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {statusOptions.map(option => (
+                            <SelectItem key={option.value} value={option.value}>
+                              {option.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    ) : (
+                      <Badge 
+                        variant="outline" 
+                        className={`text-xs cursor-pointer hover:opacity-80 ${getStatusColor(case_.status)}`}
+                        onClick={() => setEditingCell({ id: case_.id, field: 'status' })}
+                      >
+                        {getStatusText(case_.status)}
+                      </Badge>
+                    )}
                   </td>
                   <td className="px-3 py-2 text-sm font-medium">{formatCurrency(case_.estimatedAmount)}</td>
-                  <td className="px-3 py-2 text-xs text-muted-foreground">{case_.agent}</td>
+                  <td className="px-3 py-2">
+                    {editingCell?.id === case_.id && editingCell?.field === 'agent' ? (
+                      <Select 
+                        value={case_.agent} 
+                        onValueChange={(value) => handleCellEdit(case_.id, 'agent', value)}
+                      >
+                        <SelectTrigger className="h-7 text-xs">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {availableAgents.map(agent => (
+                            <SelectItem key={agent} value={agent}>
+                              {agent}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    ) : (
+                      <span 
+                        className="text-xs text-muted-foreground cursor-pointer hover:text-foreground"
+                        onClick={() => setEditingCell({ id: case_.id, field: 'agent' })}
+                      >
+                        {case_.agent}
+                      </span>
+                    )}
+                  </td>
                   <td className="px-3 py-2 text-xs text-muted-foreground">{formatDate(case_.processedAt)}</td>
                   <td className="px-3 py-2">
                     <Button
