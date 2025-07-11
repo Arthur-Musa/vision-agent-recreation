@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Layout } from "./components/Layout";
+import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
 import Upload from "./pages/Upload";
@@ -32,6 +33,7 @@ import ConversationClaimsProcessor from "./pages/ConversationClaimsProcessor";
 import UnderwritingIntake from "./pages/UnderwritingIntake";
 import Integrations from "./pages/Integrations";
 import ApeBagAnalyst from "./pages/ApeBagAnalyst";
+import { Chat } from "./pages/Chat";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -42,40 +44,59 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <Layout>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/upload" element={<Upload />} />
-            <Route path="/journey" element={<UserJourney />} />
-            <Route path="/claims" element={<ClaimsDashboard />} />
-            <Route path="/claims-dashboard" element={<ClaimsDashboard />} />
-            <Route path="/claims/:id" element={<ClaimDetail />} />
-            <Route path="/claims-processing" element={<AutomatedClaimsProcessing />} />
-            <Route path="/claims-metrics" element={<ClaimsMetricsDashboard />} />
-            <Route path="/cases" element={<Cases />} />
-            <Route path="/case/:id" element={<CaseDetail />} />
-            <Route path="/live" element={<LiveWorkflow />} />
-            <Route path="/manus-live" element={<ManusLiveView />} />
-            <Route path="/conversation-analysis" element={<ConversationAnalysis />} />
-            <Route path="/coverage-analysis" element={<CoverageAnalysis />} />
-            <Route path="/renewal" element={<RenewalAssistant />} />
-            <Route path="/renewal/preview" element={<RenewalPreview />} />
-            <Route path="/underwriting" element={<UnderwritingForm />} />
-            <Route path="/fraud" element={<FraudDashboard />} />
-            <Route path="/spreadsheets" element={<SmartSpreadsheet />} />
-            <Route path="/ai-agents" element={<AIAgents />} />
-            <Route path="/agent/:id" element={<AgentDetail />} />
-            <Route path="/conversation/claims-processor" element={<ConversationClaimsProcessor />} />
-            <Route path="/underwriting/intake" element={<UnderwritingIntake />} />
-            <Route path="/integrations" element={<Integrations />} />
-            <Route path="/ape-bag-analyst" element={<ApeBagAnalyst />} />
-            <Route path="/connectors" element={<ConnectorsConfig />} />
-            <Route path="/settings" element={<SettingsPage />} />
-            <Route path="/agent-builder" element={<AgentBuilder />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </Layout>
+        <ProtectedRoute>
+          <Layout>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/chat" element={<Chat />} />
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/upload" element={<Upload />} />
+              <Route path="/journey" element={<UserJourney />} />
+              <Route path="/claims" element={<ClaimsDashboard />} />
+              <Route path="/claims-dashboard" element={<ClaimsDashboard />} />
+              <Route path="/claims/:id" element={<ClaimDetail />} />
+              <Route path="/claims-processing" element={<AutomatedClaimsProcessing />} />
+              <Route path="/claims-metrics" element={<ClaimsMetricsDashboard />} />
+              <Route path="/cases" element={<Cases />} />
+              <Route path="/case/:id" element={<CaseDetail />} />
+              <Route path="/live" element={<LiveWorkflow />} />
+              <Route path="/manus-live" element={<ManusLiveView />} />
+              <Route path="/conversation-analysis" element={<ConversationAnalysis />} />
+              <Route path="/coverage-analysis" element={<CoverageAnalysis />} />
+              <Route path="/renewal" element={<RenewalAssistant />} />
+              <Route path="/renewal/preview" element={<RenewalPreview />} />
+              <Route path="/underwriting" element={<UnderwritingForm />} />
+              <Route path="/fraud" element={<FraudDashboard />} />
+              <Route path="/spreadsheets" element={<SmartSpreadsheet />} />
+              <Route path="/ai-agents" element={<AIAgents />} />
+              <Route path="/agent/:id" element={<AgentDetail />} />
+              <Route path="/conversation/claims-processor" element={<ConversationClaimsProcessor />} />
+              <Route path="/underwriting/intake" element={<UnderwritingIntake />} />
+              <Route path="/integrations" element={
+                <ProtectedRoute requireRole="admin">
+                  <Integrations />
+                </ProtectedRoute>
+              } />
+              <Route path="/ape-bag-analyst" element={<ApeBagAnalyst />} />
+              <Route path="/connectors" element={
+                <ProtectedRoute requireRole="admin">
+                  <ConnectorsConfig />
+                </ProtectedRoute>
+              } />
+              <Route path="/settings" element={
+                <ProtectedRoute requireRole="admin">
+                  <SettingsPage />
+                </ProtectedRoute>
+              } />
+              <Route path="/agent-builder" element={
+                <ProtectedRoute requireRole="admin">
+                  <AgentBuilder />
+                </ProtectedRoute>
+              } />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </Layout>
+        </ProtectedRoute>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

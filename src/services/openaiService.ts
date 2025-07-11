@@ -32,6 +32,14 @@ class OpenAIService {
   private client: OpenAI | null = null;
   
   private getClient(): OpenAI {
+    // SECURITY: In production, this should NEVER expose API keys to browser
+    // This is now deprecated in favor of secure backend proxy
+    throw new Error('Cliente OpenAI direto foi desabilitado por segurança. Use secureApiService em vez disso.');
+  }
+  
+  private getClientUnsafe(): OpenAI {
+    console.warn('SECURITY WARNING: Using unsafe OpenAI client with exposed API key');
+    
     if (!this.client) {
       // Check if we have an API key - in production this would come from environment/Supabase
       const apiKey = localStorage.getItem('openai_api_key') || (window as any).OPENAI_API_KEY;
@@ -56,7 +64,7 @@ class OpenAIService {
     context?: Record<string, any>
   ): Promise<AgentResponse> {
     try {
-      const client = this.getClient();
+      const client = this.getClientUnsafe();
       
       // Se tem assistantId, usar Assistant API
       if (agentConfig.assistantId) {
@@ -139,7 +147,7 @@ class OpenAIService {
     documentText?: string,
     context?: Record<string, any>
   ): Promise<AgentResponse> {
-    const client = this.getClient();
+    const client = this.getClientUnsafe();
     
     try {
       // Criar thread
@@ -221,7 +229,7 @@ class OpenAIService {
     } = {}
   ): Promise<string> {
     try {
-      const client = this.getClient();
+      const client = this.getClientUnsafe();
       
       const messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] = [];
       

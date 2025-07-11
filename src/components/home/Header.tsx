@@ -1,9 +1,12 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Settings } from "lucide-react";
+import { UserMenu } from "@/components/auth/UserMenu";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Header = () => {
   const navigate = useNavigate();
+  const { user, hasRole } = useAuth();
 
   return (
     <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
@@ -15,15 +18,20 @@ const Header = () => {
             </div>
             <h1 className="text-2xl olga-logo text-foreground">Olga</h1>
           </div>
-          <Button 
-            variant="outline" 
-            size="sm"
-            onClick={() => navigate('/settings')}
-            className="gap-2"
-          >
-            <Settings className="h-4 w-4" />
-            Configurações
-          </Button>
+          <div className="flex items-center gap-2">
+            {hasRole('admin') && (
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => navigate('/settings')}
+                className="gap-2"
+              >
+                <Settings className="h-4 w-4" />
+                Configurações
+              </Button>
+            )}
+            <UserMenu />
+          </div>
         </div>
       </div>
     </header>
