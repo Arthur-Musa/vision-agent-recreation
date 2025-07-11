@@ -192,7 +192,10 @@ const CaseDetail = () => {
               <Button 
                 variant="ghost" 
                 size="sm"
-                onClick={() => navigate('/cases')}
+                onClick={() => {
+                  console.log('🔙 Botão voltar clicado!');
+                  navigate('/cases');
+                }}
                 className="gap-2"
               >
                 <ArrowLeft className="h-4 w-4" />
@@ -208,17 +211,28 @@ const CaseDetail = () => {
               <Button
                 variant={isLiveUpdate ? "default" : "outline"}
                 size="sm"
-                onClick={() => setIsLiveUpdate(!isLiveUpdate)}
+                onClick={() => {
+                  console.log('⏯️ Botão Live Update clicado! Estado atual:', isLiveUpdate);
+                  setIsLiveUpdate(!isLiveUpdate);
+                }}
                 className="gap-2"
               >
                 {isLiveUpdate ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
                 {t(texts.liveUpdates)}
               </Button>
-              <Button variant="outline" size="sm">
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => console.log('📤 Botão Compartilhar clicado!')}
+              >
                 <Share className="h-4 w-4 mr-2" />
                 Compartilhar
               </Button>
-              <Button variant="outline" size="sm">
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => console.log('💾 Botão Exportar clicado!')}
+              >
                 <Download className="h-4 w-4 mr-2" />
                 Exportar
               </Button>
@@ -427,15 +441,30 @@ const CaseDetail = () => {
                 <CardTitle>Ações Rápidas</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
-                <Button variant="outline" size="sm" className="w-full justify-start">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="w-full justify-start"
+                  onClick={() => console.log('🔄 Botão Reiniciar Análise clicado!')}
+                >
                   <RotateCcw className="h-4 w-4 mr-2" />
                   Reiniciar Análise
                 </Button>
-                <Button variant="outline" size="sm" className="w-full justify-start">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="w-full justify-start"
+                  onClick={() => console.log('🎯 Botão Ajustar Prioridade clicado!')}
+                >
                   <Target className="h-4 w-4 mr-2" />
                   Ajustar Prioridade
                 </Button>
-                <Button variant="outline" size="sm" className="w-full justify-start">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="w-full justify-start"
+                  onClick={() => console.log('⚡ Botão Acelerar Processo clicado!')}
+                >
                   <Zap className="h-4 w-4 mr-2" />
                   Acelerar Processo
                 </Button>
