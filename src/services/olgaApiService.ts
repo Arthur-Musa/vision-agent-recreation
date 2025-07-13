@@ -6,6 +6,7 @@
 import { config } from '@/config/environment';
 import { validateClaimData, sanitizeError } from '@/lib/validation';
 import { apiRateLimiter } from '@/lib/rateLimiter';
+import { toast } from '@/hooks/use-toast';
 
 export interface OlgaApiConfig {
   apiKey?: string;
@@ -59,6 +60,10 @@ class OlgaApiService {
       fallbackMode: !localStorage.getItem('olga_api_key'),
       timeout: config.api.timeout
     };
+
+    if (this.config.fallbackMode) {
+      this.notifyFallbackMode();
+    }
   }
 
   // Configuração da API Key
@@ -72,6 +77,8 @@ class OlgaApiService {
     this.config.apiKey = undefined;
     this.config.fallbackMode = true;
     localStorage.removeItem('olga_api_key');
+
+    this.notifyFallbackMode();
   }
 
   getConfig(): OlgaApiConfig {
@@ -413,6 +420,14 @@ class OlgaApiService {
         status: 'approved'
       }
     };
+  }
+
+  private notifyFallbackMode(): void {
+    toast({
+      title: 'Modo Fallback Ativo',
+      description: 'Configure a olga_api_key para utilizar a API real da Olga.',
+      variant: 'destructive'
+    });
   }
 
   // Métodos de utilidade
