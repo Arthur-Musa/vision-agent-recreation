@@ -24,7 +24,8 @@ class OCRService {
 
     try {
       this.worker = await createWorker('por', 1, {
-        logger: m => console.log(m)
+        logger: m => console.log(m),
+        workerPath: '/tesseract-worker.min.js'
       });
       
       await this.worker.setParameters({
