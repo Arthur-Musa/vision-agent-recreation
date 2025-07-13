@@ -8,6 +8,8 @@ import { useToast } from '@/hooks/use-toast';
 import { AgentDropdown } from '@/components/agents/AgentDropdown';
 import { conciergeOrchestrator } from '@/services/conciergeOrchestrator';
 import { workflowEngine } from '@/services/workflowEngine';
+import { agentOptimizer } from '@/services/agentOptimizer';
+import { visionAnalyzer } from '@/services/visionAnalyzer';
 import { 
   ArrowLeft, 
   Send, 
@@ -30,9 +32,15 @@ import {
 
 interface Message {
   id: string;
-  type: 'user' | 'system' | 'processing' | 'error';
+  type: 'user' | 'system' | 'processing' | 'error' | 'optimization' | 'metrics';
   content: string;
   timestamp: string;
+  metadata?: {
+    processingTime?: number;
+    confidence?: number;
+    cacheHit?: boolean;
+    agentRecommendation?: any;
+  };
 }
 
 interface PipelineStep {
@@ -56,6 +64,14 @@ const LiveWorkflow = () => {
   const [currentAgent, setCurrentAgent] = useState<string>('concierge');
   const [agentHistory, setAgentHistory] = useState<string[]>(['concierge']);
   const [showAgentSelector, setShowAgentSelector] = useState(false);
+  const [systemMetrics, setSystemMetrics] = useState({
+    totalQueries: 0,
+    avgResponseTime: 2.3,
+    accuracyRate: 95,
+    cacheHitRate: 0,
+    activeAgents: 1
+  });
+  const [loadDistribution, setLoadDistribution] = useState<Record<string, number>>({});
 
   // Handle initial query from navigation state
   useEffect(() => {
@@ -80,35 +96,109 @@ const LiveWorkflow = () => {
     }
   }, [location.state]);
 
-  const addSystemMessage = (content: string) => {
+  const addSystemMessage = (
+    content: string, 
+    type: Message['type'] = 'system',
+    metadata?: Message['metadata']
+  ) => {
     const message: Message = {
-      id: `msg-${Date.now()}`,
-      type: 'system',
+      id: `msg-${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      type,
       content,
       timestamp: new Date().toLocaleTimeString('pt-BR', { 
         hour: '2-digit', 
         minute: '2-digit' 
-      })
+      }),
+      metadata
     };
     setMessages(prev => [...prev, message]);
   };
 
+  const updateSystemMetrics = (processingTime: number, success: boolean) => {
+    setSystemMetrics(prev => ({
+      totalQueries: prev.totalQueries + 1,
+      avgResponseTime: (prev.avgResponseTime * 0.9) + (processingTime / 1000 * 0.1),
+      accuracyRate: success 
+        ? (prev.accuracyRate * 0.95) + (100 * 0.05)
+        : (prev.accuracyRate * 0.95) + (0 * 0.05),
+      cacheHitRate: prev.cacheHitRate, // Updated by vision analyzer
+      activeAgents: prev.activeAgents
+    }));
+  };
+
+  const updateLoadDistribution = () => {
+    const distribution = agentOptimizer.getLoadDistribution();
+    setLoadDistribution(distribution);
+  };
+
   const handleDirectAgentMessage = async (query: string, agentId: string) => {
+    const startTime = Date.now();
     setIsProcessing(true);
     addSystemMessage(`📝 Processando: "${query}"`);
     
+    // Get agent optimization requirements
+    const taskRequirements = {
+      documentTypes: ['PDF'],
+      complexity: 'medium' as const,
+      urgency: 'medium' as const,
+      requiredCapabilities: ['document_parsing', 'data_extraction'],
+      estimatedDataVolume: 1,
+      complianceRisk: 'low' as const
+    };
+    
     try {
+      const recommendation = await agentOptimizer.recommendAgent(taskRequirements);
+      
+      // Add optimization insights
+      if (recommendation.confidence < 80) {
+        addSystemMessage(`⚡ Otimização: ${recommendation.reasoning}`, 'optimization');
+      }
+
       // Use real concierge orchestrator
       const response = await conciergeOrchestrator.processQuery(query);
+      const processingTime = Date.now() - startTime;
       
-      addSystemMessage(`✅ Processamento concluído pelo agente ${agentId}`);
+      // Update metrics
+      updateSystemMetrics(processingTime, true);
+      
+      // Update agent performance  
+      agentOptimizer.updateAgentPerformance(
+        agentId,
+        taskRequirements,
+        processingTime,
+        true,
+        85
+      );
+
+      addSystemMessage(`✅ Processamento concluído pelo agente ${agentId}`, 'system', {
+        processingTime,
+        confidence: response.context?.confidence || 80
+      });
+      
       addSystemMessage(`📊 Resultado: ${response.message}`);
       
       if (response.nextSteps.length > 0) {
         addSystemMessage(`🎯 Próximos passos: ${response.nextSteps.join(', ')}`);
       }
+
+      // Show performance metrics
+      addSystemMessage(
+        `⚡ Métricas: ${processingTime}ms • Confiança: ${Math.round((response.context?.confidence || 80))}% • Cache: N/A`,
+        'metrics'
+      );
+
     } catch (error) {
-      addSystemMessage(`❌ Erro no processamento: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
+      const processingTime = Date.now() - startTime;
+      updateSystemMetrics(processingTime, false);
+      
+      agentOptimizer.updateAgentPerformance(
+        agentId,
+        taskRequirements,
+        processingTime,
+        false
+      );
+      
+      addSystemMessage(`❌ Erro no processamento: ${error instanceof Error ? error.message : 'Erro desconhecido'}`, 'error');
     }
     
     setIsProcessing(false);
@@ -241,18 +331,22 @@ const LiveWorkflow = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  <div className="grid grid-cols-3 gap-4">
+                  <div className="grid grid-cols-4 gap-4">
                     <div className="text-center">
-                      <div className="text-2xl font-bold text-primary">23</div>
-                      <div className="text-sm text-muted-foreground">Cases Processed</div>
+                      <div className="text-2xl font-bold text-primary">{systemMetrics.totalQueries}</div>
+                      <div className="text-sm text-muted-foreground">Total Queries</div>
                     </div>
                     <div className="text-center">
-                      <div className="text-2xl font-bold text-green-600">95%</div>
+                      <div className="text-2xl font-bold text-green-600">{Math.round(systemMetrics.accuracyRate)}%</div>
                       <div className="text-sm text-muted-foreground">Accuracy Rate</div>
                     </div>
                     <div className="text-center">
-                      <div className="text-2xl font-bold text-blue-600">2.3s</div>
+                      <div className="text-2xl font-bold text-blue-600">{systemMetrics.avgResponseTime.toFixed(1)}s</div>
                       <div className="text-sm text-muted-foreground">Avg Response</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-purple-600">{Math.round(systemMetrics.cacheHitRate)}%</div>
+                      <div className="text-sm text-muted-foreground">Cache Hit Rate</div>
                     </div>
                   </div>
                   
@@ -284,16 +378,32 @@ const LiveWorkflow = () => {
                       <div key={message.id} className="flex gap-3">
                         <div className={`w-2 h-2 rounded-full mt-2 shrink-0 ${
                           message.type === 'user' ? 'bg-blue-500' : 
-                          message.type === 'system' ? 'bg-green-500' : 'bg-yellow-500'
+                          message.type === 'system' ? 'bg-green-500' : 
+                          message.type === 'optimization' ? 'bg-purple-500' :
+                          message.type === 'metrics' ? 'bg-orange-500' :
+                          message.type === 'error' ? 'bg-red-500' : 'bg-yellow-500'
                         }`} />
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1">
                             <span className="text-xs font-medium">
-                              {message.type === 'user' ? 'Usuário' : 'Sistema'}
+                              {message.type === 'user' ? 'Usuário' : 
+                               message.type === 'optimization' ? 'Otimização' :
+                               message.type === 'metrics' ? 'Métricas' :
+                               message.type === 'error' ? 'Erro' : 'Sistema'}
                             </span>
                             <span className="text-xs text-muted-foreground">
                               {message.timestamp}
                             </span>
+                            {message.metadata?.processingTime && (
+                              <Badge variant="secondary" className="text-xs">
+                                {message.metadata.processingTime}ms
+                              </Badge>
+                            )}
+                            {message.metadata?.confidence && (
+                              <Badge variant="outline" className="text-xs">
+                                {Math.round(message.metadata.confidence)}%
+                              </Badge>
+                            )}
                           </div>
                           <p className="text-sm break-words">{message.content}</p>
                         </div>

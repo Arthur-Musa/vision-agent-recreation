@@ -6,12 +6,43 @@ interface VisionAnalysisResult {
   confidence: number;
   summary: string;
   isInsuranceDocument: boolean;
+  processingTime?: number;
+  cacheHit?: boolean;
+  qualityScore?: number;
+}
+
+interface CacheEntry {
+  key: string;
+  result: VisionAnalysisResult;
+  timestamp: number;
+  fileHash: string;
 }
 
 class VisionAnalyzer {
+  private cache = new Map<string, CacheEntry>();
+  private readonly CACHE_DURATION = 30 * 60 * 1000; // 30 minutes
+  private readonly MAX_CACHE_SIZE = 1000;
+  
   async analyzeDocument(imageFile: File): Promise<VisionAnalysisResult> {
+    const startTime = Date.now();
+    
     try {
-      console.log('Starting GPT-4 Vision analysis...');
+      console.log('Starting optimized document analysis...');
+      
+      // Generate file hash for caching
+      const fileHash = await this.generateFileHash(imageFile);
+      const cacheKey = `doc_${fileHash}`;
+      
+      // Check cache first
+      const cachedResult = this.getFromCache(cacheKey);
+      if (cachedResult) {
+        console.log('Cache hit - returning cached result');
+        return {
+          ...cachedResult,
+          cacheHit: true,
+          processingTime: Date.now() - startTime
+        };
+      }
       
       // Convert file to base64
       const base64Image = await this.fileToBase64(imageFile);
@@ -60,7 +91,19 @@ Retorne APENAS um JSON válido com a estrutura:
       try {
         const parsedResult = JSON.parse(result);
         console.log('GPT-4 Vision analysis completed successfully');
-        return parsedResult;
+        
+        // Enhance result with additional metrics
+        const enhancedResult: VisionAnalysisResult = {
+          ...parsedResult,
+          processingTime: Date.now() - startTime,
+          cacheHit: false,
+          qualityScore: this.calculateQualityScore(parsedResult)
+        };
+        
+        // Cache the result
+        this.setCache(cacheKey, enhancedResult, fileHash);
+        
+        return enhancedResult;
       } catch (parseError) {
         console.warn('Failed to parse GPT-4 Vision result as JSON, returning default structure');
         return {
@@ -157,22 +200,172 @@ Retorne APENAS um JSON válido:
     return !!(hasValidCPF || hasValidCNPJ || hasName || hasPolicy);
   }
 
-  // Combine OCR and Vision results for better accuracy
+  // Enhanced OCR and Vision combination with smart weighting
   combineAnalysisResults(ocrData: Record<string, any>, visionData: VisionAnalysisResult): Record<string, any> {
     const combined = { ...visionData.extractedData };
     
-    // Prefer OCR for specific data types that are better extracted via pattern matching
-    if (ocrData.cpf && !combined.cpf) combined.cpf = ocrData.cpf;
-    if (ocrData.cnpj && !combined.cnpj) combined.cnpj = ocrData.cnpj;
-    if (ocrData.email && !combined.email) combined.email = ocrData.email;
-    if (ocrData.telefone && !combined.telefone) combined.telefone = ocrData.telefone;
-    if (ocrData.policyNumber && !combined.policyNumber) combined.policyNumber = ocrData.policyNumber;
+    // Smart data type preferences with confidence weighting
+    const ocrPreferred = ['cpf', 'cnpj', 'telefone', 'email', 'policyNumber', 'cep'];
+    const visionPreferred = ['insuredName', 'claimType', 'documentType', 'summary'];
     
-    // Prefer Vision for contextual data
-    if (!ocrData.insuredName && combined.insuredName) combined.insuredName = visionData.extractedData.insuredName;
-    if (!ocrData.claimType && combined.claimType) combined.claimType = visionData.extractedData.claimType;
+    // Apply OCR data for structured fields
+    ocrPreferred.forEach(field => {
+      if (ocrData[field] && this.validateFieldData(field, ocrData[field])) {
+        combined[field] = ocrData[field];
+        combined[`${field}_source`] = 'ocr';
+        combined[`${field}_confidence`] = this.calculateFieldConfidence(field, ocrData[field]);
+      }
+    });
+    
+    // Apply Vision data for contextual fields
+    visionPreferred.forEach(field => {
+      if (visionData.extractedData[field] && !combined[field]) {
+        combined[field] = visionData.extractedData[field];
+        combined[`${field}_source`] = 'vision';
+        combined[`${field}_confidence`] = visionData.confidence;
+      }
+    });
+    
+    // Cross-validation for critical fields
+    this.performCrossValidation(combined, ocrData, visionData);
     
     return combined;
+  }
+
+  // Cache management methods
+  private getFromCache(key: string): VisionAnalysisResult | null {
+    const entry = this.cache.get(key);
+    if (!entry) return null;
+    
+    const isExpired = Date.now() - entry.timestamp > this.CACHE_DURATION;
+    if (isExpired) {
+      this.cache.delete(key);
+      return null;
+    }
+    
+    return entry.result;
+  }
+
+  private setCache(key: string, result: VisionAnalysisResult, fileHash: string): void {
+    // Clean old entries if cache is full
+    if (this.cache.size >= this.MAX_CACHE_SIZE) {
+      this.cleanOldCacheEntries();
+    }
+    
+    this.cache.set(key, {
+      key,
+      result,
+      timestamp: Date.now(),
+      fileHash
+    });
+  }
+
+  private cleanOldCacheEntries(): void {
+    const now = Date.now();
+    const entries = Array.from(this.cache.entries());
+    
+    // Remove expired entries first
+    entries.forEach(([key, entry]) => {
+      if (now - entry.timestamp > this.CACHE_DURATION) {
+        this.cache.delete(key);
+      }
+    });
+    
+    // If still too large, remove oldest entries
+    if (this.cache.size >= this.MAX_CACHE_SIZE) {
+      const sortedEntries = entries
+        .sort((a, b) => a[1].timestamp - b[1].timestamp)
+        .slice(0, Math.floor(this.MAX_CACHE_SIZE * 0.8));
+      
+      this.cache.clear();
+      sortedEntries.forEach(([key, entry]) => {
+        this.cache.set(key, entry);
+      });
+    }
+  }
+
+  private async generateFileHash(file: File): Promise<string> {
+    const buffer = await file.arrayBuffer();
+    const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  }
+
+  private calculateQualityScore(result: any): number {
+    let score = 0;
+    const totalFields = 15; // Expected number of fields
+    
+    // Score based on data completeness
+    const extractedFields = Object.keys(result.extractedData || {}).length;
+    score += (extractedFields / totalFields) * 40;
+    
+    // Score based on confidence
+    score += (result.confidence || 0) * 0.4;
+    
+    // Score based on document type identification
+    if (result.isInsuranceDocument) score += 20;
+    
+    return Math.min(Math.round(score), 100);
+  }
+
+  private validateFieldData(field: string, value: any): boolean {
+    if (!value) return false;
+    
+    switch (field) {
+      case 'cpf':
+        return /^\d{11}$/.test(value.toString().replace(/\D/g, ''));
+      case 'cnpj':
+        return /^\d{14}$/.test(value.toString().replace(/\D/g, ''));
+      case 'email':
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+      case 'telefone':
+        return /^\d{10,11}$/.test(value.toString().replace(/\D/g, ''));
+      case 'cep':
+        return /^\d{8}$/.test(value.toString().replace(/\D/g, ''));
+      default:
+        return value.toString().length > 0;
+    }
+  }
+
+  private calculateFieldConfidence(field: string, value: any): number {
+    const isValid = this.validateFieldData(field, value);
+    const hasValue = !!value;
+    
+    if (!hasValue) return 0;
+    if (!isValid) return 30;
+    
+    // Base confidence for valid data
+    let confidence = 80;
+    
+    // Adjust based on field type
+    if (['cpf', 'cnpj', 'email'].includes(field)) {
+      confidence = 95; // High confidence for validated structured data
+    }
+    
+    return confidence;
+  }
+
+  private performCrossValidation(combined: Record<string, any>, ocrData: Record<string, any>, visionData: VisionAnalysisResult): void {
+    // Cross-validate CPF/CNPJ consistency
+    if (combined.cpf && combined.cnpj) {
+      console.warn('Both CPF and CNPJ found - flagging for manual review');
+      combined.validation_flags = combined.validation_flags || [];
+      combined.validation_flags.push('cpf_cnpj_conflict');
+    }
+    
+    // Validate document type consistency
+    if (ocrData.documentType && visionData.extractedData.documentType) {
+      const ocrType = ocrData.documentType.toLowerCase();
+      const visionType = visionData.extractedData.documentType.toLowerCase();
+      
+      if (ocrType !== visionType) {
+        combined.document_type_conflict = {
+          ocr: ocrData.documentType,
+          vision: visionData.extractedData.documentType,
+          recommended: visionData.confidence > 80 ? visionData.extractedData.documentType : ocrData.documentType
+        };
+      }
+    }
   }
 }
 
