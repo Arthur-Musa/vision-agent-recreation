@@ -71,3 +71,19 @@ Yes, you can!
 To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
 
 Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+
+## Configuração de Chaves de API
+
+Alguns recursos deste projeto dependem das chaves **openai_api_key** e **olga_api_key**. Você pode defini‑las de duas formas:
+
+1. **localStorage do navegador**
+   - Abra o console do navegador e execute:
+     ```javascript
+     localStorage.setItem('openai_api_key', 'SUA_CHAVE_OPENAI');
+     localStorage.setItem('olga_api_key', 'SUA_CHAVE_OLGA');
+     ```
+
+2. **Variáveis de ambiente**
+   - Defina `OPENAI_API_KEY` e `OLGA_API_KEY` antes de iniciar a aplicação. Elas serão expostas como `window.OPENAI_API_KEY` e `window.OLGA_API_KEY` durante a execução.
+
+Se essas chaves não estiverem configuradas, os serviços rodam em **modo de demonstração**, utilizando respostas simuladas.
