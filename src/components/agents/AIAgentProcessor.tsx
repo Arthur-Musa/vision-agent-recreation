@@ -20,7 +20,7 @@ import {
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { openaiService, type OpenAIAgentConfig, type AgentResponse } from '@/services/openaiService';
-import { OpenAISettings } from '@/components/settings/OpenAISettings';
+// Componente removido - chaves API agora são gerenciadas no backend
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 
 interface AIAgentProcessorProps {
@@ -138,7 +138,7 @@ ${testInput}
             <DialogHeader>
               <DialogTitle>Configurações OpenAI</DialogTitle>
             </DialogHeader>
-            <OpenAISettings />
+            <p className="text-muted-foreground">As chaves API são agora gerenciadas de forma segura no backend.</p>
           </DialogContent>
         </Dialog>
       </div>

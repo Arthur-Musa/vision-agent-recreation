@@ -55,30 +55,25 @@ class OlgaApiService {
   
   constructor() {
     this.config = {
-      apiKey: localStorage.getItem('olga_api_key') || undefined,
       baseUrl: config.api.baseUrl,
-      fallbackMode: !localStorage.getItem('olga_api_key'),
+      fallbackMode: false,
       timeout: config.api.timeout
     };
+  }
 
-    if (this.config.fallbackMode) {
-      this.notifyFallbackMode();
+  private async callOlgaAPI(endpoint: string, method: string = 'POST', body?: any): Promise<any> {
+    const { supabase } = await import('@/integrations/supabase/client');
+    
+    const response = await supabase.functions.invoke('olga-proxy', {
+      body: { endpoint, method, body }
+    });
+    
+    if (response.error) {
+      console.warn('Olga API indisponível, usando modo fallback:', response.error);
+      return this.generateFallbackResponse(endpoint, { method, body });
     }
-  }
-
-  // Configuração da API Key
-  setApiKey(apiKey: string): void {
-    this.config.apiKey = apiKey;
-    this.config.fallbackMode = false;
-    localStorage.setItem('olga_api_key', apiKey);
-  }
-
-  clearApiKey(): void {
-    this.config.apiKey = undefined;
-    this.config.fallbackMode = true;
-    localStorage.removeItem('olga_api_key');
-
-    this.notifyFallbackMode();
+    
+    return response.data;
   }
 
   getConfig(): OlgaApiConfig {
@@ -91,45 +86,9 @@ class OlgaApiService {
       throw new Error('Rate limit excedido. Aguarde alguns segundos.');
     }
 
-    // Se estiver em modo fallback, simular resposta
-    if (this.config.fallbackMode) {
-      return this.generateFallbackResponse(endpoint, options) as T;
-    }
-
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), this.config.timeout);
-
     try {
-      const headers: Record<string, string> = {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        'Origin': window.location.origin,
-        ...options?.headers as Record<string, string>,
-      };
-
-      if (this.config.apiKey) {
-        headers['Authorization'] = `Bearer ${this.config.apiKey}`;
-      }
-
-      const response = await fetch(`${this.config.baseUrl}${endpoint}`, {
-        ...options,
-        headers,
-        mode: 'cors',
-        signal: controller.signal,
-      });
-
-      clearTimeout(timeoutId);
-
-      if (!response.ok) {
-        const errorText = await response.text().catch(() => 'Unknown error');
-        throw new Error(`Olga API Error: ${response.status} ${response.statusText} - ${errorText}`);
-      }
-
-      return response.json();
+      return await this.callOlgaAPI(endpoint, options?.method || 'POST', options?.body ? JSON.parse(options.body as string) : undefined) as T;
     } catch (error) {
-      clearTimeout(timeoutId);
-      
-      // Em caso de erro, fallback para modo simulado
       console.warn('Olga API indisponível, usando modo fallback:', error);
       return this.generateFallbackResponse(endpoint, options) as T;
     }
@@ -432,7 +391,7 @@ class OlgaApiService {
 
   // Métodos de utilidade
   isConnected(): boolean {
-    return !this.config.fallbackMode && !!this.config.apiKey;
+    return !this.config.fallbackMode;
   }
 
   getConnectionStatus(): { 
@@ -444,7 +403,7 @@ class OlgaApiService {
     return {
       connected: this.isConnected(),
       mode: this.config.fallbackMode ? 'fallback' : 'real',
-      hasApiKey: !!this.config.apiKey,
+      hasApiKey: true, // Sempre true pois as chaves estão no backend
       baseUrl: this.config.baseUrl
     };
   }

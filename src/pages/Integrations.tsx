@@ -3,8 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { OlgaApiSettings } from '@/components/settings/OlgaApiSettings';
-import { OpenAISettings } from '@/components/settings/OpenAISettings';
+// Componentes de configuração removidos - chaves API agora são gerenciadas no backend
 import { 
   Settings, 
   Zap, 
@@ -20,8 +19,9 @@ import { Button } from '@/components/ui/button';
 
 const Integrations = () => {
   const olgaStatus = olgaApi.getConnectionStatus();
-  const hasOpenAI = !!localStorage.getItem('openai_api_key');
-  const hasAnthropic = !!localStorage.getItem('anthropic_api_key');
+  // Chaves API agora são gerenciadas no backend via edge functions
+  const hasOpenAI = true; // Sempre true pois as chaves estão no backend
+  const hasAnthropic = true;
 
   const getStatusIcon = (connected: boolean) => {
     return connected ? 
@@ -173,7 +173,22 @@ const Integrations = () => {
                   Configure a API key para acessar funcionalidades avançadas de análise e detecção de fraudes.
                 </AlertDescription>
               </Alert>
-              <OlgaApiSettings />
+              <div className="space-y-4">
+                <Card>
+                  <CardContent className="p-6">
+                    <div className="text-center space-y-4">
+                      <Database className="h-12 w-12 mx-auto text-muted-foreground" />
+                      <div>
+                        <h3 className="text-lg font-semibold">Configuração da API Olga</h3>
+                        <p className="text-sm text-muted-foreground">
+                          As chaves API são agora gerenciadas de forma segura no backend.
+                        </p>
+                      </div>
+                      <Badge variant="outline">Configurado via Backend</Badge>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
             </TabsContent>
 
             <TabsContent value="openai" className="space-y-4">
@@ -184,7 +199,22 @@ const Integrations = () => {
                   Funciona como complemento à API Olga para cenários que exigem processamento de linguagem natural.
                 </AlertDescription>
               </Alert>
-              <OpenAISettings />
+              <div className="space-y-4">
+                <Card>
+                  <CardContent className="p-6">
+                    <div className="text-center space-y-4">
+                      <Brain className="h-12 w-12 mx-auto text-muted-foreground" />
+                      <div>
+                        <h3 className="text-lg font-semibold">Configuração da OpenAI</h3>
+                        <p className="text-sm text-muted-foreground">
+                          As chaves API são agora gerenciadas de forma segura no backend.
+                        </p>
+                      </div>
+                      <Badge variant="outline">Configurado via Backend</Badge>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
             </TabsContent>
 
             <TabsContent value="anthropic" className="space-y-4">

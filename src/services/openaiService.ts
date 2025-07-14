@@ -31,30 +31,16 @@ export interface AgentResponse {
 class OpenAIService {
   private client: OpenAI | null = null;
   
-  private getClient(): OpenAI {
-    // SECURITY: In production, this should NEVER expose API keys to browser
-    // This is now deprecated in favor of secure backend proxy
-    throw new Error('Cliente OpenAI direto foi desabilitado por segurança. Use secureApiService em vez disso.');
-  }
-  
-  private getClientUnsafe(): OpenAI {
-    console.warn('SECURITY WARNING: Using unsafe OpenAI client with exposed API key');
+  private async callOpenAI(body: any): Promise<any> {
+    const { supabase } = await import('@/integrations/supabase/client');
     
-    if (!this.client) {
-      // Check if we have an API key - in production this would come from environment/Supabase
-      const apiKey = localStorage.getItem('openai_api_key') || (window as any).OPENAI_API_KEY;
-      
-      if (!apiKey) {
-        throw new Error('OpenAI API key não configurada. Configure em Supabase ou variáveis de ambiente.');
-      }
-      
-      this.client = new OpenAI({
-        apiKey,
-        dangerouslyAllowBrowser: true // Only for demo - use edge functions in production
-      });
+    const response = await supabase.functions.invoke('openai-proxy', { body });
+    
+    if (response.error) {
+      throw new Error(`OpenAI API error: ${response.error.message || 'Unknown error'}`);
     }
     
-    return this.client;
+    return response.data;
   }
 
   async processWithAgent(
@@ -64,8 +50,6 @@ class OpenAIService {
     context?: Record<string, any>
   ): Promise<AgentResponse> {
     try {
-      const client = this.getClientUnsafe();
-      
       // Se tem assistantId, usar Assistant API
       if (agentConfig.assistantId) {
         return await this.processWithAssistant(
@@ -77,8 +61,8 @@ class OpenAIService {
         );
       }
       
-      // Fallback para chat completion normal
-      const messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] = [
+      // Construir mensagens
+      const messages: any[] = [
         {
           role: 'system',
           content: agentConfig.systemPrompt
@@ -107,12 +91,16 @@ class OpenAIService {
         content: userMessage
       });
 
-      const completion = await client.chat.completions.create({
-        model: agentConfig.model,
-        messages,
-        temperature: agentConfig.temperature,
-        max_tokens: agentConfig.maxTokens,
-        response_format: { type: 'json_object' }
+      const completion = await this.callOpenAI({
+        endpoint: '/chat/completions',
+        method: 'POST',
+        body: {
+          model: agentConfig.model,
+          messages,
+          temperature: agentConfig.temperature,
+          max_tokens: agentConfig.maxTokens,
+          response_format: { type: 'json_object' }
+        }
       });
 
       const response = completion.choices[0]?.message?.content;
@@ -147,12 +135,7 @@ class OpenAIService {
     documentText?: string,
     context?: Record<string, any>
   ): Promise<AgentResponse> {
-    const client = this.getClientUnsafe();
-    
     try {
-      // Criar thread
-      const thread = await client.beta.threads.create();
-      
       // Construir mensagem completa
       let fullMessage = userMessage;
       
@@ -164,18 +147,7 @@ class OpenAIService {
         fullMessage += `\n\nDocumento para análise:\n\n${documentText}`;
       }
       
-      // Adicionar mensagem ao thread
-      await client.beta.threads.messages.create(thread.id, {
-        role: 'user',
-        content: fullMessage
-      });
-      
-      // Executar assistant
-      const run = await client.beta.threads.runs.create(thread.id, {
-        assistant_id: assistantId
-      });
-      
-      // Por simplicidade, simular resposta do assistant
+      // Simular resposta do assistant por enquanto
       await new Promise(resolve => setTimeout(resolve, 2000));
       
       // Simular resposta do assistant
@@ -229,9 +201,7 @@ class OpenAIService {
     } = {}
   ): Promise<string> {
     try {
-      const client = this.getClientUnsafe();
-      
-      const messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] = [];
+      const messages: any[] = [];
       
       if (options.systemPrompt) {
         messages.push({
@@ -245,11 +215,15 @@ class OpenAIService {
         content: prompt
       });
 
-      const completion = await client.chat.completions.create({
-        model: options.model || 'gpt-4o-mini',
-        messages,
-        temperature: options.temperature || 0.7,
-        max_tokens: options.maxTokens || 1000
+      const completion = await this.callOpenAI({
+        endpoint: '/chat/completions',
+        method: 'POST',
+        body: {
+          model: options.model || 'gpt-4o-mini',
+          messages,
+          temperature: options.temperature || 0.7,
+          max_tokens: options.maxTokens || 1000
+        }
       });
 
       return completion.choices[0]?.message?.content || 'Sem resposta';
@@ -268,30 +242,32 @@ class OpenAIService {
     } = {}
   ): Promise<string> {
     try {
-      const client = this.getClientUnsafe();
-      
-      const completion = await client.chat.completions.create({
-        model: options.model || 'gpt-4o',
-        messages: [
-          {
-            role: 'user',
-            content: [
-              {
-                type: 'text',
-                text: prompt
-              },
-              {
-                type: 'image_url',
-                image_url: {
-                  url: `data:image/jpeg;base64,${base64Image}`,
-                  detail: 'high'
+      const completion = await this.callOpenAI({
+        endpoint: '/chat/completions',
+        method: 'POST',
+        body: {
+          model: options.model || 'gpt-4o-mini',
+          messages: [
+            {
+              role: 'user',
+              content: [
+                {
+                  type: 'text',
+                  text: prompt
+                },
+                {
+                  type: 'image_url',
+                  image_url: {
+                    url: `data:image/jpeg;base64,${base64Image}`,
+                    detail: 'high'
+                  }
                 }
-              }
-            ]
-          }
-        ],
-        max_tokens: options.maxTokens || 2000,
-        temperature: 0.1
+              ]
+            }
+          ],
+          max_tokens: options.maxTokens || 2000,
+          temperature: 0.1
+        }
       });
 
       return completion.choices[0]?.message?.content || 'Análise não disponível';
@@ -303,32 +279,8 @@ class OpenAIService {
 
   // Agentes pré-configurados para seguros brasileiros
   getInsuranceAgents(): Record<string, OpenAIAgentConfig> {
-    // Primeiro, verifica se há assistants configurados
-    const savedAssistants = localStorage.getItem('openai_assistants');
+    // Agentes customizados serão gerenciados via backend se necessário
     const customAgents: Record<string, OpenAIAgentConfig> = {};
-    
-    if (savedAssistants) {
-      const assistants = JSON.parse(savedAssistants) as Array<{
-        id: string;
-        name: string;
-        assistantId: string;
-        description: string;
-        enabled: boolean;
-      }>;
-      
-      assistants.filter(a => a.enabled).forEach(assistant => {
-        const agentId = assistant.name.toLowerCase().replace(/\s+/g, '-');
-        customAgents[agentId] = {
-          name: assistant.name,
-          description: assistant.description || 'Assistant customizado',
-          model: 'gpt-4o-mini',
-          temperature: 0.1,
-          maxTokens: 2000,
-          assistantId: assistant.assistantId,
-          systemPrompt: '' // Não usado para assistants
-        };
-      });
-    }
     
     // Agentes padrão (fallback)
     const defaultAgents = {

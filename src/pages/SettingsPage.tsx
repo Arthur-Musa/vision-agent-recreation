@@ -8,9 +8,8 @@ import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Settings, Key, Users, Bell, Palette, Database } from 'lucide-react';
-import { OpenAISettings } from '@/components/settings/OpenAISettings';
 import { AssistantSettings } from '@/components/settings/AssistantSettings';
-import { OlgaApiSettings } from '@/components/settings/OlgaApiSettings';
+// Componentes removidos - chaves API agora são gerenciadas no backend
 
 const SettingsPage = () => {
   const navigate = useNavigate();
@@ -87,13 +86,8 @@ const SettingsPage = () => {
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <div>
-                    <h3 className="text-lg font-medium mb-4">Olga API</h3>
-                    <OlgaApiSettings />
-                  </div>
-                  
-                  <div className="border-t pt-6">
-                    <h3 className="text-lg font-medium mb-4">OpenAI</h3>
-                    <OpenAISettings />
+                    <h3 className="text-lg font-medium mb-4">APIs</h3>
+                    <p className="text-muted-foreground text-sm">As chaves API são agora gerenciadas de forma segura no backend.</p>
                   </div>
                   
                   <div className="border-t pt-6">

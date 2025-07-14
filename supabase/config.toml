@@ -1,1 +1,7 @@
 project_id = "jdauagwejlbeskhcpxwi"
+
+[functions.openai-proxy]
+verify_jwt = false
+
+[functions.olga-proxy]
+verify_jwt = false

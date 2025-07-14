@@ -14,7 +14,7 @@ import { openaiService } from '@/services/openaiService';
 import { toast } from 'sonner';
 
 const OpenAITestCenter = () => {
-  const [apiKey, setApiKey] = useState(localStorage.getItem('openai_api_key') || '');
+  // Chaves API agora são gerenciadas no backend via edge functions
   const [isLoading, setIsLoading] = useState(false);
   const [response, setResponse] = useState('');
   
@@ -33,10 +33,7 @@ const OpenAITestCenter = () => {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState('');
 
-  const saveApiKey = () => {
-    localStorage.setItem('openai_api_key', apiKey);
-    toast.success('API Key salva com sucesso!');
-  };
+  // Chaves API agora são gerenciadas no backend via edge functions
 
   const testChatCompletion = async () => {
     if (!chatPrompt.trim()) {
@@ -68,10 +65,7 @@ const OpenAITestCenter = () => {
       return;
     }
 
-    if (!apiKey) {
-      toast.error('Configure a API Key da OpenAI primeiro');
-      return;
-    }
+    // Chaves API agora são gerenciadas no backend via edge functions
 
     setIsLoading(true);
     try {
@@ -172,24 +166,10 @@ const OpenAITestCenter = () => {
         </CardHeader>
         <CardContent>
           <div className="flex gap-2">
-            <Input
-              type="password"
-              placeholder="sk-..."
-              value={apiKey}
-              onChange={(e) => setApiKey(e.target.value)}
-              className="flex-1"
-            />
-            <Button onClick={saveApiKey} variant="outline">
-              Salvar
-            </Button>
+            <p className="text-muted-foreground text-sm">
+              As chaves API são agora gerenciadas de forma segura no backend.
+            </p>
           </div>
-          {!apiKey && (
-            <Alert className="mt-3">
-              <AlertDescription>
-                Configure sua API Key da OpenAI para usar as funcionalidades de teste
-              </AlertDescription>
-            </Alert>
-          )}
         </CardContent>
       </Card>
 

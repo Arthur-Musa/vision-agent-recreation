@@ -175,13 +175,11 @@ class ChatService {
       }
 
       // Segunda tentativa: usar agentes configurados se disponível
-      const openaiKey = localStorage.getItem('openai_api_key') || localStorage.getItem('anthropic_api_key');
+      // Chaves API agora são gerenciadas no backend via edge functions
       
-      if (openaiKey) {
-        // Processa documentos com agente de IA real
-        const result = await this.processWithRealAI(files, userMessage);
-        return result;
-      }
+      // Processa documentos com agente de IA real
+      const result = await this.processWithRealAI(files, userMessage);
+      return result;
 
       // Fallback: usar análise simulada
       return this.simulateDocumentAnalysis(files, userMessage);
