@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Settings, Key, Users, Bell, Palette, Database } from 'lucide-react';
+import { ArrowLeft, Settings, Key, Users, Bell, Palette, Database, Bot } from 'lucide-react';
 import { AssistantSettings } from '@/components/settings/AssistantSettings';
 // Componentes removidos - chaves API agora são gerenciadas no backend
 
@@ -94,6 +94,28 @@ const SettingsPage = () => {
                     <h3 className="text-lg font-medium mb-4">Assistants OpenAI</h3>
                     <AssistantSettings />
                   </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Bot className="h-5 w-5" />
+                    Gerenciar Assistants OpenAI
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Configure e gerencie seus assistants OpenAI personalizados.
+                  </p>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => navigate('/assistants')}
+                    className="w-full"
+                  >
+                    <Settings className="h-4 w-4 mr-2" />
+                    Abrir Gerenciador de Assistants
+                  </Button>
                   
                   <div className="border-t pt-6">
                     <h3 className="text-lg font-medium mb-4">Anthropic Claude</h3>

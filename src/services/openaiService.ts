@@ -147,23 +147,47 @@ class OpenAIService {
         fullMessage += `\n\nDocumento para análise:\n\n${documentText}`;
       }
       
-      // Simular resposta do assistant por enquanto
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Simular resposta do assistant
+      // Chamar assistant via backend
+      const response = await this.callOpenAI({
+        assistantId,
+        threadId: null, // Novo thread para cada interação
+        body: {
+          message: fullMessage,
+          instructions: `Você é o agente ${agentName}. Responda sempre em JSON com a estrutura: {"content": "análise", "extractedData": {}, "confidence": 0.9, "validations": [], "recommendations": [], "citations": []}`
+        }
+      });
+
+      if (response.error) {
+        throw new Error(`Assistant API error: ${response.error}`);
+      }
+
+      // Parse da resposta do assistant
+      let parsedResponse;
+      try {
+        parsedResponse = JSON.parse(response.content);
+      } catch (e) {
+        // Se não conseguir fazer parse, usar resposta direta
+        parsedResponse = {
+          content: response.content,
+          extractedData: {},
+          confidence: 0.9,
+          validations: [],
+          recommendations: [],
+          citations: []
+        };
+      }
+
       return {
-        content: `Assistant ${agentName} processou: ${userMessage}`,
-        extractedData: {},
-        confidence: 0.9,
-        validations: [
-          {
-            field: 'assistant',
-            status: 'success' as const,
-            message: 'Processado com Assistant OpenAI'
-          }
-        ],
-        recommendations: ['Resultado processado pelo assistant'],
-        citations: []
+        content: parsedResponse.content || response.content,
+        extractedData: parsedResponse.extractedData || {},
+        confidence: parsedResponse.confidence || 0.9,
+        validations: parsedResponse.validations || [{
+          field: 'assistant',
+          status: 'success' as const,
+          message: `Processado com Assistant OpenAI: ${agentName}`
+        }],
+        recommendations: parsedResponse.recommendations || ['Resultado processado pelo assistant'],
+        citations: parsedResponse.citations || []
       };
     } catch (error) {
       console.error('Erro ao processar com Assistant:', error);
