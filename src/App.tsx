@@ -37,6 +37,7 @@ import DataPipeline from "./pages/DataPipeline";
 import KnowledgeHub from "./pages/KnowledgeHub";
 import { Chat } from "./pages/Chat";
 import OpenAITestCenter from "./pages/OpenAITestCenter";
+import { SinistrosProcessing } from "./pages/SinistrosProcessing";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -53,6 +54,7 @@ const App = () => (
               <Route path="/" element={<Index />} />
               <Route path="/chat" element={<Chat />} />
               <Route path="/openai-test" element={<OpenAITestCenter />} />
+              <Route path="/sinistros" element={<SinistrosProcessing />} />
               
               <Route path="/upload" element={<Upload />} />
               <Route path="/journey" element={<UserJourney />} />
