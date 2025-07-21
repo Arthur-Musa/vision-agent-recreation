@@ -5,7 +5,7 @@ import Index from './pages/Index';
 import Upload from './pages/Upload';
 import AIAgents from './pages/AIAgents';
 import ClaimsDashboard from './pages/ClaimsDashboard';
-import EvoAI from '@/pages/EvoAI';
+import AgentSystem from './pages/AgentSystem';
 
 function App() {
   return (
@@ -16,7 +16,7 @@ function App() {
           <Route path="/upload" element={<Upload />} />
           <Route path="/ai-agents" element={<AIAgents />} />
           <Route path="/claims" element={<ClaimsDashboard />} />
-          <Route path="/evoai" element={<EvoAI />} />
+          <Route path="/agent-system" element={<AgentSystem />} />
         </Routes>
       </Layout>
     </Router>
