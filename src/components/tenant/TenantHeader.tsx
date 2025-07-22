@@ -17,6 +17,26 @@ export const TenantHeader: React.FC = () => {
     return email.split('@')[0].slice(0, 2).toUpperCase();
   };
 
+  // Se não há usuário, mostrar versão simplificada
+  if (!user) {
+    return (
+      <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="flex h-16 items-center justify-between px-6">
+          <div className="flex items-center space-x-3">
+            <SidebarTrigger />
+            <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
+              <Building2 className="w-5 h-5 text-primary" />
+            </div>
+            <div>
+              <h1 className="font-semibold text-lg">{tenant.branding.companyName}</h1>
+              <p className="text-xs text-muted-foreground">Powered by Olga</p>
+            </div>
+          </div>
+        </div>
+      </header>
+    );
+  }
+
   return (
     <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="flex h-16 items-center justify-between px-6">
