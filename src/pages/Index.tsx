@@ -37,46 +37,49 @@ const Index = () => {
           </div>
         </div>
 
-        {/* Quick Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
-          <div className="bg-card border rounded-lg p-6 hover:shadow-md transition-shadow">
-            <h3 className="text-lg font-semibold mb-2">Sistema de Agentes IA</h3>
-            <p className="text-sm text-muted-foreground mb-4">
-              Gerencie seus agentes inteligentes
-            </p>
-            <a 
-              href="/agent-system" 
-              className="text-primary hover:underline text-sm font-medium"
-            >
-              Acessar →
-            </a>
-          </div>
+        {/* Components with error boundaries */}
+        <div className="mt-8 space-y-4">
+          <ErrorBoundary fallback={
+            <div className="bg-muted/50 rounded-lg p-4">
+              <p className="text-sm text-muted-foreground">
+                Erro ao carregar componente AskGoBox
+              </p>
+            </div>
+          }>
+            <div className="bg-muted/10 rounded-lg p-4">
+              <p className="text-sm text-muted-foreground">
+                AskGoBox será carregado quando disponível
+              </p>
+            </div>
+          </ErrorBoundary>
 
-          <div className="bg-card border rounded-lg p-6 hover:shadow-md transition-shadow">
-            <h3 className="text-lg font-semibold mb-2">Upload de Documentos</h3>
-            <p className="text-sm text-muted-foreground mb-4">
-              Envie e processe documentos
-            </p>
-            <a 
-              href="/upload" 
-              className="text-primary hover:underline text-sm font-medium"
-            >
-              Enviar →
-            </a>
-          </div>
+          <ErrorBoundary fallback={
+            <div className="bg-muted/50 rounded-lg p-4">
+              <p className="text-sm text-muted-foreground">
+                Erro ao carregar AgentCards
+              </p>
+            </div>
+          }>
+            <div className="bg-muted/10 rounded-lg p-4">
+              <p className="text-sm text-muted-foreground">
+                AgentCards será carregado quando disponível
+              </p>
+            </div>
+          </ErrorBoundary>
 
-          <div className="bg-card border rounded-lg p-6 hover:shadow-md transition-shadow">
-            <h3 className="text-lg font-semibold mb-2">Dashboard de Claims</h3>
-            <p className="text-sm text-muted-foreground mb-4">
-              Monitore e gerencie sinistros
-            </p>
-            <a 
-              href="/claims" 
-              className="text-primary hover:underline text-sm font-medium"
-            >
-              Ver Dashboard →
-            </a>
-          </div>
+          <ErrorBoundary fallback={
+            <div className="bg-muted/50 rounded-lg p-4">
+              <p className="text-sm text-muted-foreground">
+                Erro ao carregar RecentCasesSection
+              </p>
+            </div>
+          }>
+            <div className="bg-muted/10 rounded-lg p-4">
+              <p className="text-sm text-muted-foreground">
+                RecentCasesSection será carregado quando disponível
+              </p>
+            </div>
+          </ErrorBoundary>
         </div>
       </div>
     </div>
