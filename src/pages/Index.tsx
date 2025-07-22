@@ -46,11 +46,7 @@ const Index = () => {
               </p>
             </div>
           }>
-            <div className="bg-muted/10 rounded-lg p-4">
-              <p className="text-sm text-muted-foreground">
-                AskGoBox será carregado quando disponível
-              </p>
-            </div>
+            {/* AskGoBox será carregado quando disponível */}
           </ErrorBoundary>
 
           <ErrorBoundary fallback={
@@ -60,11 +56,7 @@ const Index = () => {
               </p>
             </div>
           }>
-            <div className="bg-muted/10 rounded-lg p-4">
-              <p className="text-sm text-muted-foreground">
-                AgentCards será carregado quando disponível
-              </p>
-            </div>
+            {/* AgentCards será carregado quando disponível */}
           </ErrorBoundary>
 
           <ErrorBoundary fallback={
@@ -74,11 +66,7 @@ const Index = () => {
               </p>
             </div>
           }>
-            <div className="bg-muted/10 rounded-lg p-4">
-              <p className="text-sm text-muted-foreground">
-                RecentCasesSection será carregado quando disponível
-              </p>
-            </div>
+            {/* RecentCasesSection será carregado quando disponível */}
           </ErrorBoundary>
         </div>
       </div>
