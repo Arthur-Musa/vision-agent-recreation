@@ -64,13 +64,13 @@ export function AppSidebar() {
 
   const isActive = (path: string) => currentPath === path;
   const getNavCls = ({ isActive }: { isActive: boolean }) =>
-    isActive 
+    `transition-colors duration-200 ${isActive 
       ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium" 
-      : "hover:bg-sidebar-accent/50 text-sidebar-foreground";
+      : "hover:bg-sidebar-accent/50 text-sidebar-foreground hover:text-sidebar-accent-foreground"}`;
 
   return (
-    <Sidebar className={collapsed ? "w-14" : "w-64"} collapsible="icon" variant="inset">
-      <SidebarContent className="bg-sidebar">
+    <Sidebar className={`transition-all duration-300 ${collapsed ? "w-14" : "w-64"}`} collapsible="icon" variant="inset">
+      <SidebarContent className="bg-sidebar border-r border-sidebar-border">
         {/* Main Navigation */}
         <SidebarGroup>
           <SidebarGroupContent>
@@ -79,8 +79,8 @@ export function AppSidebar() {
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
                     <NavLink to={item.url} end className={getNavCls}>
-                      <item.icon className="h-4 w-4" />
-                      {!collapsed && <span className="ml-2">{item.title}</span>}
+                      <item.icon className="h-4 w-4 flex-shrink-0" />
+                      {!collapsed && <span className="ml-2 truncate">{item.title}</span>}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -100,8 +100,8 @@ export function AppSidebar() {
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
                     <NavLink to={item.url} className={getNavCls}>
-                      <item.icon className="h-4 w-4" />
-                      {!collapsed && <span className="ml-2">{item.title}</span>}
+                      <item.icon className="h-4 w-4 flex-shrink-0" />
+                      {!collapsed && <span className="ml-2 truncate">{item.title}</span>}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -133,13 +133,13 @@ export function AppSidebar() {
                           });
                         }}
                       >
-                        <case_.icon className="h-4 w-4" />
-                        {!collapsed && <span className="ml-2 truncate">{case_.title}</span>}
+                        <case_.icon className="h-4 w-4 flex-shrink-0" />
+                        {!collapsed && <span className="ml-2 truncate text-sm">{case_.title}</span>}
                       </div>
                     ) : (
                       <NavLink to={case_.url} className={getNavCls}>
-                        <case_.icon className="h-4 w-4" />
-                        {!collapsed && <span className="ml-2 truncate">{case_.title}</span>}
+                        <case_.icon className="h-4 w-4 flex-shrink-0" />
+                        {!collapsed && <span className="ml-2 truncate text-sm">{case_.title}</span>}
                       </NavLink>
                     )}
                   </SidebarMenuButton>
@@ -172,10 +172,10 @@ export function AppSidebar() {
                       }}
                     >
                       <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                        <agent.icon className={`h-4 w-4 ${agent.color}`} />
+                        <div className="w-2 h-2 rounded-full bg-green-500 flex-shrink-0"></div>
+                        <agent.icon className={`h-4 w-4 flex-shrink-0 ${agent.color}`} />
                       </div>
-                      {!collapsed && <span className="ml-2">{agent.title}</span>}
+                      {!collapsed && <span className="ml-2 truncate">{agent.title}</span>}
                     </div>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
