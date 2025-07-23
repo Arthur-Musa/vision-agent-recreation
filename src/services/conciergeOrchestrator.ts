@@ -6,6 +6,22 @@
 import { workflowEngine } from './workflowEngine';
 import { WorkflowExecution } from '@/types/workflow';
 
+// Helper to normalize monetary strings like "1.234,56" or "1,234.56"
+const normalizeMoney = (s: string) => {
+  if (s.includes(',') && s.includes('.')) {
+    if (s.lastIndexOf(',') > s.lastIndexOf('.')) {
+      s = s.replace(/\./g, '').replace(',', '.');
+    } else {
+      s = s.replace(/,/g, '');
+    }
+  } else if (s.includes(',')) {
+    s = s.replace(/\./g, '').replace(',', '.');
+  } else {
+    s = s.replace(/,/g, '');
+  }
+  return parseFloat(s);
+};
+
 export interface TaskContext {
   id: string;
   originalQuery: string;
@@ -181,7 +197,7 @@ class ConciergeOrchestrator {
     // Extrai valores monetários
     const moneyMatch = query.match(/R\$\s*([\d.,]+)/);
     if (moneyMatch) {
-      data.valor_estimado = parseFloat(moneyMatch[1].replace(',', ''));
+      data.valor_estimado = normalizeMoney(moneyMatch[1]);
     }
     
     // Extrai datas
