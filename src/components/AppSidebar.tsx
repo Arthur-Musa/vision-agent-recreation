@@ -56,6 +56,7 @@ const agentItems = [
 ];
 
 export function AppSidebar() {
+  console.log('AppSidebar component loading...');
   const { state } = useSidebar();
   const location = useLocation();
   const navigate = useNavigate();

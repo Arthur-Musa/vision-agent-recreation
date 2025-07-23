@@ -21,6 +21,7 @@ const AskGoBox = ({
   userName,
   getTimeGreeting
 }: AskGoBoxProps) => {
+  console.log('AskGoBox component loading...');
   const navigate = useNavigate();
   const {
     toast

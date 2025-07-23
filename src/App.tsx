@@ -13,8 +13,13 @@ import LiveWorkflow from './pages/LiveWorkflow';
 import ManusLiveView from './pages/ManusLiveView';
 import OpenAITestCenter from './pages/OpenAITestCenter';
 import NotFound from './pages/NotFound';
+import KnowledgeHub from './pages/KnowledgeHub';
+import SettingsPage from './pages/SettingsPage';
+import RenewalAssistant from './pages/RenewalAssistant';
 
 function App() {
+  console.log('App component loading...');
+  
   return (
     <Router>
       <Layout>
@@ -32,6 +37,10 @@ function App() {
           <Route path="/manus-live" element={<ManusLiveView />} />
           <Route path="/manus-live-view" element={<ManusLiveView />} />
           <Route path="/openai-test" element={<OpenAITestCenter />} />
+          <Route path="/knowledge" element={<KnowledgeHub />} />
+          <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/renewal" element={<RenewalAssistant />} />
+          <Route path="/invite" element={<NotFound />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Layout>

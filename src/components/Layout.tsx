@@ -9,6 +9,7 @@ interface LayoutProps {
 }
 
 export function Layout({ children }: LayoutProps) {
+  console.log('Layout component loading...');
   const { tenant } = useTenant();
   
   return (

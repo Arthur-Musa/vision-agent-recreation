@@ -4,6 +4,7 @@ import AgentCards from "@/components/home/AgentCards";
 import RecentCasesSection from "@/components/home/RecentCasesSection";
 
 const Index = () => {
+  console.log('Index component loading...');
   const [userName] = useState('Ana'); // Mock user name
 
   const getTimeGreeting = () => {
