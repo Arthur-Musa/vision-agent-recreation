@@ -51,16 +51,23 @@ class N8nWorkflowService {
   private readonly baseUrl: string;
   
   constructor() {
-    // URL base do n8n - em produção será configurada via env
-    this.baseUrl = 'https://seu-n8n-instance.com/webhook-test';
+    // URL base do n8n configurada para 88i
+    this.baseUrl = 'https://olga-ai.app.n8n.cloud';
   }
 
   /**
-   * Inicia triagem inicial do sinistro
+   * Inicia triagem inicial do sinistro (mantido para compatibilidade)
    */
   async iniciarTriagem(data: SinistroBaseData): Promise<WorkflowResponse> {
+    return this.enviarSinistro(data);
+  }
+
+  /**
+   * Envia sinistro diretamente para o webhook 88i
+   */
+  async enviarSinistro(data: any): Promise<WorkflowResponse> {
     try {
-      const response = await fetch(`${this.baseUrl}/api/sinistro/novo`, {
+      const response = await fetch(`${this.baseUrl}/webhook/88i`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -68,7 +75,7 @@ class N8nWorkflowService {
         body: JSON.stringify({
           ...data,
           timestamp: new Date().toISOString(),
-          origem: 'portal_web'
+          fonte: 'sistema_olga'
         }),
       });
 
