@@ -89,10 +89,6 @@ const Index = () => {
                 <FileText className="w-4 h-4" />
                 Spreadsheet
               </Button>
-              <Button onClick={() => navigate('/dashboard')} variant="outline" className="gap-2">
-                <BarChart3 className="w-4 h-4" />
-                Dashboard
-              </Button>
             </div>
           </div>
         </div>
