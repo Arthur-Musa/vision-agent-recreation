@@ -2,11 +2,18 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Bot, FileText, Shield, Cpu, Target, Smartphone, Brain, BarChart3 } from "lucide-react";
+import { Bot, FileText, Shield, Cpu, Target, Smartphone, Brain, BarChart3, MessageCircle } from "lucide-react";
+import OlgaInterface from "@/components/olga/OlgaInterface";
 
 const Index = () => {
   const [userName] = useState('Analista');
+  const [showInterface, setShowInterface] = useState(false);
   const navigate = useNavigate();
+
+  // Se a interface estiver ativa, mostrar OlgaInterface
+  if (showInterface) {
+    return <OlgaInterface />;
+  }
 
   const getTimeGreeting = () => {
     const hour = new Date().getHours();
@@ -73,10 +80,16 @@ const Index = () => {
                 <p className="text-muted-foreground">Sistema Inteligente de Seguros</p>
               </div>
             </div>
-            <Button onClick={() => navigate('/claims')} className="gap-2">
-              <BarChart3 className="w-4 h-4" />
-              Dashboard Sinistros
-            </Button>
+            <div className="flex items-center space-x-3">
+              <Button onClick={() => setShowInterface(true)} className="gap-2">
+                <MessageCircle className="w-4 h-4" />
+                Interface Completa
+              </Button>
+              <Button onClick={() => navigate('/claims')} variant="outline" className="gap-2">
+                <BarChart3 className="w-4 h-4" />
+                Dashboard Sinistros
+              </Button>
+            </div>
           </div>
         </div>
       </div>
@@ -89,7 +102,7 @@ const Index = () => {
             {getTimeGreeting()}, {userName}!
           </h2>
           <p className="text-lg text-muted-foreground">
-            Escolha um agente de IA para começar o processamento automatizado
+            Agentes OpenAI conectados • Webhook N8N: https://olga-ai.app.n8n.cloud/webhook/88i
           </p>
         </div>
 
