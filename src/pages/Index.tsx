@@ -85,9 +85,13 @@ const Index = () => {
                 <MessageCircle className="w-4 h-4" />
                 Interface Completa
               </Button>
-              <Button onClick={() => navigate('/claims')} variant="outline" className="gap-2">
+              <Button onClick={() => navigate('/spreadsheet')} variant="outline" className="gap-2">
+                <FileText className="w-4 h-4" />
+                Spreadsheet
+              </Button>
+              <Button onClick={() => navigate('/dashboard')} variant="outline" className="gap-2">
                 <BarChart3 className="w-4 h-4" />
-                Dashboard Sinistros
+                Dashboard
               </Button>
             </div>
           </div>
@@ -135,7 +139,7 @@ const Index = () => {
                       <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                       <span className="text-xs text-muted-foreground">Ativo</span>
                     </div>
-                    <Button size="sm" variant="outline">
+                    <Button size="sm" variant="outline" onClick={() => navigate('/spreadsheet')}>
                       Usar Agente
                     </Button>
                   </div>
