@@ -37,15 +37,15 @@ const toolsItems = [
 ];
 
 const recentCases = [
-  { title: "Fraud Detection Analysis", url: "/spreadsheet", icon: Shield, agentId: "fraud-detection" },
-  { title: "APE + BAG Analysis", url: "/spreadsheet", icon: FileText, agentId: "claims-processor" },
-  { title: "Underwriting Review", url: "/spreadsheet", icon: Briefcase, agentId: "aura" },
+  { title: "Fraud Detection Analysis", url: "/chat", icon: Shield, agentId: "fraud-detection" },
+  { title: "APE + BAG Analysis", url: "/chat", icon: FileText, agentId: "claims-processor" },
+  { title: "Underwriting Review", url: "/chat", icon: Briefcase, agentId: "aura" },
 ];
 
 const agentItems = [
-  { title: "Aura", url: "/spreadsheet", icon: Bot, color: "text-purple-600", agentId: "aura" },
-  { title: "Fraud Detector", url: "/spreadsheet", icon: Shield, color: "text-blue-600", agentId: "fraud-detection" },
-  { title: "Claims Processor", url: "/spreadsheet", icon: FileText, color: "text-green-600", agentId: "claims-processor" },
+  { title: "Aura", url: "/chat", icon: Bot, color: "text-purple-600", agentId: "aura" },
+  { title: "Fraud Detector", url: "/chat", icon: Shield, color: "text-blue-600", agentId: "fraud-detection" },
+  { title: "Claims Processor", url: "/chat", icon: FileText, color: "text-green-600", agentId: "claims-processor" },
 ];
 
 export function AppSidebar() {

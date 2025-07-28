@@ -8,6 +8,7 @@ import { Layout } from './components/Layout';
 // Essential Pages Only
 import Index from './pages/Index';
 import SmartSpreadsheet from './pages/SmartSpreadsheet';
+import { Chat } from './pages/Chat';
 
 function App() {
   return (
@@ -18,6 +19,9 @@ function App() {
             <Routes>
               {/* Home */}
               <Route path="/" element={<Index />} />
+              
+              {/* Chat com Agentes */}
+              <Route path="/chat" element={<Chat />} />
               
               {/* Spreadsheet de Sinistros */}
               <Route path="/spreadsheet" element={<SmartSpreadsheet />} />
