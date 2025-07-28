@@ -30,29 +30,22 @@ import {
 
 const navigationItems = [
   { title: "Home", url: "/", icon: Home },
-  { title: "New agent", url: "/agent-builder", icon: Bot },
-  { title: "New case", url: "/upload", icon: Plus },
 ];
 
 const toolsItems = [
-  { title: "Smart Spreadsheet", url: "/spreadsheets", icon: BarChart3 },
-  { title: "Knowledge Hub", url: "/knowledge", icon: BookOpen },
-  { title: "Invite users", url: "/invite", icon: Users },
-  { title: "Search agents", url: "/ai-agents", icon: Search },
-  { title: "Settings", url: "/settings", icon: Settings },
+  { title: "Smart Spreadsheet", url: "/spreadsheet", icon: BarChart3 },
 ];
 
 const recentCases = [
-  { title: "Fraud Detection Analysis", url: "/live", icon: Shield, agentId: "fraud-detection" },
-  { title: "APE + BAG Analysis", url: "/live", icon: FileText, agentId: "claims-processor" },
-  { title: "Underwriting Review", url: "/live", icon: Briefcase, agentId: "aura" },
-  { title: "Policy Renewal Cases", url: "/renewal", icon: Clock },
+  { title: "Fraud Detection Analysis", url: "/spreadsheet", icon: Shield, agentId: "fraud-detection" },
+  { title: "APE + BAG Analysis", url: "/spreadsheet", icon: FileText, agentId: "claims-processor" },
+  { title: "Underwriting Review", url: "/spreadsheet", icon: Briefcase, agentId: "aura" },
 ];
 
 const agentItems = [
-  { title: "Aura", url: "/live", icon: Bot, color: "text-purple-600", agentId: "aura" },
-  { title: "Fraud Detector", url: "/live", icon: Shield, color: "text-blue-600", agentId: "fraud-detection" },
-  { title: "Claims Processor", url: "/live", icon: FileText, color: "text-green-600", agentId: "claims-processor" },
+  { title: "Aura", url: "/spreadsheet", icon: Bot, color: "text-purple-600", agentId: "aura" },
+  { title: "Fraud Detector", url: "/spreadsheet", icon: Shield, color: "text-blue-600", agentId: "fraud-detection" },
+  { title: "Claims Processor", url: "/spreadsheet", icon: FileText, color: "text-green-600", agentId: "claims-processor" },
 ];
 
 export function AppSidebar() {
