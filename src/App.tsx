@@ -9,6 +9,7 @@ import { Layout } from './components/Layout';
 import Index from './pages/Index';
 import SmartSpreadsheet from './pages/SmartSpreadsheet';
 import { Chat } from './pages/Chat';
+import LiveWorkflow from './pages/LiveWorkflow';
 
 function App() {
   return (
@@ -22,6 +23,9 @@ function App() {
               
               {/* Chat com Agentes */}
               <Route path="/chat" element={<Chat />} />
+              
+              {/* Live Workflow */}
+              <Route path="/live-workflow" element={<LiveWorkflow />} />
               
               {/* Spreadsheet de Sinistros */}
               <Route path="/spreadsheet" element={<SmartSpreadsheet />} />
