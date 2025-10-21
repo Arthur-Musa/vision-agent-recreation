@@ -7,6 +7,22 @@ import { ConciergeRequest, ConciergeResponse, Citation } from "@/types/workflow"
 import { Send, Bot, User, FileText, ExternalLink, Brain } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+// Normalize monetary strings like "1.234,56" or "1,234.56"
+const normalizeMoney = (s: string) => {
+  if (s.includes(',') && s.includes('.')) {
+    if (s.lastIndexOf(',') > s.lastIndexOf('.')) {
+      s = s.replace(/\./g, '').replace(',', '.');
+    } else {
+      s = s.replace(/,/g, '');
+    }
+  } else if (s.includes(',')) {
+    s = s.replace(/\./g, '').replace(',', '.');
+  } else {
+    s = s.replace(/,/g, '');
+  }
+  return parseFloat(s);
+};
+
 interface ConciergeChatProps {
   onAgentSuggestion?: (agentId: string) => void;
   onDataExtraction?: (data: Record<string, any>) => void;
@@ -117,7 +133,7 @@ export const ConciergeChat: React.FC<ConciergeChatProps> = ({
     
     const valueMatch = message.match(/R\$\s*([\d.,]+)/);
     if (valueMatch) {
-      data.estimatedValue = parseFloat(valueMatch[1].replace(',', ''));
+      data.estimatedValue = normalizeMoney(valueMatch[1]);
     }
     
     if (message.toLowerCase().includes('auto')) {
